@@ -14,6 +14,8 @@ import {
   Plus,
   Minus,
   ArrowUp,
+  MessageCircle,
+  Mail,
 } from "lucide-react";
 
 interface MenuItem {
@@ -344,9 +346,10 @@ function Configurator({
   const flocageDesc =
     flocageParts.length > 0 ? flocageParts.join(", ") : "Aucun";
 
-  const whatsappMsg = encodeURIComponent(
-    `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "A definir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${techniques.find((t) => t.id === selectedTechnique)?.name || "DTF"}\nTotal pieces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`
-  );
+  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "A definir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${techniques.find((t) => t.id === selectedTechnique)?.name || "DTF"}\nTotal pieces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
+  const whatsappMsg = encodeURIComponent(devisBody);
+  const emailSubject = encodeURIComponent(`Demande de devis - ${activeMenu.name}`);
+  const emailBody = encodeURIComponent(devisBody);
 
   const steps = [
     { title: "LE TEXTILE", subtitle: "Choisis ton support" },
@@ -1029,15 +1032,24 @@ function Configurator({
               <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
             </button>
           ) : (
-            <a
-              href={`https://wa.me/33675008633?text=${whatsappMsg}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 bg-[#C5FF00] text-[#0A0A0A] px-6 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
-            >
-              Demander un devis
-              <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
-            </a>
+            <>
+              <a
+                href={`https://wa.me/33675008633?text=${whatsappMsg}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#1da851] transition-colors duration-200 cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4" strokeWidth={2.5} />
+                WhatsApp
+              </a>
+              <a
+                href={`mailto:contact@lappart98.fr?subject=${emailSubject}&body=${emailBody}`}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#C5FF00] text-[#0A0A0A] px-4 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
+              >
+                <Mail className="w-4 h-4" strokeWidth={2.5} />
+                Email
+              </a>
+            </>
           )}
         </div>
       </motion.div>

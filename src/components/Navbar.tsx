@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageCircle, Mail } from "lucide-react";
 
 const links = [
   { label: "Menus", href: "#menus" },
@@ -13,6 +13,7 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [devisOpen, setDevisOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -51,14 +52,35 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <a
-            href="https://wa.me/33675008633"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#C5FF00] text-[#0A0A0A] px-5 py-2 font-heading text-sm font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
-          >
-            Devis gratuit
-          </a>
+          <div className="relative">
+            <button
+              onClick={() => setDevisOpen(!devisOpen)}
+              onBlur={() => setTimeout(() => setDevisOpen(false), 200)}
+              className="bg-[#C5FF00] text-[#0A0A0A] px-5 py-2 font-heading text-sm font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
+            >
+              Devis gratuit
+            </button>
+            {devisOpen && (
+              <div className="absolute right-0 top-full mt-2 bg-[#141414] border border-[#333] rounded-lg overflow-hidden shadow-xl min-w-[180px] z-50">
+                <a
+                  href="https://wa.me/33675008633"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#25D366] hover:text-white transition-colors duration-200 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" strokeWidth={2} />
+                  <span className="font-heading text-sm uppercase tracking-wider">WhatsApp</span>
+                </a>
+                <a
+                  href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+                  className="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#C5FF00] hover:text-[#0A0A0A] transition-colors duration-200 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" strokeWidth={2} />
+                  <span className="font-heading text-sm uppercase tracking-wider">Email</span>
+                </a>
+              </div>
+            )}
+          </div>
         </div>
 
         <button
@@ -89,14 +111,26 @@ export default function Navbar() {
                   {link.label}
                 </a>
               ))}
-              <a
-                href="https://wa.me/33675008633"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-[#C5FF00] text-[#0A0A0A] px-5 py-3 font-heading text-sm font-bold tracking-wider uppercase text-center hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer mt-2"
-              >
-                Devis gratuit
-              </a>
+              <div className="flex gap-3 mt-2">
+                <a
+                  href="https://wa.me/33675008633"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 py-3 font-heading text-sm font-bold tracking-wider uppercase hover:bg-[#1da851] transition-colors duration-200 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" strokeWidth={2} />
+                  WhatsApp
+                </a>
+                <a
+                  href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#C5FF00] text-[#0A0A0A] px-4 py-3 font-heading text-sm font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" strokeWidth={2} />
+                  Email
+                </a>
+              </div>
             </div>
           </motion.div>
         )}

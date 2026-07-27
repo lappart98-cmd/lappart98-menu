@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { MapPin, Phone, AtSign, Globe, Send } from "lucide-react";
+import { MapPin, Phone, AtSign, Globe, MessageCircle, Mail } from "lucide-react";
 
 const contactItems = [
   {
@@ -94,17 +94,28 @@ export default function Contact() {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <motion.a
-            href="https://wa.me/33675008633?text=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9."
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center gap-3 bg-[#C5FF00] text-[#0A0A0A] px-10 py-5 font-heading text-lg font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
-          >
-            <Send className="w-5 h-5" strokeWidth={2} />
-            Demander un devis gratuit
-          </motion.a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <motion.a
+              href="https://wa.me/33675008633?text=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9."
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-5 font-heading text-lg font-bold tracking-wider uppercase hover:bg-[#1da851] transition-colors duration-200 cursor-pointer"
+            >
+              <MessageCircle className="w-5 h-5" strokeWidth={2} />
+              WhatsApp
+            </motion.a>
+            <motion.a
+              href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-3 bg-[#C5FF00] text-[#0A0A0A] px-8 py-5 font-heading text-lg font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
+            >
+              <Mail className="w-5 h-5" strokeWidth={2} />
+              Email
+            </motion.a>
+          </div>
         </motion.div>
       </div>
     </section>

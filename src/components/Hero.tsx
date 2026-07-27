@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Palette, Flame, Shirt } from "lucide-react";
+import { Palette, Flame, Shirt, MessageCircle, Mail } from "lucide-react";
 
 const container = {
   hidden: {},
@@ -135,9 +135,17 @@ export default function Hero() {
             href="https://wa.me/33675008633"
             target="_blank"
             rel="noopener noreferrer"
-            className="border-2 border-white/20 text-white px-8 py-4 font-heading text-base font-bold tracking-wider uppercase hover:border-[#C5FF00] hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
+            className="flex items-center gap-2 border-2 border-[#25D366] text-[#25D366] px-6 py-4 font-heading text-base font-bold tracking-wider uppercase hover:bg-[#25D366] hover:text-white transition-colors duration-200 cursor-pointer"
           >
-            Devis gratuit
+            <MessageCircle className="w-5 h-5" strokeWidth={2} />
+            WhatsApp
+          </a>
+          <a
+            href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+            className="flex items-center gap-2 border-2 border-white/20 text-white px-6 py-4 font-heading text-base font-bold tracking-wider uppercase hover:border-[#C5FF00] hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
+          >
+            <Mail className="w-5 h-5" strokeWidth={2} />
+            Email
           </a>
         </motion.div>
 

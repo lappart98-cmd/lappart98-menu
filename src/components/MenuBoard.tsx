@@ -350,6 +350,7 @@ function Configurator({
   const whatsappMsg = encodeURIComponent(devisBody);
   const emailSubject = encodeURIComponent(`Demande de devis - ${activeMenu.name}`);
   const emailBody = encodeURIComponent(devisBody);
+  const mailtoUrl = `mailto:contact@lappart98.fr?subject=${emailSubject}&body=${emailBody}`;
 
   const steps = [
     { title: "LE TEXTILE", subtitle: "Choisis ton support" },
@@ -1043,7 +1044,7 @@ function Configurator({
                 WhatsApp
               </a>
               <a
-                href={`mailto:contact@lappart98.fr?subject=${emailSubject}&body=${emailBody}`}
+                href={mailtoUrl}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#C5FF00] text-[#0A0A0A] px-4 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
               >
                 <Mail className="w-4 h-4" strokeWidth={2.5} />

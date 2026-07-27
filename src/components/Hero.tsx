@@ -81,24 +81,24 @@ export default function Hero() {
 
         <motion.div
           variants={fadeUp}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-10"
+          className="flex flex-row items-center justify-center gap-3 sm:gap-6 mb-10"
         >
           {steps.map((step, i) => (
             <div key={step.label} className="flex items-center gap-4 sm:gap-6">
               <motion.div
                 variants={scaleIn}
                 whileHover={{ scale: 1.05, borderColor: "#C5FF00" }}
-                className="w-28 h-28 sm:w-32 sm:h-32 bg-[#141414] border-2 border-[#333] rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors duration-200"
+                className="w-20 h-20 sm:w-32 sm:h-32 bg-[#141414] border-2 border-[#333] rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 cursor-pointer transition-colors duration-200"
               >
-                <step.icon className="w-8 h-8 text-[#C5FF00]" strokeWidth={1.5} />
-                <span className="font-heading text-xs sm:text-sm font-bold text-white text-center uppercase leading-tight whitespace-pre-line">
+                <step.icon className="w-5 h-5 sm:w-8 sm:h-8 text-[#C5FF00]" strokeWidth={1.5} />
+                <span className="font-heading text-[10px] sm:text-sm font-bold text-white text-center uppercase leading-tight whitespace-pre-line">
                   {step.label}
                 </span>
               </motion.div>
               {i < steps.length - 1 && (
                 <motion.span
                   variants={scaleIn}
-                  className="text-[#C5FF00] font-heading text-3xl font-black"
+                  className="text-[#C5FF00] font-heading text-xl sm:text-3xl font-black"
                 >
                   +
                 </motion.span>

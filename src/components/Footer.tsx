@@ -4,13 +4,11 @@ export default function Footer() {
   return (
     <footer className="bg-[#0A0A0A] border-t border-[#222] py-8">
       <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="h-6 overflow-hidden">
-          <img
-            src="/logo-lappart98.png"
-            alt="L'Appart 98"
-            className="h-8 w-auto object-cover object-top invert"
-          />
-        </div>
+        <img
+          src="/logo-lappart98.png"
+          alt="L'Appart 98"
+          className="h-6 w-auto invert"
+        />
 
         <p className="font-body text-xs text-white/30 text-center">
           &copy; {new Date().getFullYear()} L&apos;Appart 98 — Atelier textile,

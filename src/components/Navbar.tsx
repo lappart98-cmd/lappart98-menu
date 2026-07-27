@@ -33,11 +33,11 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="#" className="cursor-pointer block h-8 overflow-hidden">
+        <a href="#" className="cursor-pointer block">
           <img
             src="/logo-lappart98.png"
             alt="L'Appart 98"
-            className="h-10 w-auto object-cover object-top invert"
+            className="h-8 w-auto invert"
           />
         </a>
 

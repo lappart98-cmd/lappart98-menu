@@ -32,7 +32,8 @@ interface MenuItem {
 interface TextileOption {
   id: string;
   name: string;
-  emoji: string;
+  image: string;
+  darkProduct?: boolean;
   flocageFlat?: number;
 }
 
@@ -42,13 +43,13 @@ interface CartItem {
 }
 
 const textiles: TextileOption[] = [
-  { id: "tshirt-basique", name: "T-Shirt Basique 190g", emoji: "👕" },
-  { id: "tshirt-oversize", name: "T-Shirt Oversize 220g", emoji: "👕" },
-  { id: "sweat", name: "Sweat 280g", emoji: "🧥" },
-  { id: "hoodie-classic", name: "Hoodie Classic 260g", emoji: "🧥" },
-  { id: "totebag", name: "Tote Bag", emoji: "👜", flocageFlat: 5 },
-  { id: "casquette", name: "Casquette", emoji: "🧢", flocageFlat: 5 },
-  { id: "polo", name: "Polo 210g", emoji: "👔" },
+  { id: "tshirt-basique", name: "T-Shirt Basique 190g", image: "/tshirt-190g.png" },
+  { id: "tshirt-oversize", name: "T-Shirt Oversize 220g", image: "/tshirt-noir.png" },
+  { id: "sweat", name: "Sweat Col Rond 280g", image: "/sweat-noir.png" },
+  { id: "hoodie-classic", name: "Hoodie Classic 260g", image: "/hoodie-kaki.png" },
+  { id: "totebag", name: "Tote Bag", image: "/totebag.png", flocageFlat: 5 },
+  { id: "casquette", name: "Casquette Snapback", image: "/casquette-noire.png", flocageFlat: 5 },
+  { id: "polo", name: "Polo 210g", image: "/polo-noir.png" },
 ];
 
 const productPricing: Record<string, Record<string, number>> = {
@@ -137,7 +138,7 @@ function PriceBurst({
 }) {
   return (
     <div
-      className={`relative flex items-center justify-center shrink-0 w-20 h-20 sm:w-28 sm:h-28 rounded-full border-[3px] shadow-[0_0_20px_rgba(197,255,0,0.3)] ${
+      className={`relative flex items-center justify-center shrink-0 w-14 h-14 sm:w-18 sm:h-18 rounded-full border-[3px] shadow-[0_0_20px_rgba(197,255,0,0.3)] ${
         inverted
           ? "bg-[#0A0A0A] border-[#0A0A0A]"
           : "bg-[#C5FF00] border-[#C5FF00]"
@@ -145,21 +146,21 @@ function PriceBurst({
     >
       <div className="flex flex-col items-center">
         <span
-          className={`font-heading text-[9px] sm:text-[11px] font-bold uppercase ${
+          className={`font-heading text-[10px] sm:text-xs font-bold uppercase ${
             inverted ? "text-[#C5FF00]" : "text-[#0A0A0A]"
           }`}
         >
           Des
         </span>
         <span
-          className={`font-heading font-black leading-none text-2xl sm:text-4xl ${
+          className={`font-heading font-black leading-none text-2xl sm:text-3xl ${
             inverted ? "text-[#C5FF00]" : "text-[#0A0A0A]"
           }`}
         >
           {price}
         </span>
         <span
-          className={`font-heading text-[8px] sm:text-[11px] font-bold ${
+          className={`font-heading text-[9px] sm:text-xs font-bold ${
             inverted ? "text-[#C5FF00]" : "text-[#0A0A0A]"
           }`}
         >
@@ -454,9 +455,7 @@ function Configurator({
                             : "border-[#333] bg-[#1a1a1a]"
                         }`}
                       >
-                        <div className="w-12 h-12 bg-[#222] rounded-xl flex items-center justify-center text-2xl shrink-0">
-                          {textile.emoji}
-                        </div>
+                        <img src={textile.image} alt={textile.name} className="w-20 h-20 shrink-0 object-contain" />
                         <div className="flex-1 min-w-0">
                           <span
                             className={`font-heading text-sm font-bold uppercase tracking-wider block ${

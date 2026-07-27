@@ -33,13 +33,12 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="#" className="flex items-baseline gap-1 cursor-pointer">
-          <span className="text-[#C5FF00] font-heading text-sm font-bold">
-            98
-          </span>
-          <span className="font-heading text-xl font-bold tracking-wider text-white">
-            L&apos;APPART
-          </span>
+        <a href="#" className="cursor-pointer block h-8 overflow-hidden">
+          <img
+            src="/logo-lappart98.png"
+            alt="L'Appart 98"
+            className="h-10 w-auto object-cover object-top invert"
+          />
         </a>
 
         <div className="hidden md:flex items-center gap-8">

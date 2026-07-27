@@ -4,16 +4,12 @@ export default function Footer() {
   return (
     <footer className="bg-[#0A0A0A] border-t border-[#222] py-8">
       <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-baseline gap-1">
-          <span className="text-[#C5FF00] font-heading text-sm font-bold">
-            98
-          </span>
-          <span className="font-heading text-base font-bold tracking-wider text-white">
-            L&apos;APPART
-          </span>
-          <span className="font-body text-xs text-white/30 ml-2">
-            atelier Paris
-          </span>
+        <div className="h-6 overflow-hidden">
+          <img
+            src="/logo-lappart98.png"
+            alt="L'Appart 98"
+            className="h-8 w-auto object-cover object-top invert"
+          />
         </div>
 
         <p className="font-body text-xs text-white/30 text-center">

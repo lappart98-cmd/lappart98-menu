@@ -151,7 +151,7 @@ export default function Hero() {
 
         <motion.div
           variants={fadeUp}
-          className="absolute -bottom-4 right-4 sm:right-12 rotate-12"
+          className="absolute top-8 -right-2 sm:top-12 sm:-right-4 rotate-12 pointer-events-none"
         >
           <div className="relative">
             <svg

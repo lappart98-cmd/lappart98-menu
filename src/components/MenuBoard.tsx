@@ -6,8 +6,6 @@ import {
   Star,
   Users,
   Trophy,
-  Zap,
-  Shield,
   X,
   ChevronRight,
   Check,
@@ -112,41 +110,19 @@ const menus: MenuItem[] = [
   },
   {
     name: "LE MAXI BEST-OF",
-    quantity: "15 A 29",
+    quantity: "15 A 40",
     min: 15,
-    max: 29,
+    max: 40,
     price: 11,
     tier: "bestof",
     description: "Le plus commande — rapport qualite/prix",
     icon: Trophy,
     popular: true,
   },
-  {
-    name: "LE MENU XXL",
-    quantity: "30 & +",
-    min: 30,
-    max: null,
-    price: 9,
-    tier: "xxl",
-    description: "Meilleur prix au volume pour les gros tirages",
-    icon: Zap,
-  },
-  {
-    name: "LE MENU CLUB",
-    quantity: "CLUB",
-    min: 1,
-    max: null,
-    price: 14,
-    tier: "club",
-    description: "Maillots sport : nom + numero + logo inclus",
-    icon: Shield,
-    special: true,
-  },
 ];
 
-function getMenuForQuantity(totalQty: number, isClub: boolean): MenuItem {
-  if (isClub) return menus[4];
-  for (let i = menus.length - 2; i >= 0; i--) {
+function getMenuForQuantity(totalQty: number): MenuItem {
+  for (let i = menus.length - 1; i >= 0; i--) {
     if (totalQty >= menus[i].min) return menus[i];
   }
   return menus[0];
@@ -272,7 +248,7 @@ function Configurator({
 
   const activeMenu = useMemo(() => {
     if (item.special) return item;
-    const calculated = getMenuForQuantity(totalQty, false);
+    const calculated = getMenuForQuantity(totalQty);
     return calculated.price < item.price ? calculated : item;
   }, [totalQty, item]);
 

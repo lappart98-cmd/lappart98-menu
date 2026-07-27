@@ -185,12 +185,12 @@ function QtySelector({
           e.stopPropagation();
           onChange(Math.max(0, qty - 1));
         }}
-        className="w-8 h-8 rounded-lg bg-[#222] hover:bg-[#333] flex items-center justify-center text-white/60 hover:text-white cursor-pointer transition-colors duration-150"
+        className="w-8 h-8 rounded-lg bg-[#0A0A0A]/10 hover:bg-[#0A0A0A]/20 flex items-center justify-center text-[#0A0A0A]/50 hover:text-[#0A0A0A] cursor-pointer transition-colors duration-150"
         aria-label="Reduire"
       >
         <Minus className="w-3.5 h-3.5" />
       </button>
-      <span className="w-8 text-center font-heading text-sm font-bold text-white">
+      <span className="w-8 text-center font-heading text-sm font-bold text-[#0A0A0A]">
         {qty}
       </span>
       <button
@@ -198,7 +198,7 @@ function QtySelector({
           e.stopPropagation();
           onChange(qty + 1);
         }}
-        className="w-8 h-8 rounded-lg bg-[#C5FF00]/20 hover:bg-[#C5FF00]/30 flex items-center justify-center text-[#C5FF00] cursor-pointer transition-colors duration-150"
+        className="w-8 h-8 rounded-lg bg-[#0A0A0A]/15 hover:bg-[#0A0A0A]/25 flex items-center justify-center text-[#0A0A0A] cursor-pointer transition-colors duration-150"
         aria-label="Ajouter"
       >
         <Plus className="w-3.5 h-3.5" />
@@ -449,22 +449,22 @@ function Configurator({
                       <motion.div
                         key={textile.id}
                         whileHover={{ scale: 1.01 }}
-                        className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ${
+                        className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${
                           isActive
-                            ? "border-[#C5FF00] bg-[#C5FF00]/5"
-                            : "border-[#333] bg-[#1a1a1a]"
+                            ? "bg-[#d4d4d4] ring-2 ring-[#C5FF00]"
+                            : "bg-[#e8e8e8]"
                         }`}
                       >
-                        <img src={textile.image} alt={textile.name} className="w-20 h-20 shrink-0 object-contain" />
+                        <img src={textile.image} alt={textile.name} className="w-20 h-20 shrink-0 object-contain transition-transform duration-300 hover:scale-[1.6]" />
                         <div className="flex-1 min-w-0">
                           <span
                             className={`font-heading text-sm font-bold uppercase tracking-wider block ${
-                              isActive ? "text-[#C5FF00]" : "text-white/70"
+                              isActive ? "text-[#0A0A0A]" : "text-[#1a1a1a]"
                             }`}
                           >
                             {textile.name}
                           </span>
-                          <span className="font-body text-xs text-white/40">
+                          <span className="font-body text-xs text-[#666]">
                             {unitPrice}&euro;/piece
                           </span>
                         </div>
@@ -981,6 +981,27 @@ function Configurator({
                   </p>
                   <p className="text-center mt-3 text-sm font-bold tracking-wider uppercase">
                     Merci de votre visite !
+                  </p>
+
+                  <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-3" />
+                  <p className="text-[11px] text-[#1a1a1a]/60 text-center leading-relaxed">
+                    Pour recevoir ton devis final et nous envoyer ton logo,
+                    ecris-nous sur{" "}
+                    <a
+                      href="https://wa.me/33675008633"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-[#25D366] hover:underline"
+                    >
+                      WhatsApp
+                    </a>{" "}
+                    ou par{" "}
+                    <a
+                      href="mailto:contact@lappart98.fr"
+                      className="font-bold text-[#1a1a1a]/80 hover:underline"
+                    >
+                      mail
+                    </a>
                   </p>
 
                   <div className="absolute bottom-0 left-0 right-0 h-3 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAyMCAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCAwTDEwIDEyTDIwIDAiIGZpbGw9IiNmNWYwZTgiLz48L3N2Zz4=')] bg-repeat-x bg-[length:20px_12px] translate-y-full" />

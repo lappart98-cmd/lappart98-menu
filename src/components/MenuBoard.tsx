@@ -455,7 +455,7 @@ function Configurator({
                             : "bg-[#e8e8e8]"
                         }`}
                       >
-                        <img src={textile.image} alt={textile.name} className="w-20 h-20 shrink-0 object-contain transition-transform duration-300 hover:scale-[1.6]" />
+                        <img src={textile.image} alt={textile.name} className="w-24 h-24 -my-2 shrink-0 object-contain transition-transform duration-300 hover:scale-[1.6]" />
                         <div className="flex-1 min-w-0">
                           <span
                             className={`font-heading text-sm font-bold uppercase tracking-wider block ${

@@ -1063,11 +1063,11 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
           delay: index * 0.15,
           ease: "easeOut" as const,
         }}
-        className={`relative flex flex-col ${isPopular ? "sm:-translate-y-6 z-10" : "z-0"}`}
+        className={`relative flex flex-col ${isPopular ? "-translate-y-2 sm:-translate-y-6 z-10" : "z-0"}`}
       >
         {isPopular && (
-          <div className="flex justify-center mb-3">
-            <span className="bg-[#C5FF00] text-[#0A0A0A] px-5 py-1.5 rounded-full font-heading text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(197,255,0,0.3)]">
+          <div className="flex justify-center mb-1.5 sm:mb-3">
+            <span className="bg-[#C5FF00] text-[#0A0A0A] px-2 sm:px-5 py-1 sm:py-1.5 rounded-full font-heading text-[8px] sm:text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(197,255,0,0.3)]">
               Le + commande
             </span>
           </div>
@@ -1083,30 +1083,30 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               : "bg-[#151515]/60 backdrop-blur-xl border border-white/[0.08] hover:border-white/15"
           }`}
         >
-          <div className="p-7 sm:p-8 flex flex-col flex-1">
-            <h3 className="font-heading text-2xl sm:text-3xl font-black uppercase text-white leading-tight">
+          <div className="p-3 sm:p-8 flex flex-col flex-1">
+            <h3 className="font-heading text-xs sm:text-3xl font-black uppercase text-white leading-tight">
               {item.name}
             </h3>
-            <p className="font-body text-sm text-white/40 mt-2">
+            <p className="font-body text-[10px] sm:text-sm text-white/40 mt-1 sm:mt-2 hidden sm:block">
               {item.description}
             </p>
 
-            <div className="my-6 sm:my-8">
-              <div className="flex items-baseline gap-1">
+            <div className="my-3 sm:my-8">
+              <div className="flex items-baseline gap-0.5 sm:gap-1">
                 <span
-                  className={`font-heading text-5xl sm:text-6xl font-black leading-none ${
+                  className={`font-heading text-2xl sm:text-6xl font-black leading-none ${
                     isPopular ? "text-[#C5FF00]" : "text-white"
                   }`}
                 >
                   {item.price}&euro;
                 </span>
-                <span className="font-body text-sm text-white/30">
+                <span className="font-body text-[9px] sm:text-sm text-white/30">
                   /piece
                 </span>
               </div>
             </div>
 
-            <div className="flex-1 space-y-3.5 mb-8">
+            <div className="flex-1 space-y-1.5 sm:space-y-3.5 mb-3 sm:mb-8 hidden sm:block">
               {item.features.map((feature) => (
                 <div key={feature} className="flex items-center gap-3">
                   <div
@@ -1128,14 +1128,18 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               ))}
             </div>
 
+            <p className="font-body text-[9px] text-white/40 mb-2 sm:hidden">
+              {item.quantity} pieces
+            </p>
+
             <button
-              className={`w-full py-4 rounded-xl font-heading text-sm font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+              className={`w-full py-2 sm:py-4 rounded-lg sm:rounded-xl font-heading text-[9px] sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                 isPopular
                   ? "bg-[#C5FF00] text-[#0A0A0A] hover:bg-[#b3e600]"
                   : "bg-white/[0.06] text-white border border-white/10 hover:bg-white/10"
               }`}
             >
-              {isPopular ? "Choisir cette formule" : "Composer"}
+              {isPopular ? "Choisir" : "Composer"}
             </button>
           </div>
         </motion.div>
@@ -1189,7 +1193,7 @@ export default function MenuBoard() {
             }}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end relative z-10">
+          <div className="grid grid-cols-3 gap-2 sm:gap-6 items-end relative z-10">
             {menus.map((item, index) => (
               <MenuCard key={item.name} item={item} index={index} />
             ))}

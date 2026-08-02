@@ -4,6 +4,8 @@ import Marquee from "@/components/Marquee";
 import MenuBoard from "@/components/MenuBoard";
 import Process from "@/components/Process";
 import Contact from "@/components/Contact";
+import InstagramFeed from "@/components/InstagramFeed";
+import GoogleReviews from "@/components/GoogleReviews";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -15,6 +17,8 @@ export default function Home() {
       <MenuBoard />
       <Process />
       <Marquee />
+      <GoogleReviews />
+      <InstagramFeed />
       <Contact />
       <Footer />
     </main>

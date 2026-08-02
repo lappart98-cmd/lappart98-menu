@@ -27,6 +27,7 @@ interface MenuItem {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   popular?: boolean;
   special?: boolean;
+  features: string[];
 }
 
 interface TextileOption {
@@ -98,6 +99,30 @@ const menus: MenuItem[] = [
     tier: "solo",
     description: "Ta piece perso, flocage + textile au choix",
     icon: Star,
+    features: [
+      "1 a 4 pieces",
+      "Ton visuel personnalise",
+      "Choix du textile",
+      "Flocage inclus",
+    ],
+  },
+  {
+    name: "LE MAXI BEST-OF",
+    quantity: "15 A 40",
+    min: 15,
+    max: 40,
+    price: 11,
+    tier: "bestof",
+    description: "Le plus commande — prix imbattable",
+    icon: Trophy,
+    popular: true,
+    features: [
+      "15 a 40 pieces",
+      "Meilleur prix/piece",
+      "Ton visuel personnalise",
+      "Choix du textile",
+      "Flocage inclus",
+    ],
   },
   {
     name: "LE MENU TEAM",
@@ -108,17 +133,13 @@ const menus: MenuItem[] = [
     tier: "team",
     description: "Parfait equipes, assos & familles",
     icon: Users,
-  },
-  {
-    name: "LE MAXI BEST-OF",
-    quantity: "15 A 40",
-    min: 15,
-    max: 40,
-    price: 11,
-    tier: "bestof",
-    description: "Le plus commande — rapport qualite/prix",
-    icon: Trophy,
-    popular: true,
+    features: [
+      "5 a 14 pieces",
+      "Ideal equipes & assos",
+      "Ton visuel personnalise",
+      "Choix du textile",
+      "Flocage inclus",
+    ],
   },
 ];
 
@@ -174,9 +195,11 @@ function PriceBurst({
 function QtySelector({
   qty,
   onChange,
+  dark,
 }: {
   qty: number;
   onChange: (n: number) => void;
+  dark?: boolean;
 }) {
   return (
     <div className="flex items-center gap-1">
@@ -185,12 +208,20 @@ function QtySelector({
           e.stopPropagation();
           onChange(Math.max(0, qty - 1));
         }}
-        className="w-8 h-8 rounded-lg bg-[#0A0A0A]/10 hover:bg-[#0A0A0A]/20 flex items-center justify-center text-[#0A0A0A]/50 hover:text-[#0A0A0A] cursor-pointer transition-colors duration-150"
+        className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors duration-150 ${
+          dark
+            ? "bg-white/10 hover:bg-white/20 text-white/50 hover:text-white"
+            : "bg-[#0A0A0A]/10 hover:bg-[#0A0A0A]/20 text-[#0A0A0A]/50 hover:text-[#0A0A0A]"
+        }`}
         aria-label="Reduire"
       >
         <Minus className="w-3.5 h-3.5" />
       </button>
-      <span className="w-8 text-center font-heading text-sm font-bold text-[#0A0A0A]">
+      <span
+        className={`w-8 text-center font-heading text-sm font-bold ${
+          dark ? "text-white" : "text-[#0A0A0A]"
+        }`}
+      >
         {qty}
       </span>
       <button
@@ -198,7 +229,11 @@ function QtySelector({
           e.stopPropagation();
           onChange(qty + 1);
         }}
-        className="w-8 h-8 rounded-lg bg-[#0A0A0A]/15 hover:bg-[#0A0A0A]/25 flex items-center justify-center text-[#0A0A0A] cursor-pointer transition-colors duration-150"
+        className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors duration-150 ${
+          dark
+            ? "bg-white/15 hover:bg-white/25 text-white"
+            : "bg-[#0A0A0A]/15 hover:bg-[#0A0A0A]/25 text-[#0A0A0A]"
+        }`}
         aria-label="Ajouter"
       >
         <Plus className="w-3.5 h-3.5" />
@@ -653,6 +688,7 @@ function Configurator({
                                   logoSup: n,
                                 }))
                               }
+                              dark
                             />
                           </div>
                         </div>
@@ -707,61 +743,19 @@ function Configurator({
                   </div>
                 )}
 
-                <h4 className="font-heading text-sm font-bold text-white/40 uppercase tracking-wider mb-3">
-                  Technique
-                </h4>
-                <div className="flex flex-col gap-3">
-                  {techniques.map((tech) => (
-                    <motion.button
-                      key={tech.id}
-                      onClick={() => setSelectedTechnique(tech.id)}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className={`relative text-left p-5 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                        selectedTechnique === tech.id
-                          ? "border-[#C5FF00] bg-[#C5FF00]/10"
-                          : "border-[#333] bg-[#1a1a1a] hover:border-[#C5FF00]/40"
-                      }`}
-                    >
-                      {selectedTechnique === tech.id && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute top-3 right-3 w-6 h-6 bg-[#C5FF00] rounded-full flex items-center justify-center"
-                        >
-                          <Check
-                            className="w-3.5 h-3.5 text-[#0A0A0A]"
-                            strokeWidth={3}
-                          />
-                        </motion.div>
-                      )}
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`font-heading text-base sm:text-lg font-bold uppercase ${
-                            selectedTechnique === tech.id
-                              ? "text-[#C5FF00]"
-                              : "text-white"
-                          }`}
-                        >
-                          {tech.name}
-                        </span>
-                        {tech.tag && (
-                          <span
-                            className={`px-2 py-0.5 font-heading text-[9px] font-bold uppercase tracking-wider ${
-                              tech.id === "dtf"
-                                ? "bg-[#C5FF00] text-[#0A0A0A]"
-                                : "bg-white/10 text-white/50"
-                            }`}
-                          >
-                            {tech.tag}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-body text-sm text-white/50 mt-1">
-                        {tech.desc}
-                      </p>
-                    </motion.button>
-                  ))}
+                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#C5FF00]" strokeWidth={3} />
+                    <span className="font-heading text-sm font-bold text-white">
+                      Technique : DTF
+                    </span>
+                    <span className="px-2 py-0.5 font-heading text-[9px] font-bold uppercase tracking-wider bg-[#C5FF00] text-[#0A0A0A]">
+                      Recommande
+                    </span>
+                  </div>
+                  <p className="font-body text-xs text-white/40 mt-1 ml-6">
+                    Impression haute qualite, couleurs vives, tous textiles
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -1056,97 +1050,94 @@ function Configurator({
 
 function MenuCard({ item, index }: { item: MenuItem; index: number }) {
   const [showConfigurator, setShowConfigurator] = useState(false);
+  const isPopular = item.popular;
 
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, x: index % 2 === 0 ? -60 : 60 }}
-        whileInView={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{
-          duration: 0.5,
-          delay: index * 0.1,
+          duration: 0.6,
+          delay: index * 0.15,
           ease: "easeOut" as const,
         }}
+        className={`relative flex flex-col ${isPopular ? "sm:-translate-y-6 z-10" : "z-0"}`}
       >
+        {isPopular && (
+          <div className="flex justify-center mb-3">
+            <span className="bg-[#C5FF00] text-[#0A0A0A] px-5 py-1.5 rounded-full font-heading text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(197,255,0,0.3)]">
+              Le + commande
+            </span>
+          </div>
+        )}
+
         <motion.div
           onClick={() => setShowConfigurator(true)}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          className={`relative cursor-pointer overflow-hidden transition-all duration-300 ${
-            item.special
-              ? "bg-[#C5FF00] text-[#0A0A0A]"
-              : "bg-[#141414] text-white border border-[#222] hover:border-[#C5FF00]/50"
-          } ${item.popular ? "ring-2 ring-[#C5FF00]" : ""}`}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+          className={`relative cursor-pointer rounded-2xl flex flex-col flex-1 overflow-hidden transition-all duration-300 ${
+            isPopular
+              ? "bg-[#1a1a1a]/80 backdrop-blur-xl border border-[#C5FF00]/25 shadow-[0_0_50px_rgba(197,255,0,0.08)]"
+              : "bg-[#151515]/60 backdrop-blur-xl border border-white/[0.08] hover:border-white/15"
+          }`}
         >
-          {item.popular && (
-            <div className="absolute top-0 right-0 bg-[#C5FF00] text-[#0A0A0A] px-4 py-1">
-              <span className="font-heading text-[10px] font-bold tracking-widest uppercase">
-                Le + commande
-              </span>
-            </div>
-          )}
+          <div className="p-7 sm:p-8 flex flex-col flex-1">
+            <h3 className="font-heading text-2xl sm:text-3xl font-black uppercase text-white leading-tight">
+              {item.name}
+            </h3>
+            <p className="font-body text-sm text-white/40 mt-2">
+              {item.description}
+            </p>
 
-          {item.special && (
-            <div className="absolute top-3 left-3">
-              <span className="bg-[#0A0A0A] text-[#C5FF00] px-3 py-1 font-heading text-[10px] font-bold tracking-widest uppercase">
-                Special Club
-              </span>
-            </div>
-          )}
-
-          <div className="p-5 sm:p-8 flex items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-center gap-3 sm:gap-6 flex-1 min-w-0">
-              <div
-                className={`hidden sm:flex w-14 h-14 rounded-xl items-center justify-center shrink-0 ${
-                  item.special ? "bg-[#0A0A0A]/10" : "bg-[#C5FF00]/10"
-                }`}
-              >
-                <item.icon
-                  className={`w-7 h-7 ${
-                    item.special ? "text-[#0A0A0A]" : "text-[#C5FF00]"
-                  }`}
-                  strokeWidth={1.5}
-                />
-              </div>
-
-              <div className="min-w-0">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h3 className="font-heading text-lg sm:text-2xl md:text-3xl font-black uppercase">
-                    {item.name}
-                  </h3>
-                  <span
-                    className={`px-3 py-0.5 font-heading text-[10px] sm:text-xs font-bold tracking-wider shrink-0 ${
-                      item.special
-                        ? "bg-[#0A0A0A] text-[#C5FF00]"
-                        : "bg-white/10 text-white/60"
-                    }`}
-                  >
-                    {item.quantity}
-                  </span>
-                </div>
-                <p
-                  className={`font-body text-sm mt-1 ${
-                    item.special ? "text-[#0A0A0A]/70" : "text-white/50"
+            <div className="my-6 sm:my-8">
+              <div className="flex items-baseline gap-1">
+                <span
+                  className={`font-heading text-5xl sm:text-6xl font-black leading-none ${
+                    isPopular ? "text-[#C5FF00]" : "text-white"
                   }`}
                 >
-                  {item.description}
-                </p>
+                  {item.price}&euro;
+                </span>
+                <span className="font-body text-sm text-white/30">
+                  /piece
+                </span>
               </div>
             </div>
 
-            <PriceBurst price={String(item.price)} inverted={item.special} />
-          </div>
+            <div className="flex-1 space-y-3.5 mb-8">
+              {item.features.map((feature) => (
+                <div key={feature} className="flex items-center gap-3">
+                  <div
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                      isPopular ? "bg-[#C5FF00]/15" : "bg-white/10"
+                    }`}
+                  >
+                    <Check
+                      className={`w-3 h-3 ${
+                        isPopular ? "text-[#C5FF00]" : "text-[#C5FF00]/70"
+                      }`}
+                      strokeWidth={3}
+                    />
+                  </div>
+                  <span className="font-body text-sm text-white/60">
+                    {feature}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-          <div
-            className={`h-1 ${
-              item.popular
-                ? "bg-[#C5FF00]"
-                : item.special
-                  ? "bg-[#0A0A0A]"
-                  : "bg-[#222]"
-            }`}
-          />
+            <button
+              className={`w-full py-4 rounded-xl font-heading text-sm font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                isPopular
+                  ? "bg-[#C5FF00] text-[#0A0A0A] hover:bg-[#b3e600]"
+                  : "bg-white/[0.06] text-white border border-white/10 hover:bg-white/10"
+              }`}
+            >
+              {isPopular ? "Choisir cette formule" : "Composer"}
+            </button>
+          </div>
         </motion.div>
       </motion.div>
 
@@ -1170,7 +1161,7 @@ export default function MenuBoard() {
     <section id="menus" className="py-24 sm:py-32 relative" ref={ref}>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#111_0%,_#0A0A0A_70%)]" />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6">
+      <div className="relative z-10 max-w-5xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -1189,10 +1180,20 @@ export default function MenuBoard() {
           </p>
         </motion.div>
 
-        <div className="flex flex-col gap-4">
-          {menus.map((item, index) => (
-            <MenuCard key={item.name} item={item} index={index} />
-          ))}
+        <div className="relative">
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] sm:w-[650px] sm:h-[650px] rounded-full pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(circle, transparent 35%, rgba(197,255,0,0.06) 48%, rgba(197,255,0,0.12) 53%, rgba(197,255,0,0.06) 58%, transparent 70%)",
+            }}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end relative z-10">
+            {menus.map((item, index) => (
+              <MenuCard key={item.name} item={item} index={index} />
+            ))}
+          </div>
         </div>
 
         <motion.div
@@ -1200,16 +1201,11 @@ export default function MenuBoard() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 text-center"
+          className="mt-12 text-center"
         >
-          <div className="inline-block bg-[#C5FF00] px-6 py-3">
-            <p className="font-heading text-sm font-bold text-[#0A0A0A] uppercase tracking-wider">
-              Chaque menu = ton textile + ton flocage + la pose
-            </p>
-          </div>
-          <p className="font-body text-xs text-white/30 mt-4">
-            *Prix indicatifs T-Shirt Basique + flocage dos. Tarif selon textile
-            et emplacements.
+          <p className="font-body text-xs text-white/30">
+            *Prix indicatifs T-Shirt Basique. Tarif final selon textile
+            et emplacements de flocage.
           </p>
         </motion.div>
       </div>

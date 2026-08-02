@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -312,7 +312,7 @@ function ProductCard({
   );
 }
 
-export default function CataloguePage() {
+function CatalogueContent() {
   const searchParams = useSearchParams();
   const openFromUrl = searchParams.get("open");
 
@@ -410,5 +410,13 @@ export default function CataloguePage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function CataloguePage() {
+  return (
+    <Suspense>
+      <CatalogueContent />
+    </Suspense>
   );
 }

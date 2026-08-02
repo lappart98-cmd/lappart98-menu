@@ -6,6 +6,7 @@ import { Menu, X, MessageCircle, Mail } from "lucide-react";
 
 const links = [
   { label: "Menus", href: "#menus" },
+  { label: "Catalogue", href: "#catalogue" },
   { label: "Comment ca marche", href: "#process" },
   { label: "Contact", href: "#contact" },
 ];

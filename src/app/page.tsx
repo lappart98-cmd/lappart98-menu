@@ -6,6 +6,7 @@ import Process from "@/components/Process";
 import Contact from "@/components/Contact";
 import InstagramFeed from "@/components/InstagramFeed";
 import GoogleReviews from "@/components/GoogleReviews";
+import Catalogue from "@/components/Catalogue";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
       <MenuBoard />
       <Process />
       <Marquee />
+      <Catalogue />
       <GoogleReviews />
       <InstagramFeed />
       <Contact />

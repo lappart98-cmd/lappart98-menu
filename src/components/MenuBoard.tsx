@@ -14,7 +14,9 @@ import {
   ArrowUp,
   MessageCircle,
   Mail,
+  ChevronDown,
 } from "lucide-react";
+import { products, grammageValue, type Product } from "@/data/products";
 
 interface MenuItem {
   name: string;
@@ -36,22 +38,68 @@ interface TextileOption {
   image: string;
   darkProduct?: boolean;
   flocageFlat?: number;
+  // Categories du catalogue proposees quand le client veut preciser un modele.
+  categories: string[];
 }
 
 interface CartItem {
   textileId: string;
   qty: number;
+  // Reference du catalogue choisie, si le client a precise un modele.
+  ref?: string;
 }
 
 const textiles: TextileOption[] = [
-  { id: "tshirt-basique", name: "T-Shirt Basique 190g", image: "/tshirt-190g.png" },
-  { id: "tshirt-oversize", name: "T-Shirt Oversize 220g", image: "/tshirt-noir.png" },
-  { id: "sweat", name: "Sweat Col Rond 280g", image: "/sweat-noir.png" },
-  { id: "hoodie-classic", name: "Hoodie Classic 260g", image: "/hoodie-kaki.png" },
-  { id: "totebag", name: "Tote Bag", image: "/totebag.png", flocageFlat: 5 },
-  { id: "casquette", name: "Casquette Snapback", image: "/casquette-noire.png", flocageFlat: 5 },
-  { id: "polo", name: "Polo 210g", image: "/polo-noir.png" },
+  {
+    id: "tshirt-basique",
+    name: "T-Shirt Basique 190g",
+    image: "/tshirt-190g.png",
+    categories: ["T-shirts Urbains", "T-shirts Techniques"],
+  },
+  {
+    id: "tshirt-oversize",
+    name: "T-Shirt Oversize 220g",
+    image: "/tshirt-noir.png",
+    categories: ["T-shirts Oversize"],
+  },
+  {
+    id: "sweat",
+    name: "Sweat Col Rond 280g",
+    image: "/sweat-noir.png",
+    categories: ["Sweats col rond"],
+  },
+  {
+    id: "hoodie-classic",
+    name: "Hoodie Classic 260g",
+    image: "/hoodie-kaki.png",
+    categories: ["Sweats a capuche"],
+  },
+  {
+    id: "totebag",
+    name: "Tote Bag",
+    image: "/totebag.png",
+    flocageFlat: 5,
+    categories: ["Sacs"],
+  },
+  {
+    id: "casquette",
+    name: "Casquette Snapback",
+    image: "/casquette-noire.png",
+    flocageFlat: 5,
+    categories: ["Casquettes"],
+  },
+  {
+    id: "polo",
+    name: "Polo 210g",
+    image: "/polo-noir.png",
+    categories: ["Polos"],
+  },
 ];
+
+// Modeles du catalogue proposes pour une famille de textile.
+function modelesPour(textile: TextileOption): Product[] {
+  return products.filter((p) => textile.categories.includes(p.category));
+}
 
 const productPricing: Record<string, Record<string, number>> = {
   "tshirt-basique":  { solo: 9, team: 7, bestof: 6, xxl: 4, club: 14 },
@@ -251,6 +299,7 @@ function Configurator({
 }) {
   const [step, setStep] = useState(0);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [selectedTechnique, setSelectedTechnique] = useState("dtf");
   const [selectedFlocage, setSelectedFlocage] = useState({
     dos: false,
@@ -279,6 +328,19 @@ function Configurator({
 
   const getQty = (textileId: string) =>
     cart.find((c) => c.textileId === textileId)?.qty || 0;
+
+  const getRef = (textileId: string) =>
+    cart.find((c) => c.textileId === textileId)?.ref;
+
+  // Choisir un modele cree la ligne si elle n'existe pas encore : le client
+  // peut partir du catalogue sans avoir regle la quantite avant.
+  const setRef = (textileId: string, ref: string | undefined) => {
+    setCart((prev) => {
+      const existing = prev.find((c) => c.textileId === textileId);
+      if (!existing) return [...prev, { textileId, qty: 1, ref }];
+      return prev.map((c) => (c.textileId === textileId ? { ...c, ref } : c));
+    });
+  };
 
   const totalQty = cart.reduce((sum, c) => sum + c.qty, 0);
 
@@ -337,7 +399,10 @@ function Configurator({
     .map((c) => {
       const t = textiles.find((tx) => tx.id === c.textileId);
       const unitPrice = productPricing[c.textileId]?.[tierKey] ?? 0;
-      return `- ${c.qty}x ${t?.name} (${unitPrice}€/pc)`;
+      const modele = c.ref
+        ? ` — modele ${c.ref} ${products.find((p) => p.ref === c.ref)?.name ?? ""}`.trimEnd()
+        : "";
+      return `- ${c.qty}x ${t?.name}${modele} (${unitPrice}€/pc)`;
     })
     .join("\n");
 
@@ -480,34 +545,137 @@ function Configurator({
                     const isActive = qty > 0;
                     const unitPrice =
                       productPricing[textile.id]?.[tierKey] ?? 0;
+                    const modeles = modelesPour(textile);
+                    const chosenRef = getRef(textile.id);
+                    const chosen = modeles.find((m) => m.ref === chosenRef);
+                    const open = pickerFor === textile.id;
+
                     return (
-                      <motion.div
+                      <div
                         key={textile.id}
-                        whileHover={{ scale: 1.01 }}
-                        className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${
-                          isActive
-                            ? "bg-[#d4d4d4] ring-2 ring-[#C5FF00]"
-                            : "bg-[#e8e8e8]"
+                        className={`rounded-xl overflow-hidden transition-all duration-200 ${
+                          isActive ? "ring-2 ring-[#C5FF00]" : ""
                         }`}
                       >
-                        <img src={textile.image} alt={textile.name} className="w-24 h-24 -my-2 shrink-0 object-contain transition-transform duration-300 hover:scale-[1.6]" />
-                        <div className="flex-1 min-w-0">
-                          <span
-                            className={`font-heading text-sm font-bold uppercase tracking-wider block ${
-                              isActive ? "text-[#0A0A0A]" : "text-[#1a1a1a]"
-                            }`}
-                          >
-                            {textile.name}
-                          </span>
-                          <span className="font-body text-xs text-[#666]">
-                            {unitPrice}&euro;/piece
-                          </span>
+                        <div
+                          className={`flex items-center gap-4 p-4 ${
+                            isActive ? "bg-[#d4d4d4]" : "bg-[#e8e8e8]"
+                          }`}
+                        >
+                          <img
+                            src={chosen ? chosen.defaultImages[0] : textile.image}
+                            alt={chosen ? chosen.name : textile.name}
+                            className="w-24 h-24 -my-2 shrink-0 object-contain transition-transform duration-300 hover:scale-[1.6]"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span
+                              className={`font-heading text-sm font-bold uppercase tracking-wider block ${
+                                isActive ? "text-[#0A0A0A]" : "text-[#1a1a1a]"
+                              }`}
+                            >
+                              {textile.name}
+                            </span>
+                            <span className="font-body text-xs text-[#666]">
+                              {unitPrice}&euro;/piece
+                            </span>
+
+                            {modeles.length > 0 && (
+                              <button
+                                onClick={() =>
+                                  setPickerFor(open ? null : textile.id)
+                                }
+                                className={`mt-2 flex items-center gap-1.5 max-w-full font-body text-[11px] rounded-md px-2 py-1 cursor-pointer transition-colors duration-200 ${
+                                  chosen
+                                    ? "bg-[#0A0A0A] text-[#C5FF00]"
+                                    : "bg-[#0A0A0A]/10 text-[#333] hover:bg-[#0A0A0A]/20"
+                                }`}
+                              >
+                                <span className="truncate">
+                                  {chosen
+                                    ? `${chosen.ref} · ${chosen.name}`
+                                    : `Choisir le modele (${modeles.length})`}
+                                </span>
+                                <ChevronDown
+                                  className={`w-3 h-3 shrink-0 transition-transform duration-200 ${
+                                    open ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+                            )}
+                          </div>
+                          <QtySelector
+                            qty={qty}
+                            onChange={(n) => updateQty(textile.id, n)}
+                          />
                         </div>
-                        <QtySelector
-                          qty={qty}
-                          onChange={(n) => updateQty(textile.id, n)}
-                        />
-                      </motion.div>
+
+                        <AnimatePresence initial={false}>
+                          {open && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.22 }}
+                              className="bg-[#141414] overflow-hidden"
+                            >
+                              <div className="p-3">
+                                <div className="grid grid-cols-3 gap-2">
+                                  {modeles.map((m) => {
+                                    const sel = m.ref === chosenRef;
+                                    const g = grammageValue(m);
+                                    return (
+                                      <button
+                                        key={m.ref}
+                                        onClick={() =>
+                                          setRef(
+                                            textile.id,
+                                            sel ? undefined : m.ref
+                                          )
+                                        }
+                                        className={`text-left rounded-lg overflow-hidden border transition-all duration-200 cursor-pointer ${
+                                          sel
+                                            ? "border-[#C5FF00] bg-[#C5FF00]/10"
+                                            : "border-[#2a2a2a] hover:border-white/25"
+                                        }`}
+                                      >
+                                        <img
+                                          src={m.defaultImages[0]}
+                                          alt={m.name}
+                                          className="w-full aspect-square object-contain bg-[#e8e8e8]"
+                                        />
+                                        <div className="p-1.5">
+                                          <span
+                                            className={`font-heading text-[10px] font-bold block truncate ${
+                                              sel
+                                                ? "text-[#C5FF00]"
+                                                : "text-white"
+                                            }`}
+                                          >
+                                            {m.ref}
+                                          </span>
+                                          <span className="font-body text-[9px] text-white/40 block truncate">
+                                            {g ? `${g} g/m²` : m.brand}
+                                          </span>
+                                          <span className="font-body text-[9px] text-white/30 block truncate">
+                                            {m.colors.length} coloris
+                                          </span>
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                <p className="font-body text-[10px] text-white/30 mt-2.5 leading-relaxed">
+                                  Le modele precise ta demande. L&apos;estimation
+                                  reste basee sur la gamme
+                                  {" "}&laquo;&nbsp;{textile.name}&nbsp;&raquo;
+                                  {" "}&mdash; le devis final ajuste selon la
+                                  reference.
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     );
                   })}
                 </div>
@@ -823,10 +991,19 @@ function Configurator({
                           return (
                             <div
                               key={c.textileId}
-                              className="flex items-center justify-between"
+                              className="flex items-start justify-between"
                             >
                               <span className="text-sm font-medium truncate max-w-[140px] sm:max-w-none">
                                 {t?.name}
+                                {c.ref && (
+                                  <span className="block text-[10px] text-[#1a1a1a]/50 truncate">
+                                    {c.ref} &middot;{" "}
+                                    {
+                                      products.find((p) => p.ref === c.ref)
+                                        ?.name
+                                    }
+                                  </span>
+                                )}
                               </span>
                               <div className="flex gap-4">
                                 <span className="w-8 text-right text-sm text-[#1a1a1a]/60">

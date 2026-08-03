@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "catalogue:pdf": "node scripts/build-catalogue-pdf.mjs"
+    "catalogue:pdf": "node scripts/build-catalogue-pdf.mjs",
+    "flyer:pdf": "node scripts/build-flyer-pdf.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

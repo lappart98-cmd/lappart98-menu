@@ -1077,13 +1077,13 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
           onClick={() => setShowConfigurator(true)}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.98 }}
-          className={`relative cursor-pointer rounded-2xl flex flex-col flex-1 overflow-hidden transition-all duration-300 ${
+          className={`relative cursor-pointer rounded-2xl flex flex-col flex-1 overflow-hidden transition-all duration-300 min-h-[320px] sm:min-h-[560px] ${
             isPopular
               ? "bg-[#1a1a1a]/80 backdrop-blur-xl border border-[#C5FF00]/25 shadow-[0_0_50px_rgba(197,255,0,0.08)]"
               : "bg-[#151515]/60 backdrop-blur-xl border border-white/[0.08] hover:border-white/15"
           }`}
         >
-          <div className="p-3 sm:p-8 flex flex-col flex-1">
+          <div className="p-4 sm:p-8 flex flex-col flex-1">
             <h3 className="font-heading text-xs sm:text-3xl font-black uppercase text-white leading-tight">
               {item.name}
             </h3>
@@ -1091,10 +1091,10 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               {item.description}
             </p>
 
-            <div className="my-3 sm:my-8">
+            <div className="my-5 sm:my-8 flex-1 flex items-center sm:flex-none sm:block">
               <div className="flex items-baseline gap-0.5 sm:gap-1">
                 <span
-                  className={`font-heading text-2xl sm:text-6xl font-black leading-none ${
+                  className={`font-heading text-3xl sm:text-6xl font-black leading-none ${
                     isPopular ? "text-[#C5FF00]" : "text-white"
                   }`}
                 >
@@ -1128,12 +1128,12 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               ))}
             </div>
 
-            <p className="font-body text-[9px] text-white/40 mb-2 sm:hidden">
+            <p className="font-body text-[10px] text-white/40 mt-auto mb-3 sm:hidden">
               {item.quantity} pieces
             </p>
 
             <button
-              className={`w-full py-2 sm:py-4 rounded-lg sm:rounded-xl font-heading text-[9px] sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+              className={`w-full py-2.5 sm:py-4 rounded-lg sm:rounded-xl font-heading text-[9px] sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                 isPopular
                   ? "bg-[#C5FF00] text-[#0A0A0A] hover:bg-[#b3e600]"
                   : "bg-white/[0.06] text-white border border-white/10 hover:bg-white/10"

@@ -83,7 +83,7 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS332-4_2025.jpg",
       "https://cdn.toptex.com/pictures/NS332-6_2025.jpg",
     ],
-    price: "A partir de 11€/piece",
+    price: "Prix sur demande",
   },
   {
     ref: "BY102",
@@ -124,7 +124,7 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/BY102-2_2027.jpg",
       "https://cdn.toptex.com/pictures/BY102-3_2027.jpg",
     ],
-    price: "A partir de 13€/piece",
+    price: "Prix sur demande",
   },
   {
     ref: "NS330",
@@ -153,7 +153,7 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS330-12_2024.jpg",
       "https://cdn.toptex.com/pictures/NS330-10_2024.jpg",
     ],
-    price: "A partir de 13€/piece",
+    price: "Prix sur demande",
   },
   {
     ref: "BY163",
@@ -176,7 +176,7 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/BY163-4_2027.jpg",
       "https://cdn.toptex.com/pictures/BY163-5_2027.jpg",
     ],
-    price: "A partir de 18€/piece",
+    price: "Prix sur demande",
   },
   {
     ref: "IB402",

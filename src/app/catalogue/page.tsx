@@ -353,6 +353,18 @@ function CatalogueContent() {
     });
   }, [activeCategory, sortMode]);
 
+  // Sur "Tous", 20 fiches a la suite ne se lisent pas : on les regroupe par
+  // gamme. Sur une categorie precise, la liste simple suffit.
+  const groupes = useMemo(() => {
+    if (activeCategory !== "Tous")
+      return [{ nom: activeCategory as string, items: filtered }];
+
+    return categories
+      .filter((c) => c !== "Tous")
+      .map((c) => ({ nom: c as string, items: filtered.filter((p) => p.category === c) }))
+      .filter((g) => g.items.length > 0);
+  }, [activeCategory, filtered]);
+
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Header */}
@@ -440,16 +452,32 @@ function CatalogueContent() {
 
       {/* Product list */}
       <div className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
-        <div className="space-y-3">
-          {filtered.map((product) => (
-            <ProductCard
-              key={product.ref}
-              product={product}
-              isOpen={openRef === product.ref}
-              onToggle={() =>
-                setOpenRef(openRef === product.ref ? null : product.ref)
-              }
-            />
+        <div className="space-y-10 sm:space-y-14">
+          {groupes.map((groupe) => (
+            <section key={groupe.nom}>
+              <div className="flex items-baseline gap-3 mb-4">
+                <h2 className="font-heading text-xl sm:text-3xl font-black uppercase text-white">
+                  {groupe.nom}
+                </h2>
+                <span className="font-heading text-xs text-[#C5FF00] tracking-wider">
+                  {groupe.items.length}
+                </span>
+                <span className="flex-1 h-px bg-white/10" />
+              </div>
+
+              <div className="space-y-3">
+                {groupe.items.map((product) => (
+                  <ProductCard
+                    key={product.ref}
+                    product={product}
+                    isOpen={openRef === product.ref}
+                    onToggle={() =>
+                      setOpenRef(openRef === product.ref ? null : product.ref)
+                    }
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
 

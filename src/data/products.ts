@@ -1,6 +1,10 @@
 export interface ProductColor {
   name: string;
   slug: string;
+  // Par defaut les visuels sont deduits de la reference chez Toptex. Les
+  // produits d'autres fournisseurs (Velilla...) portent leurs propres URLs.
+  swatch?: string;
+  images?: string[];
 }
 
 export interface Product {
@@ -17,23 +21,32 @@ export interface Product {
   certifications: string[];
   defaultImages: string[];
   price: string;
+  // Origine des visuels par coloris quand le coloris n'en porte pas lui-meme.
+  // "toptex" (defaut) : deduits de la reference. "none" : le fournisseur n'en
+  // publie pas, on reste sur les visuels par defaut.
+  packshotSource?: "toptex" | "none";
 }
 
 export const categories = [
   "Tous",
   "T-shirts Oversize",
   "T-shirts Urbains",
+  "T-shirts Techniques",
+  "Polos",
   "Sweats a capuche",
   "Sweats col rond",
+  "Casquettes",
 ] as const;
 
 export type Category = (typeof categories)[number];
 
 // Le grammage est stocke en texte ("280 g/m²") pour l'affichage. Cette fonction
-// en extrait la valeur numerique pour permettre le tri du catalogue.
-export function grammageValue(product: Product): number {
+// en extrait la valeur numerique pour permettre le tri du catalogue. Renvoie
+// null quand le fournisseur ne le publie pas : ces produits sont alors classes
+// en fin de liste plutot que traites comme un grammage nul.
+export function grammageValue(product: Product): number | null {
   const match = product.grammage.match(/\d+/);
-  return match ? Number(match[0]) : 0;
+  return match ? Number(match[0]) : null;
 }
 
 export const products: Product[] = [
@@ -421,6 +434,703 @@ export const products: Product[] = [
     ],
     price: "Prix sur demande",
   },
+  {
+    // Le fournisseur scinde ce modele en deux references : MK023CV pour les
+    // coloris, MK023WV pour le blanc. Regroupes ici sur une seule fiche.
+    ref: "MK023CV",
+    name: "PALM - T-shirt manches courtes 190",
+    packshotSource: "none",
+    brand: "Mukua",
+    category: "T-shirts Urbains",
+    description:
+      "T-shirt unisexe en 100% coton RingSpun, single jersey 190g. Col rond bord-cote 1x1 avec elasthanne, bande de renfort epaule a epaule, tissu tubulaire, coupe regular.",
+    material: "100% coton RingSpun (Heather Grey : 85% coton / 15% viscose)",
+    grammage: "190 g/m²",
+    cut: "Regular, col rond bord-cote 1x1",
+    sizes: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
+    colors: [
+      {
+        // Le blanc est vendu sous une reference distincte (MK023WV) avec sa
+        // propre convention d'images : une seule vue, chemin different.
+        name: "White",
+        slug: "100",
+        swatch:
+          "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
+        images: [
+          "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK023WV_SERIE_01_1000.jpg",
+        ],
+      },
+      {
+        name: "Black",
+        slug: "200",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/200_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_3_1000.webp",
+        ],
+      },
+      {
+        name: "Dark Grey",
+        slug: "201",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/201_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_201_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_201_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_201_3_1000.webp",
+        ],
+      },
+      {
+        name: "Heather Grey",
+        slug: "202",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/202_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_202_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_202_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_202_3_1000.webp",
+        ],
+      },
+      {
+        name: "Sand",
+        slug: "103",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/103_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_103_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_103_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_103_3_1000.webp",
+        ],
+      },
+      {
+        name: "Brown",
+        slug: "104",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/104_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_104_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_104_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_104_3_1000.webp",
+        ],
+      },
+      {
+        name: "Yellow",
+        slug: "300",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/300_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_300_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_300_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_300_3_1000.webp",
+        ],
+      },
+      {
+        name: "Gold",
+        slug: "305",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/305_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_305_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_305_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_305_3_1000.webp",
+        ],
+      },
+      {
+        name: "Orange",
+        slug: "301",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/301_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_301_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_301_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_301_3_1000.webp",
+        ],
+      },
+      {
+        name: "Peach",
+        slug: "313",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/313_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_313_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_313_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_313_3_1000.webp",
+        ],
+      },
+      {
+        name: "Fresh Coral",
+        slug: "414",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/414_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_414_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_414_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_414_3_1000.webp",
+        ],
+      },
+      {
+        name: "Red",
+        slug: "400",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/400_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_400_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_400_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_400_3_1000.webp",
+        ],
+      },
+      {
+        name: "Wine",
+        slug: "403",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/403_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_403_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_403_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_403_3_1000.webp",
+        ],
+      },
+      {
+        name: "Fuchsia",
+        slug: "406",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/406_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_406_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_406_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_406_3_1000.webp",
+        ],
+      },
+      {
+        name: "Pale Rose",
+        slug: "410",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/410_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_410_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_410_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_410_3_1000.webp",
+        ],
+      },
+      {
+        name: "Lilac",
+        slug: "530",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/530_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_530_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_530_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_530_3_1000.webp",
+        ],
+      },
+      {
+        name: "Purple",
+        slug: "511",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/511_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_511_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_511_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_511_3_1000.webp",
+        ],
+      },
+      {
+        name: "Navy",
+        slug: "500",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/500_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_500_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_500_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_500_3_1000.webp",
+        ],
+      },
+      {
+        name: "Deep Navy",
+        slug: "512",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/512_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_512_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_512_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_512_3_1000.webp",
+        ],
+      },
+      {
+        name: "Royal Blue",
+        slug: "502",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/502_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_502_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_502_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_502_3_1000.webp",
+        ],
+      },
+      {
+        name: "Denim Blue",
+        slug: "510",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/510_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_510_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_510_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_510_3_1000.webp",
+        ],
+      },
+      {
+        name: "Blue Fog",
+        slug: "509",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/509_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_509_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_509_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_509_3_1000.webp",
+        ],
+      },
+      {
+        name: "Sky Blue",
+        slug: "501",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/501_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_501_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_501_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_501_3_1000.webp",
+        ],
+      },
+      {
+        name: "Atoll",
+        slug: "505",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/505_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_505_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_505_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_505_3_1000.webp",
+        ],
+      },
+      {
+        name: "Rich Turquoise",
+        slug: "515",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/515_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_515_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_515_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_515_3_1000.webp",
+        ],
+      },
+      {
+        name: "Kelly Green",
+        slug: "600",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/600_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_600_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_600_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_600_3_1000.webp",
+        ],
+      },
+      {
+        name: "Khaki Green",
+        slug: "601",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/601_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_601_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_601_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_601_3_1000.webp",
+        ],
+      },
+      {
+        name: "Bottle Green",
+        slug: "602",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/602_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_602_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_602_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_602_3_1000.webp",
+        ],
+      },
+      {
+        name: "Sage",
+        slug: "613",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/613_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_613_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_613_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_613_3_1000.webp",
+        ],
+      },
+      {
+        name: "Lime",
+        slug: "604",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/604_100.jpg",
+        images: [
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_604_1_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_604_2_1000.webp",
+        "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_604_3_1000.webp",
+        ],
+      },
+    ],
+    certifications: [],
+    defaultImages: [
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_1_1000.webp",
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_2_1000.webp",
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_3_1000.webp",
+    ],
+    price: "Prix sur demande",
+  },
+  {
+    ref: "MK520V",
+    name: "TECH - T-shirt technique MC",
+    brand: "Mukua",
+    category: "T-shirts Techniques",
+    description:
+      "T-shirt technique unisexe en maille Bird Eye 100% polyester. Manches raglan, tissu respirant a sechage rapide, forte resistance au boulochage, coutures decoratives sur la demi-manche.",
+    material: "100% polyester (maille Bird Eye)",
+    grammage: "130 g/m²",
+    cut: "Droite, manches raglan, col rond",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
+    // Velilla ne publie pas de packshot par coloris pour cette reference :
+    // seules les pastilles existent, le visuel reste celui par defaut.
+    packshotSource: "none",
+    colors: [
+      {
+        name: "White",
+        slug: "100",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
+      },
+      {
+        name: "Black",
+        slug: "200",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/200_100.jpg",
+      },
+      {
+        name: "Navy",
+        slug: "500",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/500_100.jpg",
+      },
+      {
+        name: "Royal Blue",
+        slug: "502",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/502_100.jpg",
+      },
+      {
+        name: "Atoll",
+        slug: "505",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/505_100.jpg",
+      },
+      {
+        name: "Red",
+        slug: "400",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/400_100.jpg",
+      },
+      {
+        name: "Fluor Orange",
+        slug: "303",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/303_100.jpg",
+      },
+      {
+        name: "Fluor Yellow",
+        slug: "304",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/304_100.jpg",
+      },
+      {
+        name: "Fluor Lime",
+        slug: "610",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/610_100.jpg",
+      },
+      {
+        name: "Fluor Pink",
+        slug: "408",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/408_100.jpg",
+      },
+    ],
+    certifications: [],
+    defaultImages: [
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK520V_SERIE_01_1000.jpg",
+    ],
+    price: "Prix sur demande",
+  },
+  {
+    // Comme le PALM, le fournisseur scinde le modele : MK215CV pour les
+    // coloris, MK215WV pour le blanc. Regroupes sur une seule fiche.
+    ref: "MK215CV",
+    name: "GIBSON - Polo manches courtes 210",
+    brand: "Mukua",
+    category: "Polos",
+    description:
+      "Polo unisexe en tissu pique 35% coton RingSpun / 65% polyester, 210g. Patte 3 boutons, bande de proprete renforcee au col, col et manches cotes 1x1, fentes laterales, coupe regular.",
+    material: "35% coton RingSpun / 65% polyester (Heather Grey : 85% coton / 15% viscose)",
+    grammage: "210 g/m²",
+    cut: "Regular, patte 3 boutons, fentes laterales",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
+    // Aucun packshot par coloris publie : seules les pastilles existent.
+    packshotSource: "none",
+    colors: [
+      {
+        // Blanc vendu sous la reference MK215WV, avec son propre visuel.
+        name: "White",
+        slug: "100",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
+        images: [
+          "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK215WV_SERIE_01_1000.jpg",
+        ],
+      },
+      {
+        name: "Black",
+        slug: "200",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/200_100.jpg",
+      },
+      {
+        name: "Dark Grey",
+        slug: "201",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/201_100.jpg",
+      },
+      {
+        name: "Heather Grey",
+        slug: "202",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/202_100.jpg",
+      },
+      {
+        name: "Sand",
+        slug: "103",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/103_100.jpg",
+      },
+      {
+        name: "Brown",
+        slug: "104",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/104_100.jpg",
+      },
+      {
+        name: "Gold",
+        slug: "305",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/305_100.jpg",
+      },
+      {
+        name: "Orange",
+        slug: "301",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/301_100.jpg",
+      },
+      {
+        name: "Red",
+        slug: "400",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/400_100.jpg",
+      },
+      {
+        name: "Wine",
+        slug: "403",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/403_100.jpg",
+      },
+      {
+        name: "Navy",
+        slug: "500",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/500_100.jpg",
+      },
+      {
+        name: "Royal Blue",
+        slug: "502",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/502_100.jpg",
+      },
+      {
+        name: "Sky Blue",
+        slug: "501",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/501_100.jpg",
+      },
+      {
+        name: "Atoll",
+        slug: "505",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/505_100.jpg",
+      },
+      {
+        name: "Kelly Green",
+        slug: "600",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/600_100.jpg",
+      },
+      {
+        name: "Real Green",
+        slug: "605",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/605_100.jpg",
+      },
+      {
+        name: "Khaki Green",
+        slug: "601",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/601_100.jpg",
+      },
+      {
+        name: "Bottle Green",
+        slug: "602",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/602_100.jpg",
+      },
+      {
+        name: "Sage",
+        slug: "613",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/613_100.jpg",
+      },
+      {
+        name: "Lime",
+        slug: "604",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/604_100.jpg",
+      },
+    ],
+    certifications: [],
+    defaultImages: [
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK215CV_SERIE_01_1000.jpg",
+    ],
+    price: "Prix sur demande",
+  },
+  {
+    ref: "CM260",
+    name: "HAMILTON - Casquette trucker 5 panneaux",
+    brand: "Mukua",
+    category: "Casquettes",
+    description:
+      "Casquette 5 panneaux en sergé et maille ton sur ton. Fermeture reglable plastique, visiere courbee a coutures decoratives, bande de transpiration.",
+    material: "Sergé et maille (composition non communiquee)",
+    grammage: "Non communique",
+    cut: "5 panneaux, visiere courbee, fermeture reglable",
+    sizes: ["U"],
+    // Aucun packshot par coloris publie : seules les pastilles existent.
+    packshotSource: "none",
+    colors: [
+      {
+        name: "White",
+        slug: "100",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
+      },
+      {
+        name: "Dark Grey",
+        slug: "201",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/201_100.jpg",
+      },
+      {
+        name: "Black",
+        slug: "200",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/200_100.jpg",
+      },
+      {
+        name: "Deep Navy",
+        slug: "512",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/512_100.jpg",
+      },
+      {
+        name: "Royal Blue",
+        slug: "502",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/502_100.jpg",
+      },
+      {
+        name: "Red",
+        slug: "400",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/400_100.jpg",
+      },
+    ],
+    certifications: [],
+    defaultImages: [
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CM260_SERIE_01_1000.webp",
+    ],
+    price: "Prix sur demande",
+  },
+  {
+    ref: "CM260B",
+    name: "HAMILTON BICOLOR - Casquette trucker bicolore 5 panneaux",
+    brand: "Mukua",
+    category: "Casquettes",
+    description:
+      "Casquette bicolore 5 panneaux, sergé et maille contrastee. Fermeture reglable plastique, visiere courbee a coutures decoratives, bande de transpiration.",
+    material: "Sergé et maille (composition non communiquee)",
+    grammage: "Non communique",
+    cut: "5 panneaux bicolore, visiere courbee",
+    sizes: ["U"],
+    // Aucun packshot par coloris publie : seules les pastilles existent.
+    packshotSource: "none",
+    colors: [
+      {
+        name: "Black/White",
+        slug: "802",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/802_100.jpg",
+      },
+      {
+        name: "Deep Navy/Cloud Grey",
+        slug: "810",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/810_100.webp",
+      },
+      {
+        name: "Wine/Bone",
+        slug: "811",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/811_100.webp",
+      },
+      {
+        name: "Misty Green/Tan",
+        slug: "813",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/813_100.webp",
+      },
+    ],
+    certifications: [],
+    defaultImages: [
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CM260B_SERIE_01_1000.webp",
+    ],
+    price: "Prix sur demande",
+  },
+  {
+    ref: "CV300",
+    name: "FORBES - Casquette vintage 6 panneaux",
+    brand: "Mukua",
+    category: "Casquettes",
+    description:
+      "Casquette 6 panneaux en sergé coton lave effet vintage. Fermeture reglable metal, 6 oeillets de ventilation brodes ton sur ton, visiere courbee.",
+    material: "100% coton (sergé)",
+    grammage: "280 g/m²",
+    cut: "6 panneaux, visiere courbee, fermeture metal",
+    sizes: ["U"],
+    // Aucun packshot par coloris publie : seules les pastilles existent.
+    packshotSource: "none",
+    colors: [
+      {
+        name: "Vintage Sand",
+        slug: "103V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/103V_100.webp",
+      },
+      {
+        name: "Vintage Charcoal",
+        slug: "223V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/223V_100.webp",
+      },
+      {
+        name: "Vintage Ivory",
+        slug: "309V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/309V_100.webp",
+      },
+      {
+        name: "Vintage Peach",
+        slug: "313V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/313V_100.webp",
+      },
+      {
+        name: "Vintage Wine",
+        slug: "403V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/403V_100.webp",
+      },
+      {
+        name: "Vintage Rose",
+        slug: "410V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/410V_100.webp",
+      },
+      {
+        name: "Vintage Sky",
+        slug: "501V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/501V_100.webp",
+      },
+      {
+        name: "Vintage Denim",
+        slug: "510V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/510V_100.webp",
+      },
+      {
+        name: "Vintage Navy",
+        slug: "512V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/512V_100.webp",
+      },
+      {
+        name: "Vintage Lilac",
+        slug: "530V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/530V_100.webp",
+      },
+      {
+        name: "Vintage Khaki",
+        slug: "601V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/601V_100.webp",
+      },
+      {
+        name: "Vintage Sage",
+        slug: "613V",
+        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/thumbnails/613V_100.webp",
+      },
+    ],
+    certifications: [],
+    defaultImages: [
+      "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CV300_SERIE_01_1000.webp",
+    ],
+    price: "Prix sur demande",
+  },
 ];
 
 export function getPackshotImages(ref: string, colorSlug: string): string[] {
@@ -429,4 +1139,22 @@ export function getPackshotImages(ref: string, colorSlug: string): string[] {
     `https://cdn.toptex.com/packshots/PS_${ref}-B_${colorSlug}.png`,
     `https://cdn.toptex.com/packshots/PS_${ref}-S_${colorSlug}.png`,
   ];
+}
+
+// Visuels d'un coloris : ceux portes par le coloris s'il en a (fournisseur hors
+// Toptex), sinon selon la convention declaree par le produit.
+export function getColorImages(
+  product: Product,
+  color: ProductColor
+): string[] {
+  if (color.images) return color.images;
+  if (product.packshotSource === "none") return product.defaultImages;
+  return getPackshotImages(product.ref, color.slug);
+}
+
+export function getColorSwatch(ref: string, color: ProductColor): string {
+  return (
+    color.swatch ??
+    `https://cdn.toptex.com/stickers/PAST_${ref}_${color.slug}.jpg?w=48`
+  );
 }

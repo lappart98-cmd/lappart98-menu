@@ -17,7 +17,8 @@ import {
 import {
   products,
   categories,
-  getPackshotImages,
+  getColorImages,
+  getColorSwatch,
   grammageValue,
   type Product,
   type Category,
@@ -43,8 +44,12 @@ function ProductCard({
   const [activeImage, setActiveImage] = useState(0);
   const [activeColor, setActiveColor] = useState<string | null>(null);
 
-  const currentImages = activeColor
-    ? getPackshotImages(product.ref, activeColor)
+  const activeColorObj = activeColor
+    ? product.colors.find((c) => c.slug === activeColor)
+    : undefined;
+
+  const currentImages = activeColorObj
+    ? getColorImages(product, activeColorObj)
     : product.defaultImages;
 
   const handleColorClick = (slug: string) => {
@@ -262,7 +267,7 @@ function ProductCard({
                             }`}
                           >
                             <Image
-                              src={`https://cdn.toptex.com/stickers/PAST_${product.ref}_${color.slug}.jpg?w=48`}
+                              src={getColorSwatch(product.ref, color)}
                               alt={color.name}
                               width={36}
                               height={36}
@@ -338,11 +343,14 @@ function CatalogueContent() {
     if (sortMode === "defaut") return list;
 
     // `products` est un module partage : on trie une copie, pas la source.
-    return [...list].sort((a, b) =>
-      sortMode === "leger"
-        ? grammageValue(a) - grammageValue(b)
-        : grammageValue(b) - grammageValue(a)
-    );
+    return [...list].sort((a, b) => {
+      const ga = grammageValue(a);
+      const gb = grammageValue(b);
+      // Grammage non communique : toujours en fin de liste, quel que soit le sens.
+      if (ga === null) return gb === null ? 0 : 1;
+      if (gb === null) return -1;
+      return sortMode === "leger" ? ga - gb : gb - ga;
+    });
   }, [activeCategory, sortMode]);
 
   return (

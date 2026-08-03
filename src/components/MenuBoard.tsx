@@ -132,7 +132,7 @@ const techniques = [
     name: "DTF",
     desc: "Impression haute qualite, couleurs vives, tous textiles",
     tag: "Recommande",
-    prix: { dos: 7, coeur: 4, logoSup: 3 },
+    prix: { dos: 5, coeur: 3, logoSup: 2 },
     fraisFichier: 0,
   },
   {

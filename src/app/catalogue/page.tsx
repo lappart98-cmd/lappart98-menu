@@ -82,11 +82,13 @@ function ProductCard({
           />
         </div>
         <div className="flex-1 text-left min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-heading text-[10px] font-bold tracking-wider uppercase text-[#C5FF00] bg-[#C5FF00]/10 px-2 py-0.5 rounded-full">
+          {/* min-w-0 + truncate : sans ca, la marque ne peut pas retrecir et
+              pousse la carte au-dela de l'ecran sur mobile. */}
+          <div className="flex items-center gap-2 mb-0.5 min-w-0">
+            <span className="font-heading text-[10px] font-bold tracking-wider uppercase text-[#C5FF00] bg-[#C5FF00]/10 px-2 py-0.5 rounded-full shrink-0">
               {product.ref}
             </span>
-            <span className="font-body text-[10px] text-white/30">
+            <span className="font-body text-[10px] text-white/30 truncate">
               {product.brand}
             </span>
           </div>
@@ -102,8 +104,13 @@ function ProductCard({
             {product.grammage}
           </span>
         </div>
-        <span className="font-heading text-sm sm:text-base font-black text-[#C5FF00] shrink-0 mr-2">
-          {product.price.replace("A partir de ", "des ")}
+        <span className="shrink-0 mr-2 text-right">
+          <span className="font-heading text-sm sm:text-base font-black text-[#C5FF00] block leading-tight">
+            {product.price.replace("A partir de ", "des ")}
+          </span>
+          <span className="font-body text-[9px] sm:text-[10px] text-white/30 block leading-tight">
+            hors flocage
+          </span>
         </span>
         <ChevronDown
           className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${

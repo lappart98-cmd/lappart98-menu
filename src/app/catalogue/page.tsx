@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -18,9 +18,18 @@ import {
   products,
   categories,
   getPackshotImages,
+  grammageValue,
   type Product,
   type Category,
 } from "@/data/products";
+
+const sortModes = [
+  { id: "defaut", label: "Par defaut" },
+  { id: "leger", label: "Plus leger" },
+  { id: "lourd", label: "Plus lourd" },
+] as const;
+
+type SortMode = (typeof sortModes)[number]["id"];
 
 function ProductCard({
   product,
@@ -317,12 +326,24 @@ function CatalogueContent() {
   const openFromUrl = searchParams.get("open");
 
   const [activeCategory, setActiveCategory] = useState<Category>("Tous");
+  const [sortMode, setSortMode] = useState<SortMode>("defaut");
   const [openRef, setOpenRef] = useState<string | null>(openFromUrl);
 
-  const filtered =
-    activeCategory === "Tous"
-      ? products
-      : products.filter((p) => p.category === activeCategory);
+  const filtered = useMemo(() => {
+    const list =
+      activeCategory === "Tous"
+        ? products
+        : products.filter((p) => p.category === activeCategory);
+
+    if (sortMode === "defaut") return list;
+
+    // `products` est un module partage : on trie une copie, pas la source.
+    return [...list].sort((a, b) =>
+      sortMode === "leger"
+        ? grammageValue(a) - grammageValue(b)
+        : grammageValue(b) - grammageValue(a)
+    );
+  }, [activeCategory, sortMode]);
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
@@ -382,6 +403,29 @@ function CatalogueContent() {
                 </button>
               );
             })}
+          </div>
+
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#1c1c1c]">
+            <span className="shrink-0 flex items-center gap-1.5 font-heading text-[10px] font-bold tracking-wider uppercase text-white/30">
+              <Weight className="w-3.5 h-3.5" strokeWidth={2} />
+              Grammage
+            </span>
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+              {sortModes.map((mode) => (
+                <button
+                  key={mode.id}
+                  onClick={() => setSortMode(mode.id)}
+                  aria-pressed={sortMode === mode.id}
+                  className={`shrink-0 font-heading text-[10px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-full border transition-all duration-200 cursor-pointer ${
+                    sortMode === mode.id
+                      ? "bg-white/10 text-white border-white/30"
+                      : "bg-transparent text-white/40 border-[#282828] hover:border-white/20"
+                  }`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

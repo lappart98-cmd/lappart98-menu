@@ -1,0 +1,152 @@
+{
+  "_lisezmoi": "Copier en pricing.config.json et renseigner. Ce fichier de travail est volontairement hors du depot : il contient les prix d achat et les charges.",
+  "charges": {
+    "_lisezmoi": "Charges fixes mensuelles, amorties sur le volume produit.",
+    "loyerMensuel": 0,
+    "assuranceMensuelle": 0,
+    "autresChargesMensuelles": 0,
+    "amortissementMachineMensuel": 0,
+    "piecesParMois": 0
+  },
+  "consommables": {
+    "_lisezmoi": "Cout du flocage DTF, ramene au metre carre imprime.",
+    "film": {
+      "prixRouleauHT": 0,
+      "longueurM": 100,
+      "largeurM": 0.3,
+      "_source": "Rouleau film transfert DTF 30cm x 100m, pelage instantane PREMIUM, 40,83 EUR HT"
+    },
+    "encre": {
+      "prixLitreHT": 0,
+      "consommationMlParM2": 50,
+      "_source": "Pack 6L encres DTF + solution de nettoyage, 240,83 EUR HT (SKU PACK_ENCRES_6L_SOLUTION)",
+      "_estimation": "50 ml/m² : estimation mediane DTF (CMJN + blanc). Non mesuree. L ecart entre 30 et 110 ml/m² ne bouge le cout d un flocage dos que de 0,35 EUR, donc sans effet sur le prix de vente."
+    },
+    "poudre": {
+      "prixKgHT": 0,
+      "consommationGParM2": 60,
+      "_source": "Poudre blanche transfert DTF, sac 5 kg, 65,83 EUR HT (Creadhesif)",
+      "_estimation": "60 g/m² : estimation mediane DTF. Non mesuree, meme remarque."
+    }
+  },
+  "emplacements": {
+    "_lisezmoi": "Surface imprimee par emplacement, en cm2. Sert a repartir le cout DTF.",
+    "dos": {
+      "surfaceCm2": 900
+    },
+    "coeur": {
+      "surfaceCm2": 100
+    },
+    "logoSup": {
+      "surfaceCm2": 100
+    }
+  },
+  "marge": {
+    "_lisezmoi": "Coefficient multiplicateur applique au prix de revient, par palier.",
+    "solo": 0,
+    "team": 0,
+    "bestof": 0
+  },
+  "textiles": {
+    "NS332": {
+      "achatHT": 0,
+      "_nom": "T-shirt ecoresponsable oversize homme",
+      "_famille": "tshirt-oversize"
+    },
+    "BY102": {
+      "achatHT": 0,
+      "_nom": "T-shirt oversize lourd",
+      "_famille": "tshirt-oversize"
+    },
+    "NS330": {
+      "achatHT": 0,
+      "_nom": "T-shirt epaules tombantes unisexe",
+      "_famille": "tshirt-oversize"
+    },
+    "BY163": {
+      "achatHT": 0,
+      "_nom": "T-shirt urbain lourd",
+      "_famille": "tshirt-basique"
+    },
+    "IB402": {
+      "achatHT": 0,
+      "_nom": "Sweat-shirt a capuche unisexe",
+      "_famille": "hoodie-classic"
+    },
+    "K4018": {
+      "achatHT": 0,
+      "_nom": "Sweatshirt a capuche molleton oversize unisexe",
+      "_famille": "hoodie-classic"
+    },
+    "NS444": {
+      "achatHT": 0,
+      "_nom": "Sweat-shirt ecoresponsable a capuche unisexe",
+      "_famille": "hoodie-classic"
+    },
+    "NS408": {
+      "achatHT": 0,
+      "_nom": "Sweat-shirt ecoresponsable a capuche oversize unisexe",
+      "_famille": "hoodie-classic"
+    },
+    "BY284": {
+      "achatHT": 0,
+      "_nom": "Sweat capuche au toucher doux",
+      "_famille": "hoodie-classic"
+    },
+    "BY268": {
+      "achatHT": 0,
+      "_nom": "Sweat a capuche oversize",
+      "_famille": "hoodie-classic"
+    },
+    "IB400": {
+      "achatHT": 0,
+      "_nom": "Sweat-shirt col rond unisexe",
+      "_famille": "sweat"
+    },
+    "NS443": {
+      "achatHT": 0,
+      "_nom": "Sweat-shirt ecoresponsable a col rond unisexe",
+      "_famille": "sweat"
+    },
+    "NS407": {
+      "achatHT": 0,
+      "_nom": "Sweat-shirt ecoresponsable a col rond oversize unisexe",
+      "_famille": "sweat"
+    },
+    "MK023CV": {
+      "achatHT": 0,
+      "_nom": "PALM - T-shirt manches courtes 190",
+      "_famille": "tshirt-basique"
+    },
+    "MK520V": {
+      "achatHT": 0,
+      "_nom": "TECH - T-shirt technique MC",
+      "_famille": "tshirt-basique"
+    },
+    "MK215CV": {
+      "achatHT": 0,
+      "_nom": "GIBSON - Polo manches courtes 210",
+      "_famille": "polo"
+    },
+    "CM260": {
+      "achatHT": 0,
+      "_nom": "HAMILTON - Casquette trucker 5 panneaux",
+      "_famille": "casquette"
+    },
+    "CM260B": {
+      "achatHT": 0,
+      "_nom": "HAMILTON BICOLOR - Casquette trucker bicolore 5 panneaux",
+      "_famille": "casquette"
+    },
+    "CV300": {
+      "achatHT": 0,
+      "_nom": "FORBES - Casquette vintage 6 panneaux",
+      "_famille": "casquette"
+    },
+    "KI3223": {
+      "achatHT": 0,
+      "_nom": "Sac shopping avec longues anses",
+      "_famille": "totebag"
+    }
+  }
+}

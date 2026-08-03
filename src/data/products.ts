@@ -21,6 +21,9 @@ export interface Product {
   certifications: string[];
   defaultImages: string[];
   price: string;
+  // Prix de vente HT par palier de quantite, calcules a partir du prix
+  // d'achat reel (cf. scripts/pricing.config.json et compute-prices.mjs).
+  prices: { solo: number; team: number; bestof: number };
   // Origine des visuels par coloris quand le coloris n'en porte pas lui-meme.
   // "toptex" (defaut) : deduits de la reference. "none" : le fournisseur n'en
   // publie pas, on reste sur les visuels par defaut.
@@ -83,7 +86,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS332-4_2025.jpg",
       "https://cdn.toptex.com/pictures/NS332-6_2025.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 15€/piece",
+    prices: { solo: 20, team: 17, bestof: 15 },
   },
   {
     ref: "BY102",
@@ -124,7 +128,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/BY102-2_2027.jpg",
       "https://cdn.toptex.com/pictures/BY102-3_2027.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 14€/piece",
+    prices: { solo: 18, team: 16, bestof: 14 },
   },
   {
     ref: "NS330",
@@ -153,7 +158,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS330-12_2024.jpg",
       "https://cdn.toptex.com/pictures/NS330-10_2024.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 14€/piece",
+    prices: { solo: 18, team: 16, bestof: 14 },
   },
   {
     ref: "BY163",
@@ -176,7 +182,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/BY163-4_2027.jpg",
       "https://cdn.toptex.com/pictures/BY163-5_2027.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 14€/piece",
+    prices: { solo: 19, team: 16, bestof: 14 },
   },
   {
     ref: "IB402",
@@ -207,7 +214,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/IB402-3_2026.jpg",
       "https://cdn.toptex.com/pictures/IB402-4_2026.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 22€/piece",
+    prices: { solo: 26, team: 24, bestof: 22 },
   },
   {
     ref: "K4018",
@@ -234,7 +242,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/K4018-3_2027.jpg",
       "https://cdn.toptex.com/pictures/K4018-4_2027.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 30€/piece",
+    prices: { solo: 37, team: 33, bestof: 30 },
   },
   {
     ref: "NS444",
@@ -260,7 +269,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS444-5_2026.jpg",
       "https://cdn.toptex.com/packshots/PS_NS444_BLACK.png",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 27€/piece",
+    prices: { solo: 32, team: 29, bestof: 27 },
   },
   {
     ref: "NS408",
@@ -296,7 +306,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS408-2_2025.jpg",
       "https://cdn.toptex.com/pictures/NS408-3_2025.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 34€/piece",
+    prices: { solo: 42, team: 37, bestof: 34 },
   },
   {
     ref: "BY284",
@@ -320,7 +331,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/BY284-3_2027.jpg",
       "https://cdn.toptex.com/packshots/PS_BY284_BLACK.png",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 30€/piece",
+    prices: { solo: 37, team: 33, bestof: 30 },
   },
   {
     ref: "BY268",
@@ -340,7 +352,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/BY268-3_2027.jpg",
       "https://cdn.toptex.com/pictures/BY268-4_2027.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 43€/piece",
+    prices: { solo: 53, team: 46, bestof: 43 },
   },
   {
     ref: "IB400",
@@ -371,7 +384,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/IB400-3_2026.jpg",
       "https://cdn.toptex.com/pictures/IB400-4_2026.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 21€/piece",
+    prices: { solo: 25, team: 23, bestof: 21 },
   },
   {
     ref: "NS443",
@@ -397,7 +411,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/packshots/PS_NS443_BLACK.png",
       "https://cdn.toptex.com/packshots/PS_NS443_IVORY.png",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 28€/piece",
+    prices: { solo: 34, team: 30, bestof: 28 },
   },
   {
     ref: "NS407",
@@ -433,7 +448,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/NS407-2_2025.jpg",
       "https://cdn.toptex.com/pictures/NS407-3_2025.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 27€/piece",
+    prices: { solo: 33, team: 29, bestof: 27 },
   },
   {
     // Le fournisseur scinde ce modele en deux references : MK023CV pour les
@@ -758,7 +774,8 @@ export const products: Product[] = [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_2_1000.webp",
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/MK023CV_200_3_1000.webp",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 7€/piece",
+    prices: { solo: 10, team: 8, bestof: 7 },
   },
   {
     ref: "MK520V",
@@ -830,7 +847,8 @@ export const products: Product[] = [
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK520V_SERIE_01_1000.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 7€/piece",
+    prices: { solo: 10, team: 8, bestof: 7 },
   },
   {
     // Comme le PALM, le fournisseur scinde le modele : MK215CV pour les
@@ -957,7 +975,8 @@ export const products: Product[] = [
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK215CV_SERIE_01_1000.jpg",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 11€/piece",
+    prices: { solo: 14, team: 12, bestof: 11 },
   },
   {
     ref: "CM260",
@@ -1008,7 +1027,8 @@ export const products: Product[] = [
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CM260_SERIE_01_1000.webp",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 8€/piece",
+    prices: { solo: 11, team: 9, bestof: 8 },
   },
   {
     ref: "CM260B",
@@ -1049,7 +1069,8 @@ export const products: Product[] = [
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CM260B_SERIE_01_1000.webp",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 8€/piece",
+    prices: { solo: 11, team: 9, bestof: 8 },
   },
   {
     ref: "CV300",
@@ -1130,7 +1151,8 @@ export const products: Product[] = [
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CV300_SERIE_01_1000.webp",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 8€/piece",
+    prices: { solo: 11, team: 9, bestof: 8 },
   },
   {
     ref: "KI3223",
@@ -1155,7 +1177,8 @@ export const products: Product[] = [
       "https://cdn.toptex.com/pictures/KI3223-3_2026.jpg",
       "https://cdn.toptex.com/packshots/PS_KI3223_NATURAL.png",
     ],
-    price: "Prix sur demande",
+    price: "A partir de 5€/piece",
+    prices: { solo: 7, team: 6, bestof: 5 },
   },
 ];
 

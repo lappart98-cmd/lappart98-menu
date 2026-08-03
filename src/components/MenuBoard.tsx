@@ -37,7 +37,9 @@ interface TextileOption {
   name: string;
   image: string;
   darkProduct?: boolean;
-  flocageFlat?: number;
+  // Accessoire facture au tarif du "dos" de la technique choisie,
+  // sans notion d'emplacement.
+  flocageFlat?: boolean;
   // Categories du catalogue proposees quand le client veut preciser un modele.
   categories: string[];
 }
@@ -78,14 +80,14 @@ const textiles: TextileOption[] = [
     id: "totebag",
     name: "Tote Bag",
     image: "/totebag.png",
-    flocageFlat: 5,
+    flocageFlat: true,
     categories: ["Sacs"],
   },
   {
     id: "casquette",
     name: "Casquette Snapback",
     image: "/casquette-noire.png",
-    flocageFlat: 5,
+    flocageFlat: true,
     categories: ["Casquettes"],
   },
   {
@@ -101,39 +103,47 @@ function modelesPour(textile: TextileOption): Product[] {
   return products.filter((p) => textile.categories.includes(p.category));
 }
 
-const productPricing: Record<string, Record<string, number>> = {
-  "tshirt-basique":  { solo: 9, team: 7, bestof: 6, xxl: 4, club: 14 },
-  "tshirt-oversize": { solo: 15, team: 13, bestof: 11, xxl: 9, club: 18 },
-  "sweat":           { solo: 23, team: 19, bestof: 17, xxl: 14, club: 22 },
-  "hoodie-classic":  { solo: 17, team: 14, bestof: 12, xxl: 10, club: 18 },
-  "casquette":       { solo: 8, team: 6, bestof: 5, xxl: 4, club: 10 },
-  "totebag":         { solo: 5, team: 4, bestof: 3, xxl: 2, club: 5 },
-  "polo":            { solo: 11, team: 9, bestof: 8, xxl: 6, club: 16 },
-};
+// Les prix vivent desormais sur chaque reference du catalogue, calcules a
+// partir du prix d'achat reel (scripts/compute-prices.mjs). Tant que le client
+// n'a pas precise de modele, on affiche le moins cher de la famille : c'est le
+// "a partir de" honnete, et choisir un modele plus haut de gamme fait monter
+// le prix, jamais l'inverse.
+function prixTextile(
+  textile: TextileOption,
+  tier: string,
+  ref?: string
+): number {
+  const tarif = (p: Product) =>
+    (p.prices as Record<string, number>)[tier] ?? p.prices.bestof;
 
-const flocageOptions = [
-  { id: "dos", name: "Dos", price: 5 },
-  { id: "coeur", name: "Coeur", price: 3 },
-];
+  if (ref) {
+    const choisi = products.find((p) => p.ref === ref);
+    if (choisi) return tarif(choisi);
+  }
+  const modeles = modelesPour(textile);
+  return modeles.length ? Math.min(...modeles.map(tarif)) : 0;
+}
 
+// Chaque technique a sa propre grille par emplacement. Les accessoires
+// (tote bag, casquette) sont factures au tarif "dos" de la technique.
 const techniques = [
   {
     id: "dtf",
     name: "DTF",
     desc: "Impression haute qualite, couleurs vives, tous textiles",
     tag: "Recommande",
-  },
-  {
-    id: "uv",
-    name: "Stickers UV",
-    desc: "Vitrophanie, stickers, surfaces rigides",
-    tag: "Sur demande",
+    prix: { dos: 7, coeur: 4, logoSup: 3 },
+    fraisFichier: 0,
   },
   {
     id: "broderie",
     name: "Broderie",
     desc: "Rendu premium, ideal logos & casquettes",
-    tag: "Sur demande",
+    tag: "Premium",
+    prix: { dos: 14, coeur: 6, logoSup: 5 },
+    // Digitalisation : facturee par visuel distinct, une seule fois
+    // (pas par piece). Chaque emplacement compte pour un visuel.
+    fraisFichier: 40,
   },
 ];
 
@@ -143,7 +153,7 @@ const menus: MenuItem[] = [
     quantity: "1 A 4",
     min: 1,
     max: 4,
-    price: 14,
+    price: 7,
     tier: "solo",
     description: "Ta piece perso, flocage + textile au choix",
     icon: Star,
@@ -159,7 +169,7 @@ const menus: MenuItem[] = [
     quantity: "15 A 40",
     min: 15,
     max: 40,
-    price: 11,
+    price: 5,
     tier: "bestof",
     description: "Le plus commande — prix imbattable",
     icon: Trophy,
@@ -177,7 +187,7 @@ const menus: MenuItem[] = [
     quantity: "5 A 14",
     min: 5,
     max: 14,
-    price: 12,
+    price: 6,
     tier: "team",
     description: "Parfait equipes, assos & familles",
     icon: Users,
@@ -355,10 +365,15 @@ function Configurator({
 
   const textileTotal = useMemo(() => {
     return cart.reduce((sum, c) => {
-      const unitPrice = productPricing[c.textileId]?.[tierKey] ?? 0;
+      const tx = textiles.find((t) => t.id === c.textileId);
+      const unitPrice = tx ? prixTextile(tx, tierKey, c.ref) : 0;
       return sum + c.qty * unitPrice;
     }, 0);
   }, [cart, tierKey]);
+
+  const technique =
+    techniques.find((t) => t.id === selectedTechnique) ?? techniques[0];
+  const tarifs = technique.prix;
 
   const standardQty = item.special
     ? 0
@@ -378,13 +393,13 @@ function Configurator({
         })
         .map((c) => {
           const t = textiles.find((tx) => tx.id === c.textileId)!;
-          return { ...c, name: t.name, flocageFlat: t.flocageFlat! };
+          return { ...c, name: t.name, flocageFlat: tarifs.dos };
         });
 
   const standardFlocagePerPiece =
-    (selectedFlocage.dos ? 5 : 0) +
-    (selectedFlocage.coeur ? 3 : 0) +
-    selectedFlocage.logoSup * 2;
+    (selectedFlocage.dos ? tarifs.dos : 0) +
+    (selectedFlocage.coeur ? tarifs.coeur : 0) +
+    selectedFlocage.logoSup * tarifs.logoSup;
 
   const standardFlocageTotal = standardQty * standardFlocagePerPiece;
   const flatFlocageTotal = flatFlocageItems.reduce(
@@ -392,13 +407,22 @@ function Configurator({
     0
   );
   const flocageTotal = standardFlocageTotal + flatFlocageTotal;
-  const totalEstimate = textileTotal + flocageTotal;
+  // Un visuel a digitaliser par emplacement marque : chaque emplacement porte
+  // son propre fichier de broderie. Les accessoires comptent pour un visuel.
+  const nbLogos =
+    (selectedFlocage.dos ? 1 : 0) +
+    (selectedFlocage.coeur ? 1 : 0) +
+    selectedFlocage.logoSup +
+    (flatFlocageItems.length > 0 ? 1 : 0);
+  const fraisFichier = totalQty > 0 ? technique.fraisFichier * nbLogos : 0;
+  const totalEstimate = textileTotal + flocageTotal + fraisFichier;
 
   const cartLines = cart
     .filter((c) => c.qty > 0)
     .map((c) => {
       const t = textiles.find((tx) => tx.id === c.textileId);
-      const unitPrice = productPricing[c.textileId]?.[tierKey] ?? 0;
+      const tx = textiles.find((t) => t.id === c.textileId);
+      const unitPrice = tx ? prixTextile(tx, tierKey, c.ref) : 0;
       const modele = c.ref
         ? ` — modele ${c.ref} ${products.find((p) => p.ref === c.ref)?.name ?? ""}`.trimEnd()
         : "";
@@ -410,11 +434,11 @@ function Configurator({
   if (item.special) {
     flocageParts.push("Nom + numero + logo (inclus)");
   } else {
-    if (selectedFlocage.dos) flocageParts.push("Dos (5€/pc)");
-    if (selectedFlocage.coeur) flocageParts.push("Coeur (3€/pc)");
+    if (selectedFlocage.dos) flocageParts.push(`Dos (${tarifs.dos}€/pc)`);
+    if (selectedFlocage.coeur) flocageParts.push(`Coeur (${tarifs.coeur}€/pc)`);
     if (selectedFlocage.logoSup > 0)
       flocageParts.push(
-        `${selectedFlocage.logoSup} logo(s) sup. (2€/pc/logo)`
+        `${selectedFlocage.logoSup} logo(s) sup. (${tarifs.logoSup}€/pc/logo)`
       );
     flatFlocageItems.forEach((fi) =>
       flocageParts.push(`${fi.name} (${fi.flocageFlat}€/pc)`)
@@ -422,8 +446,11 @@ function Configurator({
   }
   const flocageDesc =
     flocageParts.length > 0 ? flocageParts.join(", ") : "Aucun";
+  const ligneFichier = fraisFichier
+    ? `\nFichiers broderie : ${nbLogos} x ${technique.fraisFichier}€ = ${fraisFichier}€ (une fois)`
+    : "";
 
-  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "A definir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${techniques.find((t) => t.id === selectedTechnique)?.name || "DTF"}\nTotal pieces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
+  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "A definir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${technique.name}${ligneFichier}\nTotal pieces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
   const whatsappMsg = encodeURIComponent(devisBody);
   const emailSubject = encodeURIComponent(`Demande de devis - ${activeMenu.name}`);
   const emailBody = encodeURIComponent(devisBody);
@@ -543,10 +570,9 @@ function Configurator({
                   {textiles.map((textile) => {
                     const qty = getQty(textile.id);
                     const isActive = qty > 0;
-                    const unitPrice =
-                      productPricing[textile.id]?.[tierKey] ?? 0;
                     const modeles = modelesPour(textile);
                     const chosenRef = getRef(textile.id);
+                    const unitPrice = prixTextile(textile, tierKey, chosenRef);
                     const chosen = modeles.find((m) => m.ref === chosenRef);
                     const open = pickerFor === textile.id;
 
@@ -757,7 +783,10 @@ function Configurator({
                           Emplacements flocage
                         </h4>
                         <div className="flex flex-col gap-3">
-                          {flocageOptions.map((opt) => {
+                          {[
+                            { id: "dos", name: "Dos", price: tarifs.dos },
+                            { id: "coeur", name: "Coeur", price: tarifs.coeur },
+                          ].map((opt) => {
                             const isSelected =
                               selectedFlocage[
                                 opt.id as keyof typeof selectedFlocage
@@ -844,7 +873,7 @@ function Configurator({
                                   Logo(s) supplementaire(s)
                                 </span>
                                 <span className="font-body text-xs text-white/40">
-                                  +2&euro;/logo/piece
+                                  +{tarifs.logoSup}&euro;/logo/piece
                                 </span>
                               </div>
                             </div>
@@ -911,18 +940,55 @@ function Configurator({
                   </div>
                 )}
 
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#C5FF00]" strokeWidth={3} />
-                    <span className="font-heading text-sm font-bold text-white">
-                      Technique : DTF
-                    </span>
-                    <span className="px-2 py-0.5 font-heading text-[9px] font-bold uppercase tracking-wider bg-[#C5FF00] text-[#0A0A0A]">
-                      Recommande
-                    </span>
+                <div>
+                  <h4 className="font-heading text-sm font-bold text-white/40 uppercase tracking-wider mb-3">
+                    Technique de marquage
+                  </h4>
+                  <div className="flex flex-col gap-3">
+                    {techniques.map((t) => {
+                      const sel = selectedTechnique === t.id;
+                      return (
+                        <motion.button
+                          key={t.id}
+                          onClick={() => setSelectedTechnique(t.id)}
+                          whileTap={{ scale: 0.98 }}
+                          className={`text-left p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                            sel
+                              ? "border-[#C5FF00] bg-[#C5FF00]/10"
+                              : "border-[#333] bg-[#1a1a1a] hover:border-[#C5FF00]/40"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`font-heading text-sm font-bold uppercase ${
+                                sel ? "text-[#C5FF00]" : "text-white"
+                              }`}
+                            >
+                              {t.name}
+                            </span>
+                            <span className="px-2 py-0.5 font-heading text-[9px] font-bold uppercase tracking-wider bg-[#C5FF00] text-[#0A0A0A]">
+                              {t.tag}
+                            </span>
+                            <span className="ml-auto font-body text-xs text-white/40">
+                              dos {t.prix.dos}&euro; &middot; coeur {t.prix.coeur}&euro;
+                            </span>
+                          </div>
+                          {t.fraisFichier > 0 && (
+                            <div className="mt-1.5 inline-block font-body text-[11px] text-[#C5FF00] bg-[#C5FF00]/10 rounded px-2 py-0.5">
+                              + {t.fraisFichier}&euro; de digitalisation par visuel,
+                              une seule fois
+                            </div>
+                          )}
+                          <p className="font-body text-xs text-white/40 mt-1">
+                            {t.desc}
+                          </p>
+                        </motion.button>
+                      );
+                    })}
                   </div>
-                  <p className="font-body text-xs text-white/40 mt-1 ml-6">
-                    Impression haute qualite, couleurs vives, tous textiles
+                  <p className="font-body text-[11px] text-white/30 mt-3">
+                    Stickers UV et vitrophanie : sur devis, dis-le-nous dans ton
+                    message.
                   </p>
                 </div>
               </motion.div>
@@ -987,7 +1053,11 @@ function Configurator({
                             (tx) => tx.id === c.textileId
                           );
                           const unitPrice =
-                            productPricing[c.textileId]?.[tierKey] ?? 0;
+                            prixTextile(
+                              textiles.find((t) => t.id === c.textileId)!,
+                              tierKey,
+                              c.ref
+                            );
                           return (
                             <div
                               key={c.textileId}
@@ -1048,10 +1118,10 @@ function Configurator({
                             <span className="text-sm font-medium">Dos</span>
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
-                                {standardQty} &times; 5&euro;
+                                {standardQty} &times; {tarifs.dos}&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
-                                {standardQty * 5}&euro;
+                                {standardQty * tarifs.dos}&euro;
                               </span>
                             </div>
                           </div>
@@ -1061,10 +1131,10 @@ function Configurator({
                             <span className="text-sm font-medium">Coeur</span>
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
-                                {standardQty} &times; 3&euro;
+                                {standardQty} &times; {tarifs.coeur}&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
-                                {standardQty * 3}&euro;
+                                {standardQty * tarifs.coeur}&euro;
                               </span>
                             </div>
                           </div>
@@ -1077,10 +1147,10 @@ function Configurator({
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
                                 {standardQty} &times;{" "}
-                                {selectedFlocage.logoSup * 2}&euro;
+                                {selectedFlocage.logoSup * tarifs.logoSup}&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
-                                {standardQty * selectedFlocage.logoSup * 2}
+                                {standardQty * selectedFlocage.logoSup * tarifs.logoSup}
                                 &euro;
                               </span>
                             </div>
@@ -1129,6 +1199,25 @@ function Configurator({
                       <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-4" />
                       <div className="text-sm text-[#1a1a1a]/60 text-center">
                         Flocage inclus : nom + numero + logo
+                      </div>
+                    </>
+                  )}
+
+                  {fraisFichier > 0 && (
+                    <>
+                      <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-4" />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Fichiers broderie
+                          <span className="block text-[10px] text-[#1a1a1a]/50">
+                            {nbLogos} visuel{nbLogos > 1 ? "s" : ""} &times;{" "}
+                            {technique.fraisFichier}&euro; &mdash; digitalisation,
+                            une seule fois
+                          </span>
+                        </span>
+                        <span className="text-sm font-bold">
+                          {fraisFichier}&euro;
+                        </span>
                       </div>
                     </>
                   )}
@@ -1385,8 +1474,8 @@ export default function MenuBoard() {
           className="mt-12 text-center"
         >
           <p className="font-body text-xs text-white/30">
-            *Prix indicatifs T-Shirt Basique. Tarif final selon textile
-            et emplacements de flocage.
+            *Prix a partir de, hors flocage : le tarif depend du textile
+            choisi et des emplacements de marquage.
           </p>
         </motion.div>
       </div>

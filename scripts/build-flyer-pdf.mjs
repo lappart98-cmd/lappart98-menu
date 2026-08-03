@@ -113,10 +113,16 @@ const img = {
 const LIME = "#C5FF00";
 const NOIR = "#0A0A0A";
 
+// Les tarifs sont deduits du catalogue : le prix affiche est le plancher de
+// chaque palier, toutes references confondues. Le flyer ne peut donc pas
+// annoncer un prix que le site ne pratique plus.
+const plancher = (palier) =>
+  String(Math.min(...products.map((p) => p.prices[palier])));
+
 const menus = [
-  { nom: "LE P'TIT SOLO", qte: "1 a 4 pieces", prix: "14" },
-  { nom: "LE MENU TEAM", qte: "5 a 14 pieces", prix: "12" },
-  { nom: "LE MAXI BEST-OF", qte: "15 a 40 pieces", prix: "11", star: true },
+  { nom: "LE P'TIT SOLO", qte: "1 a 4 pieces", prix: plancher("solo") },
+  { nom: "LE MENU TEAM", qte: "5 a 14 pieces", prix: plancher("team") },
+  { nom: "LE MAXI BEST-OF", qte: "15 a 40 pieces", prix: plancher("bestof"), star: true },
 ];
 
 const etapes = [
@@ -291,7 +297,7 @@ h1 em { color: ${LIME}; font-style: normal; }
       <img class="s3" src="${img.casquette}" alt="">
       <div class="burst">
         <span class="a">Des</span>
-        <span class="b">11&euro;</span>
+        <span class="b">${plancher("bestof")}&euro;</span>
         <span class="c">la piece</span>
       </div>
     </div>

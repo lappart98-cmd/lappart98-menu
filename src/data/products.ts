@@ -36,6 +36,7 @@ export const categories = [
   "Sweats a capuche",
   "Sweats col rond",
   "Casquettes",
+  "Sacs",
 ] as const;
 
 export type Category = (typeof categories)[number];
@@ -1128,6 +1129,31 @@ export const products: Product[] = [
     certifications: [],
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/thumbnails/CV300_SERIE_01_1000.webp",
+    ],
+    price: "Prix sur demande",
+  },
+  {
+    ref: "KI3223",
+    name: "Sac shopping avec longues anses",
+    brand: "Kimood",
+    category: "Sacs",
+    description:
+      "Tote bag 100% coton avec anses longues de 70 cm dans la meme matiere. Contenance 13 L, format 38 x 42 cm.",
+    material: "100% coton",
+    grammage: "130 g/m²",
+    cut: "38 x 42 cm, anses 70 cm, 13 L",
+    sizes: ["U"],
+    colors: [
+      { name: "White", slug: "WHITE" },
+      { name: "Black", slug: "BLACK" },
+      { name: "Natural", slug: "NATURAL" },
+      { name: "Navy", slug: "NAVY" },
+    ],
+    certifications: ["OEKO-TEX", "VEGAN"],
+    defaultImages: [
+      "https://cdn.toptex.com/pictures/KI3223-2_2026.jpg",
+      "https://cdn.toptex.com/pictures/KI3223-3_2026.jpg",
+      "https://cdn.toptex.com/packshots/PS_KI3223_NATURAL.png",
     ],
     price: "Prix sur demande",
   },

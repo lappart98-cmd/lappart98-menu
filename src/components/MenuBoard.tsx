@@ -1333,7 +1333,7 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
       >
         {isPopular && (
           <div className="flex justify-center mb-1.5 sm:mb-3">
-            <span className="bg-[#C5FF00] text-[#0A0A0A] px-2 sm:px-5 py-1 sm:py-1.5 rounded-full font-heading text-[8px] sm:text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(197,255,0,0.3)]">
+            <span className="bg-[#C5FF00] text-[#0A0A0A] px-2 sm:px-5 py-1 sm:py-1.5 rounded-full font-heading text-[9px] sm:text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(197,255,0,0.3)]">
               Le + commande
             </span>
           </div>
@@ -1349,8 +1349,8 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               : "bg-[#151515]/60 backdrop-blur-xl border border-white/[0.08] hover:border-white/15"
           }`}
         >
-          <div className="p-4 sm:p-8 flex flex-col flex-1">
-            <h3 className="font-heading text-xs sm:text-3xl font-black uppercase text-white leading-tight">
+          <div className="p-3 sm:p-8 flex flex-col flex-1">
+            <h3 className="font-heading text-[13px] sm:text-3xl font-black uppercase text-white leading-[1.05]">
               {item.name}
             </h3>
             <p className="font-body text-[10px] sm:text-sm text-white/40 mt-1 sm:mt-2 hidden sm:block">
@@ -1358,15 +1358,15 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
             </p>
 
             <div className="my-5 sm:my-8 flex-1 flex items-center sm:flex-none sm:block">
-              <div className="flex items-baseline gap-0.5 sm:gap-1">
+              <div className="flex flex-col items-start sm:flex-row sm:items-baseline sm:gap-1">
                 <span
-                  className={`font-heading text-3xl sm:text-6xl font-black leading-none ${
+                  className={`font-heading text-[2.6rem] sm:text-6xl font-black leading-[0.9] tracking-tight ${
                     isPopular ? "text-[#C5FF00]" : "text-white"
                   }`}
                 >
                   {item.price}&euro;
                 </span>
-                <span className="font-body text-[9px] sm:text-sm text-white/30">
+                <span className="font-body text-[11px] sm:text-sm text-white/30 -mt-0.5 sm:mt-0">
                   /piece
                 </span>
               </div>
@@ -1394,12 +1394,12 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               ))}
             </div>
 
-            <p className="font-body text-[10px] text-white/40 mt-auto mb-3 sm:hidden">
+            <p className="font-body text-xs font-medium text-white/50 mt-auto mb-2.5 sm:hidden">
               {item.quantity} pieces
             </p>
 
             <button
-              className={`w-full py-2.5 sm:py-4 rounded-lg sm:rounded-xl font-heading text-[9px] sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+              className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-heading text-[11px] sm:text-sm font-bold uppercase tracking-wide transition-all duration-200 cursor-pointer ${
                 isPopular
                   ? "bg-[#C5FF00] text-[#0A0A0A] hover:bg-[#b3e600]"
                   : "bg-white/[0.06] text-white border border-white/10 hover:bg-white/10"

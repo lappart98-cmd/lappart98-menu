@@ -293,6 +293,13 @@ export default function KineticGrid({
     [getWarpedPoint, globalColor],
   );
 
+  // La boucle se rappelait elle-meme par son nom, alors que la constante
+  // n'est pas encore initialisee au moment ou le corps est ecrit. C'etait sans
+  // consequence a l'execution, mais surtout la boucle restait accrochee a la
+  // version de `draw` capturee au demarrage. Passer par une reference garantit
+  // qu'elle appelle toujours la derniere version.
+  const animateRef = useRef<(now: number) => void>(() => {});
+
   const animate = useCallback(
     (now: number) => {
       const m = mouseRef.current;
@@ -302,10 +309,18 @@ export default function KineticGrid({
       m.y = lerpN(m.y, t.y, LERP_SPEED);
 
       draw(now);
-      rafRef.current = requestAnimationFrame(animate);
+      rafRef.current = requestAnimationFrame((suivant) =>
+        animateRef.current(suivant),
+      );
     },
     [draw],
   );
+
+  // L'affectation se fait apres le rendu : toucher une reference pendant le
+  // rendu est interdit, React pouvant abandonner puis rejouer un rendu.
+  useEffect(() => {
+    animateRef.current = animate;
+  }, [animate]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

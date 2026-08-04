@@ -30,9 +30,17 @@ mkdirSync(SORTIE, { recursive: true });
 
 // Coloris retenus pour la boutique.
 const COLORIS = [
-  { slug: "WHITE", nom: "blanc" },
-  { slug: "BLACK", nom: "noir" },
+  { slug: "WHITE", nom: "blanc", sombre: false },
+  { slug: "BLACK", nom: "noir", sombre: true },
 ];
+
+// Un visuel sombre disparait sur un textile noir. Convention : deposer a cote
+// de "mon-visuel.png" un fichier "mon-visuel@clair.png", qui sera utilise sur
+// les coloris sombres. Sans lui, le meme fichier sert pour les deux.
+function fichierPour(nom, ext, sombre) {
+  const clair = join(SOURCE, `${nom}@clair${ext}`);
+  return sombre && existsSync(clair) ? clair : join(SOURCE, `${nom}${ext}`);
+}
 
 // Zone d'impression, en fraction de la largeur et de la hauteur du vetement.
 // Un flocage poitrine occupe environ 40 % de la largeur, place sous le col.
@@ -46,8 +54,11 @@ for (const c of COLORIS) {
   }
 }
 
-const visuels = readdirSync(SOURCE).filter((f) =>
-  [".png", ".webp"].includes(extname(f).toLowerCase())
+const visuels = readdirSync(SOURCE).filter(
+  (f) =>
+    [".png", ".webp"].includes(extname(f).toLowerCase()) &&
+    // les variantes claires ne sont pas des visuels a part entiere
+    !basename(f, extname(f)).endsWith("@clair")
 );
 
 if (!visuels.length) {
@@ -98,12 +109,15 @@ for (const v of visuels) {
     const sortie = join(SORTIE, `${nom}-${c.nom}.jpg`);
     const out = execFileSync(
       "python3",
-      ["-c", script, join(CACHE, `NS332_${c.slug}.png`), join(SOURCE, v), sortie,
+      ["-c", script, join(CACHE, `NS332_${c.slug}.png`),
+       fichierPour(nom, extname(v), c.sombre), sortie,
        String(ZONE.largeur), String(ZONE.hautDepuisEpaule)],
       { encoding: "utf8" }
     ).trim();
     const d = JSON.parse(out);
-    console.log(`  ${nom} sur ${c.nom.padEnd(6)} -> visuel ${d.visuel[0]}x${d.visuel[1]} px`);
+    const variante = c.sombre && existsSync(join(SOURCE, `${nom}@clair${extname(v)}`))
+      ? " (variante claire)" : "";
+    console.log(`  ${nom} sur ${c.nom.padEnd(6)} -> ${d.visuel[0]}x${d.visuel[1]} px${variante}`);
     n++;
   }
 }

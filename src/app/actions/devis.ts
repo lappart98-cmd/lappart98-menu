@@ -118,8 +118,15 @@ export async function envoyerDevis(
     };
   }
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, DEVIS_TO } =
-    process.env;
+  // Les valeurs collees dans un panneau d'hebergeur trainent souvent un espace
+  // ou un retour a la ligne invisible, que le serveur SMTP refuse ensuite.
+  const env = (k: string) => process.env[k]?.trim() || undefined;
+  const SMTP_HOST = env("SMTP_HOST");
+  const SMTP_PORT = env("SMTP_PORT");
+  const SMTP_USER = env("SMTP_USER");
+  const SMTP_PASS = env("SMTP_PASS");
+  const SMTP_FROM = env("SMTP_FROM");
+  const DEVIS_TO = env("DEVIS_TO");
 
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     console.error("[devis] SMTP non configure - demande perdue", {
@@ -207,7 +214,11 @@ export async function envoyerDevis(
           : [],
     });
   } catch (error) {
-    console.error("[devis] echec envoi SMTP", error);
+    console.error(
+      `[devis] echec envoi SMTP | hote=${SMTP_HOST} port=${port} secure=${port === 465}` +
+        ` utilisateur=${SMTP_USER} longueurMotDePasse=${SMTP_PASS?.length ?? 0}`,
+      error
+    );
     return {
       status: "error",
       message:

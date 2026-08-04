@@ -43,3 +43,6 @@ next-env.d.ts
 # Donnees commerciales confidentielles : prix d'achat, loyer, marges.
 # Le depot est public, ce fichier ne doit pas y figurer.
 scripts/pricing.config.json
+
+# Le modele de variables d'environnement doit rester versionne
+!.env.example

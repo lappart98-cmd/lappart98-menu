@@ -13,9 +13,9 @@ import {
   Minus,
   ArrowUp,
   MessageCircle,
-  Mail,
   ChevronDown,
 } from "lucide-react";
+import DevisForm from "./DevisForm";
 import { products, grammageValue, type Product } from "@/data/products";
 
 interface MenuItem {
@@ -452,9 +452,6 @@ function Configurator({
 
   const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "A definir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${technique.name}${ligneFichier}\nTotal pieces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
   const whatsappMsg = encodeURIComponent(devisBody);
-  const emailSubject = encodeURIComponent(`Demande de devis - ${activeMenu.name}`);
-  const emailBody = encodeURIComponent(devisBody);
-  const mailtoUrl = `mailto:contact@lappart98.fr?subject=${emailSubject}&body=${emailBody}`;
 
   const steps = [
     { title: "LE TEXTILE", subtitle: "Choisis ton support" },
@@ -1245,26 +1242,21 @@ function Configurator({
 
                   <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-3" />
                   <p className="text-[11px] text-[#1a1a1a]/60 text-center leading-relaxed">
-                    Pour recevoir ton devis final et nous envoyer ton logo,
-                    ecris-nous sur{" "}
-                    <a
-                      href="https://wa.me/33675008633"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-bold text-[#25D366] hover:underline"
-                    >
-                      WhatsApp
-                    </a>{" "}
-                    ou par{" "}
-                    <a
-                      href="mailto:contact@lappart98.fr"
-                      className="font-bold text-[#1a1a1a]/80 hover:underline"
-                    >
-                      mail
-                    </a>
+                    Complete le formulaire juste en dessous pour recevoir ton
+                    devis final et nous envoyer ton visuel.
                   </p>
 
                   <div className="absolute bottom-0 left-0 right-0 h-3 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAyMCAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCAwTDEwIDEyTDIwIDAiIGZpbGw9IiNmNWYwZTgiLz48L3N2Zz4=')] bg-repeat-x bg-[length:20px_12px] translate-y-full" />
+                </div>
+
+                <div className="mt-10">
+                  <h4 className="font-heading text-lg font-black uppercase text-white">
+                    Recevoir mon devis
+                  </h4>
+                  <p className="font-body text-sm text-white/40 mt-1 mb-5">
+                    Reponse sous 2h. Joins ton visuel, on te renvoie un BAT.
+                  </p>
+                  <DevisForm recap={devisBody} formule={activeMenu.name} />
                 </div>
               </motion.div>
             )}
@@ -1289,7 +1281,6 @@ function Configurator({
               <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
             </button>
           ) : (
-            <>
               <a
                 href={`https://wa.me/33675008633?text=${whatsappMsg}`}
                 target="_blank"
@@ -1297,16 +1288,8 @@ function Configurator({
                 className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#1da851] transition-colors duration-200 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" strokeWidth={2.5} />
-                WhatsApp
+                Plutot par WhatsApp
               </a>
-              <a
-                href={mailtoUrl}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#C5FF00] text-[#0A0A0A] px-4 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
-              >
-                <Mail className="w-4 h-4" strokeWidth={2.5} />
-                Email
-              </a>
-            </>
           )}
         </div>
       </motion.div>

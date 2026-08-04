@@ -46,3 +46,6 @@ scripts/pricing.config.json
 
 # Le modele de variables d'environnement doit rester versionne
 !.env.example
+
+# Mockups generes localement, pas de raison de les versionner
+public/mockups/

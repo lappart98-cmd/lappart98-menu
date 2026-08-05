@@ -17,6 +17,9 @@ export interface DevisState {
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
 
+/** Visuel du client + les deux apercus composes, pas davantage. */
+const MAX_FILES = 3;
+
 const ALLOWED_MIME = [
   "image/png",
   "image/jpeg",
@@ -95,14 +98,19 @@ export async function envoyerDevis(
   if (telephone.replace(/\D/g, "").length < 9)
     fieldErrors.telephone = "Numéro invalide";
 
-  const file = formData.get("logo");
-  const hasFile = file instanceof File && file.size > 0;
+  // Plusieurs fichiers peuvent porter le meme nom de champ : le visuel du
+  // client, et les apercus composes sur la page d'essai.
+  const fichiers = formData
+    .getAll("logo")
+    .filter((f): f is File => f instanceof File && f.size > 0)
+    .slice(0, MAX_FILES);
+  const hasFile = fichiers.length > 0;
 
-  if (hasFile) {
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-    if (file.size > MAX_FILE_BYTES) {
+  for (const f of fichiers) {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+    if (f.size > MAX_FILE_BYTES) {
       fieldErrors.logo = "Fichier trop lourd (4 Mo max)";
-    } else if (!ALLOWED_MIME.includes(file.type) && !ALLOWED_EXT.includes(ext)) {
+    } else if (!ALLOWED_MIME.includes(f.type) && !ALLOWED_EXT.includes(ext)) {
       fieldErrors.logo = "Format non supporté";
     }
   }
@@ -179,7 +187,9 @@ export async function envoyerDevis(
       <pre style="background:#f9f9f9;padding:14px;border-radius:6px;white-space:pre-wrap;font-size:13px">${escapeHtml(recap)}</pre>
       <p style="color:#888;font-size:12px">${
         hasFile
-          ? "Le visuel du client est en pièce jointe."
+          ? `${fichiers.length} pièce${fichiers.length > 1 ? "s" : ""} jointe${
+              fichiers.length > 1 ? "s" : ""
+            } : ${fichiers.map((f) => escapeHtml(f.name)).join(", ")}.`
           : "Aucun visuel joint par le client."
       }</p>
     </div>
@@ -202,16 +212,13 @@ export async function envoyerDevis(
       ),
       text,
       html,
-      attachments:
-        hasFile && file instanceof File
-          ? [
-              {
-                filename: file.name,
-                content: Buffer.from(await file.arrayBuffer()),
-                contentType: file.type || "application/octet-stream",
-              },
-            ]
-          : [],
+      attachments: await Promise.all(
+        fichiers.map(async (f) => ({
+          filename: f.name,
+          content: Buffer.from(await f.arrayBuffer()),
+          contentType: f.type || "application/octet-stream",
+        }))
+      ),
     });
   } catch (error) {
     console.error(

@@ -2,11 +2,18 @@
 
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Paperclip, Send } from "lucide-react";
 import ApercuLogo, { type Composition } from "@/components/ApercuLogo";
 import { envoyerDevis, type DevisState } from "@/app/actions/devis";
 
 const initial: DevisState = { status: "idle", message: "" };
+
+// Reprend les paliers du configurateur : le devis part avec la meme grille.
+const MENUS = [
+  { valeur: "Le p'tit solo", detail: "1 à 4 pièces" },
+  { valeur: "Le menu team", detail: "5 à 14 pièces" },
+  { valeur: "Le maxi best-of", detail: "15 à 40 pièces" },
+];
 
 const champ =
   "w-full bg-[#111] border rounded-xl px-3.5 py-3 font-body text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#C5FF00]/50 transition-colors duration-200";
@@ -19,6 +26,9 @@ export default function ApercuPage() {
     resume: "",
   });
   const fichiersRef = useRef<HTMLInputElement>(null);
+  const supplementRef = useRef<HTMLInputElement>(null);
+  const [menu, setMenu] = useState(MENUS[1].valeur);
+  const [supplement, setSupplement] = useState<File | null>(null);
 
   // La reference reste stable : sans useCallback, l'effet de l'atelier
   // d'apercu se relancerait a chaque rendu de cette page.
@@ -32,8 +42,16 @@ export default function ApercuPage() {
     const dt = new DataTransfer();
     for (const l of composition.logos) dt.items.add(l);
     for (const a of composition.apercus) dt.items.add(a);
+    if (supplement) dt.items.add(supplement);
     input.files = dt.files;
-  }, [composition]);
+  }, [composition, supplement]);
+
+  // Ce que l'atelier recevra, annonce noir sur blanc avant l'envoi.
+  const jointes = [
+    ...composition.logos.map((f) => f.name),
+    ...composition.apercus.map((f) => f.name),
+    ...(supplement ? [supplement.name] : []),
+  ];
 
   const erreurs = etat.fieldErrors ?? {};
   const bordure = (nom: string) =>
@@ -93,7 +111,7 @@ export default function ApercuPage() {
                 aria-hidden="true"
                 className="absolute w-px h-px -left-full opacity-0"
               />
-              <input type="hidden" name="formule" value="Essai de visuel" />
+              <input type="hidden" name="formule" value={menu} />
               <input
                 type="hidden"
                 name="message"
@@ -102,6 +120,7 @@ export default function ApercuPage() {
                     ? `Aperçu composé sur le site : ${composition.resume}`
                     : "Aperçu non composé."
                 }
+                readOnly
               />
               <input
                 ref={fichiersRef}
@@ -148,6 +167,83 @@ export default function ApercuPage() {
                 defaultValue={etat.values?.tailles}
                 className={`${champ} ${bordure("tailles")}`}
               />
+
+              <div>
+                <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2">
+                  Ton menu
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  {MENUS.map((m) => {
+                    const choisi = menu === m.valeur;
+                    return (
+                      <button
+                        key={m.valeur}
+                        type="button"
+                        onClick={() => setMenu(m.valeur)}
+                        className={`p-3 rounded-xl border text-left transition-colors duration-200 cursor-pointer ${
+                          choisi
+                            ? "border-[#C5FF00] bg-[#C5FF00]/[0.06]"
+                            : "border-[#222] bg-[#111] hover:border-white/25"
+                        }`}
+                      >
+                        <span
+                          className={`font-heading text-[11px] font-bold uppercase block leading-tight ${
+                            choisi ? "text-[#C5FF00]" : "text-white"
+                          }`}
+                        >
+                          {m.valeur}
+                        </span>
+                        <span className="font-body text-[10px] text-white/30 block mt-1">
+                          {m.detail}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ce qui partira reellement, plus la possibilite d'ajouter un
+                  fichier que l'apercu ne couvre pas : charte, bon de commande. */}
+              <div className="rounded-xl border border-[#222] bg-[#111] p-3.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Paperclip
+                    className="w-3.5 h-3.5 text-[#C5FF00]"
+                    strokeWidth={2.5}
+                  />
+                  <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-white/70">
+                    Pièces jointes
+                  </span>
+                </div>
+
+                {jointes.length > 0 ? (
+                  <ul className="font-body text-[11px] text-white/45 space-y-1 mb-3">
+                    {jointes.map((nom) => (
+                      <li key={nom} className="truncate">
+                        &middot; {nom}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-body text-[11px] text-white/30 mb-3">
+                    Compose un aperçu ci-dessus, il se joindra ici tout seul.
+                  </p>
+                )}
+
+                <input
+                  ref={supplementRef}
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,.ai,.eps"
+                  onChange={(ev) => setSupplement(ev.target.files?.[0] ?? null)}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => supplementRef.current?.click()}
+                  className="font-heading text-[11px] font-bold uppercase tracking-wider text-white/50 hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
+                >
+                  + Ajouter un autre fichier
+                </button>
+              </div>
 
               {Object.values(erreurs).length > 0 && (
                 <p className="font-body text-sm text-red-400">

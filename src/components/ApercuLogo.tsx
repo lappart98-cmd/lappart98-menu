@@ -12,11 +12,13 @@ import {
   type ProductColor,
 } from "@/data/products";
 import {
-  EMPLACEMENTS,
-  emplacementParId,
+  emplacementsDe,
+  familleDe,
   largeurVetementCm,
   mesurerVetement,
   type BoiteVetement,
+  type Emplacement,
+  type Famille,
   type Vue,
 } from "@/lib/apercu";
 
@@ -29,8 +31,24 @@ const RENDU = 900;
 const FORMATS_LOGO = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 const POIDS_MAX = 6 * 1024 * 1024;
 
-/** Seuls les articles dont le fournisseur publie un packshot par coloris. */
-const textiles = products.filter((p) => p.packshotSource !== "none");
+// Un article par famille : proposer les vingt references du catalogue noyait
+// le choix, alors que la geometrie du marquage ne depend que de la famille.
+// Changer un modele ici suffit a changer celui de l'apercu.
+const REFERENCES = ["NS332", "NS443", "NS444", "CV300"];
+
+const textiles = REFERENCES.map(
+  (ref) => products.find((p) => p.ref === ref)!
+).filter(Boolean);
+
+const ETIQUETTE_FAMILLE: Record<Famille, string> = {
+  tshirt: "T-shirt",
+  sweat: "Sweat col rond",
+  hoodie: "Sweat à capuche",
+  casquette: "Casquette",
+};
+
+/** Un reglage par famille et par emplacement : changer de textile ne perd rien. */
+const cleReglage = (famille: Famille, id: string) => `${famille}:${id}`;
 
 interface Reglage {
   actif: boolean;
@@ -90,14 +108,21 @@ export default function ApercuLogo({
     null
   );
 
-  const [reglages, setReglages] = useState<Record<string, Reglage>>(() =>
-    Object.fromEntries(
-      EMPLACEMENTS.map((e) => [
-        e.id,
-        { actif: e.id === "coeur", cm: e.cmDefaut },
-      ])
-    )
-  );
+  const [reglages, setReglages] = useState<Record<string, Reglage>>(() => {
+    const init: Record<string, Reglage> = {};
+    for (const t of textiles) {
+      const famille = familleDe(t);
+      const liste = emplacementsDe(famille);
+      for (const e of liste) {
+        init[cleReglage(famille, e.id)] = {
+          // Le premier emplacement de chaque famille est coche d'office.
+          actif: e.id === liste[0].id,
+          cm: e.cmDefaut,
+        };
+      }
+    }
+    return init;
+  });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vetementsRef = useRef<
@@ -105,10 +130,21 @@ export default function ApercuLogo({
   >({});
   const inputsRef = useRef<Partial<Record<Vue, HTMLInputElement | null>>>({});
 
+  const famille = familleDe(produit);
+  const emplacements = emplacementsDe(famille);
+  const reglageDe = useCallback(
+    (e: Emplacement) => reglages[cleReglage(famille, e.id)],
+    [reglages, famille]
+  );
+
   const urls = useMemo(() => {
     const face = getColorImages(produit, coloris)[0];
-    const dos = getPackshotImages(produit.ref, coloris.slug)[1];
-    return { face: viaRelais(face), dos: viaRelais(dos) };
+    // Seul Toptex publie une vue de dos, sous le suffixe -B.
+    const dos =
+      produit.packshotSource === "none"
+        ? null
+        : getPackshotImages(produit.ref, coloris.slug)[1];
+    return { face: viaRelais(face), dos: dos ? viaRelais(dos) : null };
   }, [produit, coloris]);
 
   /** Le visuel effectivement pose sur une face. */
@@ -129,7 +165,9 @@ export default function ApercuLogo({
     (async () => {
       const face = await chargerImage(urls.face).catch(() => null);
       if (annule) return;
-      const dos = await chargerImage(urls.dos).catch(() => null);
+      const dos = urls.dos
+        ? await chargerImage(urls.dos).catch(() => null)
+        : null;
       if (annule) return;
 
       vetementsRef.current = {};
@@ -172,9 +210,9 @@ export default function ApercuLogo({
       const k = canvas.width / image.naturalWidth;
       const cmParPixel = largeurVetementCm(produit) / (boite.largeur * k);
 
-      for (const e of EMPLACEMENTS) {
+      for (const e of emplacements) {
         if (e.vue !== cible) continue;
-        const r = reglages[e.id];
+        const r = reglageDe(e);
         if (!r?.actif) continue;
 
         const largeur = r.cm / cmParPixel;
@@ -185,7 +223,7 @@ export default function ApercuLogo({
       }
       return true;
     },
-    [visuelPour, produit, reglages]
+    [visuelPour, produit, emplacements, reglageDe]
   );
 
   useEffect(() => {
@@ -197,8 +235,8 @@ export default function ApercuLogo({
   const exporter = useCallback(async (): Promise<File[]> => {
     const fichiers: File[] = [];
     for (const cible of ["face", "dos"] as Vue[]) {
-      const utilisee = EMPLACEMENTS.some(
-        (e) => e.vue === cible && reglages[e.id]?.actif
+      const utilisee = emplacements.some(
+        (e) => e.vue === cible && reglageDe(e)?.actif
       );
       if (!utilisee || !vetementsRef.current[cible] || !visuelPour(cible))
         continue;
@@ -216,18 +254,18 @@ export default function ApercuLogo({
       );
     }
     return fichiers;
-  }, [composer, produit.ref, reglages, visuelPour]);
+  }, [composer, produit.ref, emplacements, reglageDe, visuelPour]);
 
   const resume = useMemo(() => {
-    const parts = EMPLACEMENTS.filter((e) => reglages[e.id]?.actif).map((e) => {
+    const parts = emplacements.filter((e) => reglageDe(e)?.actif).map((e) => {
       const v = e.vue === "dos" && dosIdentique ? visuels.face : visuels[e.vue];
       const fichier = v ? ` (${v.fichier.name})` : " (aucun visuel)";
-      return `${e.nom} ${reglages[e.id].cm} cm${fichier}`;
+      return `${e.nom} ${reglageDe(e).cm} cm${fichier}`;
     });
     return parts.length
       ? `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}`
       : "";
-  }, [reglages, produit, coloris, visuels, dosIdentique]);
+  }, [emplacements, reglageDe, produit, coloris, visuels, dosIdentique]);
 
   // Les apercus composes remontent au formulaire, qui les joint au courriel.
   // Les fichiers d'origine, sans doublon si le dos reprend celui du devant.
@@ -296,26 +334,28 @@ export default function ApercuLogo({
   // Les trois marquages avant occupent la meme zone : les cumuler donnerait un
   // apercu impossible a produire. Choisir l'un desactive les autres ; le dos
   // reste independant, un logo coeur avec un grand dos est courant.
-  const basculer = (id: string) =>
+  const basculer = (cible: Emplacement) =>
     setReglages((prev) => {
-      const cible = emplacementParId(id);
-      const suivant = { ...prev };
-      const actif = !prev[id].actif;
-      suivant[id] = { ...prev[id], actif };
-      if (actif && cible) {
-        for (const e of EMPLACEMENTS) {
-          if (e.id !== id && e.vue === cible.vue) {
-            suivant[e.id] = { ...prev[e.id], actif: false };
-          }
+      const cle = cleReglage(famille, cible.id);
+      const actif = !prev[cle].actif;
+      const suivant = { ...prev, [cle]: { ...prev[cle], actif } };
+      if (actif) {
+        for (const e of emplacements) {
+          if (e.id === cible.id || e.vue !== cible.vue) continue;
+          const autre = cleReglage(famille, e.id);
+          suivant[autre] = { ...prev[autre], actif: false };
         }
       }
       return suivant;
     });
 
-  const regler = (id: string, cm: number) =>
-    setReglages((p) => ({ ...p, [id]: { ...p[id], cm } }));
+  const regler = (e: Emplacement, cm: number) =>
+    setReglages((p) => {
+      const cle = cleReglage(famille, e.id);
+      return { ...p, [cle]: { ...p[cle], cm } };
+    });
 
-  const actifs = EMPLACEMENTS.filter((e) => reglages[e.id]?.actif);
+  const actifs = emplacements.filter((e) => reglageDe(e)?.actif);
   const marquagesSurLaVue = actifs.filter((e) => e.vue === vue).length;
 
   return (
@@ -480,8 +520,8 @@ export default function ApercuLogo({
             Emplacements
           </span>
           <div className="space-y-2">
-            {EMPLACEMENTS.map((e) => {
-              const r = reglages[e.id];
+            {emplacements.map((e) => {
+              const r = reglageDe(e);
               const indisponible = e.vue === "dos" && !dosDisponible;
               return (
                 <div
@@ -493,7 +533,7 @@ export default function ApercuLogo({
                   } ${indisponible ? "opacity-40" : ""}`}
                 >
                   <button
-                    onClick={() => !indisponible && basculer(e.id)}
+                    onClick={() => !indisponible && basculer(e)}
                     disabled={indisponible}
                     className="w-full flex items-center gap-3 p-3 text-left cursor-pointer disabled:cursor-not-allowed"
                   >
@@ -536,7 +576,7 @@ export default function ApercuLogo({
                         max={e.cmMax}
                         step={1}
                         value={r.cm}
-                        onChange={(ev) => regler(e.id, Number(ev.target.value))}
+                        onChange={(ev) => regler(e, Number(ev.target.value))}
                         aria-label={`Largeur du marquage ${e.nom}`}
                         className="w-full accent-[#C5FF00] cursor-pointer"
                       />
@@ -551,9 +591,11 @@ export default function ApercuLogo({
             })}
           </div>
           <p className="font-body text-[11px] text-white/25 mt-2.5 leading-relaxed">
-            Un seul marquage par face : les trois formats avant occupent la
-            même zone. Largeur limitée à 30 cm, celle du film DTF de
-            l&apos;atelier — au-delà, le marquage doit être scindé.
+            {famille === "casquette"
+              ? "Une casquette ne se marque que sur son panneau avant : ni dos, ni grand format."
+              : famille === "hoodie"
+                ? "Un seul marquage par face. Le grand devant s'arrête à 26 cm pour ne pas mordre sur la poche kangourou."
+                : "Un seul marquage par face : les formats avant occupent la même zone. Largeur limitée à 30 cm, celle du film DTF de l'atelier."}
           </p>
         </div>
 
@@ -561,21 +603,37 @@ export default function ApercuLogo({
           <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2.5">
             Textile
           </span>
-          <select
-            value={produit.ref}
-            onChange={(ev) => {
-              const p = textiles.find((t) => t.ref === ev.target.value)!;
-              setProduit(p);
-              setColoris(p.colors[0]);
-            }}
-            className="w-full bg-[#111] border border-[#2a2a2a] rounded-xl px-3.5 py-3 font-body text-sm text-white focus:border-[#C5FF00]/50 focus:outline-none cursor-pointer"
-          >
-            {textiles.map((p) => (
-              <option key={p.ref} value={p.ref}>
-                {p.ref} — {p.name}
-              </option>
-            ))}
-          </select>
+          <div className="grid grid-cols-2 gap-2">
+            {textiles.map((p) => {
+              const choisi = p.ref === produit.ref;
+              return (
+                <button
+                  key={p.ref}
+                  onClick={() => {
+                    setProduit(p);
+                    setColoris(p.colors[0]);
+                    setVue("face");
+                  }}
+                  className={`p-3 rounded-xl border text-left transition-colors duration-200 cursor-pointer ${
+                    choisi
+                      ? "border-[#C5FF00] bg-[#C5FF00]/[0.06]"
+                      : "border-[#222] bg-[#111] hover:border-white/25"
+                  }`}
+                >
+                  <span
+                    className={`font-heading text-xs font-bold uppercase block ${
+                      choisi ? "text-[#C5FF00]" : "text-white"
+                    }`}
+                  >
+                    {ETIQUETTE_FAMILLE[familleDe(p)]}
+                  </span>
+                  <span className="font-body text-[10px] text-white/30 block mt-0.5">
+                    {p.ref} &middot; {p.grammage}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
           <div className="flex flex-wrap gap-2 mt-3">
             {produit.colors.map((c) => (
@@ -601,8 +659,15 @@ export default function ApercuLogo({
             ))}
           </div>
           <p className="font-body text-[11px] text-white/35 mt-2">
-            {coloris.name} &middot; {produit.grammage}
+            {coloris.name} &middot; {produit.name}
           </p>
+          {produit.packshotSource === "none" && (
+            <p className="font-body text-[11px] text-white/25 mt-1.5 leading-relaxed">
+              Le fournisseur ne photographie pas chaque coloris : l&apos;aperçu
+              garde la même teinte, mais le coloris choisi part bien avec ta
+              demande.
+            </p>
+          )}
         </div>
 
         <button

@@ -17,8 +17,8 @@ export interface DevisState {
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
 
-/** Jusqu'a deux visuels (devant, dos) et leurs deux apercus composes. */
-const MAX_FILES = 4;
+/** Deux visuels (devant, dos), leurs deux apercus, et un fichier libre. */
+const MAX_FILES = 5;
 
 const ALLOWED_MIME = [
   "image/png",

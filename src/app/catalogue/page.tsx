@@ -18,6 +18,7 @@ import {
   products,
   categories,
   getColorImages,
+  hasColorPhoto,
   getColorSwatch,
   grammageValue,
   type Product,
@@ -51,6 +52,12 @@ function ProductCard({
   const currentImages = activeColorObj
     ? getColorImages(product, activeColorObj)
     : product.defaultImages;
+
+  // Certains fournisseurs ne photographient pas chaque coloris. On le dit,
+  // sinon la pastille semble ne pas repondre.
+  const photoDuColoris = activeColorObj
+    ? hasColorPhoto(product, activeColorObj)
+    : true;
 
   const handleColorClick = (slug: string) => {
     if (activeColor === slug) {
@@ -134,7 +141,7 @@ function ProductCard({
                 <div className="p-4 sm:p-6">
                   <div
                     className={`relative aspect-[3/4] rounded-xl overflow-hidden ${
-                      activeColor ? "bg-white" : "bg-[#1a1a1a]"
+                      photoDuColoris && activeColor ? "bg-white" : "bg-[#1a1a1a]"
                     }`}
                   >
                     <Image
@@ -144,12 +151,19 @@ function ProductCard({
                       }`}
                       fill
                       className={
-                        activeColor ? "object-contain p-4" : "object-cover"
+                        photoDuColoris && activeColor ? "object-contain p-4" : "object-cover"
                       }
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       priority
                     />
                   </div>
+                  {!photoDuColoris && (
+                    <p className="font-body text-[11px] text-white/35 mt-2.5 leading-relaxed">
+                      {activeColorObj?.name} est bien disponible, mais le
+                      fournisseur ne photographie pas ce coloris : la pastille
+                      ci-contre en donne la teinte réelle.
+                    </p>
+                  )}
                   <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                     {currentImages.map((img, i) => (
                       <button
@@ -159,14 +173,14 @@ function ProductCard({
                           activeImage === i
                             ? "border-[#C5FF00]"
                             : "border-transparent hover:border-white/20"
-                        } ${activeColor ? "bg-white" : "bg-[#1a1a1a]"}`}
+                        } ${photoDuColoris && activeColor ? "bg-white" : "bg-[#1a1a1a]"}`}
                       >
                         <Image
                           src={img}
                           alt=""
                           fill
                           className={
-                            activeColor
+                            photoDuColoris && activeColor
                               ? "object-contain p-1"
                               : "object-cover"
                           }

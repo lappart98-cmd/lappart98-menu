@@ -104,7 +104,13 @@ export const products: Product[] = [
       { name: "White", slug: "WHITE" },
       { name: "Black", slug: "BLACK" },
       { name: "Baltic Blue", slug: "BALTICBLUE" },
-      { name: "Bark", slug: "BARK" },
+      {
+        name: "Bark",
+        slug: "BARK",
+        // Toptex renvoie son pictogramme « image absente » sur la vue de face
+        // de ce coloris (PS_BY102_BARK). Seule la vue de dos existe.
+        images: ["https://cdn.toptex.com/packshots/PS_BY102-B_BARK.png"],
+      },
       { name: "Beryl Blue", slug: "BERYLBLUE" },
       { name: "Bottle Green", slug: "BOTTLEGREEN" },
       { name: "Charcoal", slug: "CHARCOAL" },
@@ -1192,6 +1198,18 @@ export function getPackshotImages(ref: string, colorSlug: string): string[] {
 
 // Visuels d'un coloris : ceux portes par le coloris s'il en a (fournisseur hors
 // Toptex), sinon selon la convention declaree par le produit.
+/**
+ * Le fournisseur publie-t-il un visuel propre a ce coloris ?
+ *
+ * Faux pour les references dont on ne connait qu'une photo de groupe (Velilla
+ * et Mukua, hors MK023CV) : cliquer une pastille ne peut alors pas changer
+ * l'image. L'interface le signale plutot que de laisser croire a une panne.
+ */
+export function hasColorPhoto(product: Product, color: ProductColor): boolean {
+  if (color.images) return true;
+  return product.packshotSource !== "none";
+}
+
 export function getColorImages(
   product: Product,
   color: ProductColor

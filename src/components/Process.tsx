@@ -10,21 +10,21 @@ const steps = [
     icon: MessageSquare,
     title: "CONTACTE-NOUS",
     description:
-      "Envoie-nous ton visuel ou ton idee par WhatsApp. On te repond en moins de 2h avec un devis gratuit.",
+      "Envoie-nous ton visuel ou ton idée par WhatsApp. On te répond en moins de 2 h avec un devis gratuit.",
   },
   {
     number: "02",
     icon: PenTool,
-    title: "ON PREPARE",
+    title: "ON PRÉPARE",
     description:
       "On adapte ton visuel, tu valides le BAT. Tu choisis ton textile et ta technique (DTF, stickers UV ou broderie).",
   },
   {
     number: "03",
     icon: Package,
-    title: "C'EST PRET",
+    title: "C'EST PRÊT",
     description:
-      "Production express dans notre atelier a Gentilly. Retrait sur place ou livraison.",
+      "Production express dans notre atelier à Gentilly. Retrait sur place ou livraison.",
   },
 ];
 
@@ -47,7 +47,7 @@ export default function Process() {
             Simple comme bonjour
           </span>
           <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl font-black uppercase mt-3">
-            COMMENT <span className="text-[#C5FF00]">CA MARCHE</span>
+            COMMENT <span className="text-[#C5FF00]">ÇA MARCHE</span>
           </h2>
         </motion.div>
 

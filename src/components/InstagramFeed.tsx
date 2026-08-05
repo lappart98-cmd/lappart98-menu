@@ -48,7 +48,7 @@ export default function InstagramFeed() {
             </span>
           </a>
           <p className="font-body text-sm text-white/40 mt-2">
-            Nos dernieres realisations
+            Nos dernières réalisations
           </p>
         </motion.div>
 

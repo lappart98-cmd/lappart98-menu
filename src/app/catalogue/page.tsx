@@ -25,8 +25,8 @@ import {
 } from "@/data/products";
 
 const sortModes = [
-  { id: "defaut", label: "Par defaut" },
-  { id: "leger", label: "Plus leger" },
+  { id: "defaut", label: "Par défaut" },
+  { id: "leger", label: "Plus léger" },
   { id: "lourd", label: "Plus lourd" },
 ] as const;
 
@@ -106,7 +106,7 @@ function ProductCard({
         </div>
         <span className="shrink-0 mr-2 text-right">
           <span className="font-heading text-sm sm:text-base font-black text-[#C5FF00] block leading-tight">
-            {product.price.replace("A partir de ", "des ")}
+            {product.price.replace("À partir de ", "dès ")}
           </span>
           <span className="font-body text-[9px] sm:text-[10px] text-white/30 block leading-tight">
             hors flocage
@@ -190,7 +190,7 @@ function ProductCard({
                       />
                       <div>
                         <span className="font-body text-[10px] text-white/30 uppercase tracking-wider block">
-                          Matiere
+                          Matière
                         </span>
                         <span className="font-heading text-xs font-bold text-white">
                           {product.material}
@@ -313,7 +313,7 @@ function ProductCard({
                     </div>
                     <a
                       href={`https://wa.me/33675008633?text=${encodeURIComponent(
-                        `Salut ! Je suis interesse par le ${product.ref} - ${product.name}. Est-ce que je pourrais avoir un devis ?`
+                        `Salut ! Je suis intéressé par le ${product.ref} - ${product.name}. Est-ce que je pourrais avoir un devis ?`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -382,7 +382,7 @@ function CatalogueContent() {
             className="inline-flex items-center gap-2 font-heading text-xs tracking-wider uppercase text-white/40 hover:text-[#C5FF00] transition-colors duration-200 mb-6 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" strokeWidth={2} />
-            Retour a l&apos;accueil
+            Retour à l&apos;accueil
           </Link>
 
           <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-black uppercase">
@@ -390,7 +390,7 @@ function CatalogueContent() {
           </h1>
           <p className="font-body text-sm text-white/40 mt-3 max-w-lg">
             Tous nos textiles premium personnalisables — choisissez votre
-            modele, on s&apos;occupe du flocage.
+            modèle, on s&apos;occupe du flocage.
           </p>
         </div>
       </div>
@@ -491,7 +491,7 @@ function CatalogueContent() {
         {filtered.length === 0 && (
           <div className="text-center py-20">
             <p className="font-heading text-lg text-white/30 uppercase">
-              Aucun produit dans cette categorie
+              Aucun produit dans cette catégorie
             </p>
           </div>
         )}

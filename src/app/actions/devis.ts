@@ -74,7 +74,7 @@ export async function envoyerDevis(
 
   // Piege a bots : ce champ est cache en CSS, un humain ne le remplit jamais.
   if (clean(formData.get("website"), 100) !== "") {
-    return { status: "success", message: "Demande envoyee." };
+    return { status: "success", message: "Demande envoyée." };
   }
 
   const nom = clean(formData.get("nom"), 120);
@@ -93,7 +93,7 @@ export async function envoyerDevis(
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))
     fieldErrors.email = "Email invalide";
   if (telephone.replace(/\D/g, "").length < 9)
-    fieldErrors.telephone = "Numero invalide";
+    fieldErrors.telephone = "Numéro invalide";
 
   const file = formData.get("logo");
   const hasFile = file instanceof File && file.size > 0;
@@ -103,14 +103,14 @@ export async function envoyerDevis(
     if (file.size > MAX_FILE_BYTES) {
       fieldErrors.logo = "Fichier trop lourd (4 Mo max)";
     } else if (!ALLOWED_MIME.includes(file.type) && !ALLOWED_EXT.includes(ext)) {
-      fieldErrors.logo = "Format non supporte";
+      fieldErrors.logo = "Format non supporté";
     }
   }
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "error",
-      message: "Verifie les champs en rouge.",
+      message: "Vérifie les champs en rouge.",
       fieldErrors,
       values,
       attempt,
@@ -137,7 +137,7 @@ export async function envoyerDevis(
     return {
       status: "error",
       message:
-        "L'envoi est momentanement indisponible. Passe par WhatsApp, on te repond tout de suite.",
+        "L'envoi est momentanément indisponible. Passe par WhatsApp, on te répond tout de suite.",
       values,
       attempt,
       hadFile: hasFile,
@@ -156,17 +156,17 @@ export async function envoyerDevis(
   const lignes: Array<[string, string]> = [
     ["Nom", nom],
     ["Email", email],
-    ["Telephone", telephone],
+    ["Téléphone", telephone],
     ["Structure", structure || "-"],
     ["Formule", formule || "-"],
-    ["Tailles", tailles || "Non precise"],
+    ["Tailles", tailles || "Non précisé"],
     ["Message", message || "-"],
   ];
 
   const html = `
     <div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px">
       <h2 style="margin:0 0 4px">Nouvelle demande de devis</h2>
-      <p style="color:#666;margin:0 0 20px">${escapeHtml(formule || "Formule non precisee")}</p>
+      <p style="color:#666;margin:0 0 20px">${escapeHtml(formule || "Formule non précisée")}</p>
       <table cellpadding="6" style="border-collapse:collapse;width:100%">
         ${lignes
           .map(
@@ -175,11 +175,11 @@ export async function envoyerDevis(
           )
           .join("")}
       </table>
-      <h3 style="margin:24px 0 8px">Recapitulatif de la commande</h3>
+      <h3 style="margin:24px 0 8px">Récapitulatif de la commande</h3>
       <pre style="background:#f9f9f9;padding:14px;border-radius:6px;white-space:pre-wrap;font-size:13px">${escapeHtml(recap)}</pre>
       <p style="color:#888;font-size:12px">${
         hasFile
-          ? "Le visuel du client est en piece jointe."
+          ? "Le visuel du client est en pièce jointe."
           : "Aucun visuel joint par le client."
       }</p>
     </div>
@@ -188,7 +188,7 @@ export async function envoyerDevis(
   const text = [
     ...lignes.map(([k, v]) => `${k} : ${v}`),
     "",
-    "--- Recapitulatif ---",
+    "--- Récapitulatif ---",
     recap,
   ].join("\n");
 
@@ -222,7 +222,7 @@ export async function envoyerDevis(
     return {
       status: "error",
       message:
-        "L'envoi a echoue. Reessaie, ou passe par WhatsApp si ca persiste.",
+        "L'envoi a échoué. Réessaie, ou passe par WhatsApp si ça persiste.",
       values,
       attempt,
       hadFile: hasFile,
@@ -231,7 +231,7 @@ export async function envoyerDevis(
 
   return {
     status: "success",
-    message: "Demande envoyee ! On te repond sous 2h.",
+    message: "Demande envoyée ! On te répond sous 2 h.",
     attempt,
   };
 }

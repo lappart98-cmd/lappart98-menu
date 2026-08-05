@@ -17,7 +17,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "L'Appart 98 | Le Menu de l'Atelier",
   description:
-    "Atelier textile DTF, flocage & stickers UV a Gentilly. Compose ton textile personnalise comme au comptoir.",
+    "Atelier textile DTF, flocage & stickers UV à Gentilly. Compose ton textile personnalisé comme au comptoir.",
   openGraph: {
     title: "L'Appart 98 | Le Menu de l'Atelier",
     description:

@@ -99,7 +99,7 @@ export default function Hero() {
 
           <motion.div variants={fadeUp}>
             <span className="font-heading text-2xl sm:text-3xl md:text-4xl font-black text-[#C5FF00]">
-              = TA PIECE PERSO
+              = TA PIÈCE PERSO
             </span>
           </motion.div>
 
@@ -107,7 +107,7 @@ export default function Hero() {
             variants={fadeUp}
             className="font-body text-base md:text-lg text-white/50 mt-6 max-w-xl mx-auto"
           >
-            Compose ton textile personnalise comme au comptoir : choisis ta
+            Compose ton textile personnalisé comme au comptoir : choisis ta
             formule, on s&apos;occupe du reste.
           </motion.p>
 

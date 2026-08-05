@@ -8,7 +8,7 @@ const contactItems = [
   {
     icon: MapPin,
     label: "Atelier",
-    value: "65 rue Charles Frerot, 94250 Gentilly",
+    value: "65 rue Charles Frérot, 94250 Gentilly",
     href: "https://maps.google.com/?q=65+rue+Charles+Frerot+94250+Gentilly",
   },
   {
@@ -50,8 +50,8 @@ export default function Contact() {
             ON <span className="text-[#C5FF00]">T&apos;ATTEND</span>
           </h2>
           <p className="font-body text-base text-white/50 mt-4 max-w-md mx-auto">
-            Passe nous voir a l&apos;atelier ou envoie ton projet par WhatsApp.
-            Devis gratuit, reponse en moins de 2h.
+            Passe nous voir à l&apos;atelier ou envoie ton projet par WhatsApp.
+            Devis gratuit, réponse en moins de 2 h.
           </p>
         </motion.div>
 

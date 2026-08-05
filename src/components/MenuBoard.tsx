@@ -54,27 +54,27 @@ interface CartItem {
 const textiles: TextileOption[] = [
   {
     id: "tshirt-basique",
-    name: "T-Shirt Basique 190g",
+    name: "T-Shirt Basique 190 g",
     image: "/tshirt-190g.png",
     categories: ["T-shirts Urbains", "T-shirts Techniques"],
   },
   {
     id: "tshirt-oversize",
-    name: "T-Shirt Oversize 220g",
+    name: "T-Shirt Oversize 220 g",
     image: "/tshirt-noir.png",
     categories: ["T-shirts Oversize"],
   },
   {
     id: "sweat",
-    name: "Sweat Col Rond 280g",
+    name: "Sweat Col Rond 280 g",
     image: "/sweat-noir.png",
     categories: ["Sweats col rond"],
   },
   {
     id: "hoodie-classic",
-    name: "Hoodie Classic 260g",
+    name: "Hoodie Classic 260 g",
     image: "/hoodie-kaki.png",
-    categories: ["Sweats a capuche"],
+    categories: ["Sweats à capuche"],
   },
   {
     id: "totebag",
@@ -92,7 +92,7 @@ const textiles: TextileOption[] = [
   },
   {
     id: "polo",
-    name: "Polo 210g",
+    name: "Polo 210 g",
     image: "/polo-noir.png",
     categories: ["Polos"],
   },
@@ -130,15 +130,15 @@ const techniques = [
   {
     id: "dtf",
     name: "DTF",
-    desc: "Impression haute qualite, couleurs vives, tous textiles",
-    tag: "Recommande",
+    desc: "Impression haute qualité, couleurs vives, tous textiles",
+    tag: "Recommandé",
     prix: { dos: 6, coeur: 4, logoSup: 2 },
     fraisFichier: 0,
   },
   {
     id: "broderie",
     name: "Broderie",
-    desc: "Rendu premium, ideal logos & casquettes",
+    desc: "Rendu premium, idéal logos & casquettes",
     tag: "Premium",
     prix: { dos: 14, coeur: 6, logoSup: 5 },
     // Digitalisation : facturee par visuel distinct, une seule fois
@@ -150,51 +150,51 @@ const techniques = [
 const menus: MenuItem[] = [
   {
     name: "LE P'TIT SOLO",
-    quantity: "1 A 4",
+    quantity: "1 À 4",
     min: 1,
     max: 4,
     price: 7,
     tier: "solo",
-    description: "Ta piece perso, flocage + textile au choix",
+    description: "Ta pièce perso, flocage + textile au choix",
     icon: Star,
     features: [
-      "1 a 4 pieces",
-      "Ton visuel personnalise",
+      "1 à 4 pièces",
+      "Ton visuel personnalisé",
       "Choix du textile",
       "Flocage inclus",
     ],
   },
   {
     name: "LE MAXI BEST-OF",
-    quantity: "15 A 40",
+    quantity: "15 À 40",
     min: 15,
     max: 40,
     price: 5,
     tier: "bestof",
-    description: "Le plus commande — prix imbattable",
+    description: "Le plus commandé — prix imbattable",
     icon: Trophy,
     popular: true,
     features: [
-      "15 a 40 pieces",
-      "Meilleur prix/piece",
-      "Ton visuel personnalise",
+      "15 à 40 pièces",
+      "Meilleur prix/pièce",
+      "Ton visuel personnalisé",
       "Choix du textile",
       "Flocage inclus",
     ],
   },
   {
     name: "LE MENU TEAM",
-    quantity: "5 A 14",
+    quantity: "5 À 14",
     min: 5,
     max: 14,
     price: 6,
     tier: "team",
-    description: "Parfait equipes, assos & familles",
+    description: "Parfait équipes, assos & familles",
     icon: Users,
     features: [
-      "5 a 14 pieces",
-      "Ideal equipes & assos",
-      "Ton visuel personnalise",
+      "5 à 14 pièces",
+      "Idéal équipes & assos",
+      "Ton visuel personnalisé",
       "Choix du textile",
       "Flocage inclus",
     ],
@@ -243,7 +243,7 @@ function PriceBurst({
             inverted ? "text-[#C5FF00]" : "text-[#0A0A0A]"
           }`}
         >
-          &euro;/piece*
+          &nbsp;&euro;/pièce*
         </span>
       </div>
     </div>
@@ -424,24 +424,24 @@ function Configurator({
       const tx = textiles.find((t) => t.id === c.textileId);
       const unitPrice = tx ? prixTextile(tx, tierKey, c.ref) : 0;
       const modele = c.ref
-        ? ` — modele ${c.ref} ${products.find((p) => p.ref === c.ref)?.name ?? ""}`.trimEnd()
+        ? ` — modèle ${c.ref} ${products.find((p) => p.ref === c.ref)?.name ?? ""}`.trimEnd()
         : "";
-      return `- ${c.qty}x ${t?.name}${modele} (${unitPrice}€/pc)`;
+      return `- ${c.qty}x ${t?.name}${modele} (${unitPrice} €/pc)`;
     })
     .join("\n");
 
   const flocageParts: string[] = [];
   if (item.special) {
-    flocageParts.push("Nom + numero + logo (inclus)");
+    flocageParts.push("Nom + numéro + logo (inclus)");
   } else {
-    if (selectedFlocage.dos) flocageParts.push(`Dos (${tarifs.dos}€/pc)`);
-    if (selectedFlocage.coeur) flocageParts.push(`Coeur (${tarifs.coeur}€/pc)`);
+    if (selectedFlocage.dos) flocageParts.push(`Dos (${tarifs.dos} €/pc)`);
+    if (selectedFlocage.coeur) flocageParts.push(`Cœur (${tarifs.coeur} €/pc)`);
     if (selectedFlocage.logoSup > 0)
       flocageParts.push(
-        `${selectedFlocage.logoSup} logo(s) sup. (${tarifs.logoSup}€/pc/logo)`
+        `${selectedFlocage.logoSup} logo(s) sup. (${tarifs.logoSup} €/pc/logo)`
       );
     flatFlocageItems.forEach((fi) =>
-      flocageParts.push(`${fi.name} (${fi.flocageFlat}€/pc)`)
+      flocageParts.push(`${fi.name} (${fi.flocageFlat} €/pc)`)
     );
   }
   const flocageDesc =
@@ -450,13 +450,13 @@ function Configurator({
     ? `\nFichiers broderie : ${nbLogos} x ${technique.fraisFichier}€ = ${fraisFichier}€ (une fois)`
     : "";
 
-  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "A definir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${technique.name}${ligneFichier}\nTotal pieces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
+  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "À définir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${technique.name}${ligneFichier}\nTotal pièces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
   const whatsappMsg = encodeURIComponent(devisBody);
 
   const steps = [
     { title: "LE TEXTILE", subtitle: "Choisis ton support" },
     { title: "PERSONNALISATION", subtitle: "Flocage & technique" },
-    { title: "RECAPITULATIF", subtitle: "Estimation & envoi" },
+    { title: "RÉCAPITULATIF", subtitle: "Estimation & envoi" },
   ];
 
   return (
@@ -497,8 +497,8 @@ function Configurator({
                 }`}
               >
                 {totalQty > 0
-                  ? `${totalQty} pieces · ~${totalEstimate}€`
-                  : `${item.quantity} pieces`}
+                  ? `${totalQty} pièces · ~${totalEstimate} €`
+                  : `${item.quantity} pièces`}
               </p>
             </div>
             <button
@@ -561,7 +561,7 @@ function Configurator({
                 transition={{ duration: 0.2 }}
               >
                 <p className="font-body text-sm text-white/50 mb-5">
-                  Ajoute les textiles et choisis la quantite pour chacun.
+                  Ajoute les textiles et choisis la quantité pour chacun.
                 </p>
                 <div className="flex flex-col gap-3">
                   {textiles.map((textile) => {
@@ -599,7 +599,7 @@ function Configurator({
                               {textile.name}
                             </span>
                             <span className="font-body text-xs text-[#666]">
-                              {unitPrice}&euro;/piece
+                              {unitPrice}&nbsp;&euro;/pièce
                             </span>
 
                             {modeles.length > 0 && (
@@ -616,7 +616,7 @@ function Configurator({
                                 <span className="truncate">
                                   {chosen
                                     ? `${chosen.ref} · ${chosen.name}`
-                                    : `Choisir le modele (${modeles.length})`}
+                                    : `Choisir le modèle (${modeles.length})`}
                                 </span>
                                 <ChevronDown
                                   className={`w-3 h-3 shrink-0 transition-transform duration-200 ${
@@ -688,7 +688,7 @@ function Configurator({
                                   })}
                                 </div>
                                 <p className="font-body text-[10px] text-white/30 mt-2.5 leading-relaxed">
-                                  Le modele precise ta demande. L&apos;estimation
+                                  Le modèle précise ta demande. L&apos;estimation
                                   reste basee sur la gamme
                                   {" "}&laquo;&nbsp;{textile.name}&nbsp;&raquo;
                                   {" "}&mdash; le devis final ajuste selon la
@@ -711,7 +711,7 @@ function Configurator({
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-body text-sm text-white/60">
-                        Total pieces
+                        Total pièces
                       </span>
                       <span className="font-heading text-lg font-black text-white">
                         {totalQty}
@@ -730,7 +730,7 @@ function Configurator({
                         Sous-total textile
                       </span>
                       <span className="font-heading text-lg font-black text-[#C5FF00]">
-                        {textileTotal}&euro;
+                        {textileTotal}&nbsp;&euro;
                       </span>
                     </div>
                   </motion.div>
@@ -758,7 +758,7 @@ function Configurator({
                           strokeWidth={3}
                         />
                         <span className="font-heading text-sm font-bold text-[#C5FF00]">
-                          Nom + numero (dos)
+                          Nom + numéro (dos)
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -782,7 +782,7 @@ function Configurator({
                         <div className="flex flex-col gap-3">
                           {[
                             { id: "dos", name: "Dos", price: tarifs.dos },
-                            { id: "coeur", name: "Coeur", price: tarifs.coeur },
+                            { id: "coeur", name: "Cœur", price: tarifs.coeur },
                           ].map((opt) => {
                             const isSelected =
                               selectedFlocage[
@@ -831,7 +831,7 @@ function Configurator({
                                   </span>
                                 </div>
                                 <span className="font-heading text-sm font-bold text-white/50">
-                                  +{opt.price}&euro;/piece
+                                  +{opt.price}&nbsp;&euro;/pièce
                                 </span>
                               </motion.button>
                             );
@@ -867,10 +867,10 @@ function Configurator({
                                       : "text-white"
                                   }`}
                                 >
-                                  Logo(s) supplementaire(s)
+                                  Logo(s) supplémentaire(s)
                                 </span>
                                 <span className="font-body text-xs text-white/40">
-                                  +{tarifs.logoSup}&euro;/logo/piece
+                                  +{tarifs.logoSup}&nbsp;&euro;/logo/pièce
                                 </span>
                               </div>
                             </div>
@@ -890,9 +890,9 @@ function Configurator({
                         {standardFlocagePerPiece > 0 && standardQty > 0 && (
                           <div className="mt-3 text-right">
                             <span className="font-body text-xs text-white/40">
-                              Flocage : {standardFlocagePerPiece}&euro;/piece
+                              Flocage : {standardFlocagePerPiece}&nbsp;&euro;/pièce
                               &times; {standardQty} ={" "}
-                              {standardFlocageTotal}&euro;
+                              {standardFlocageTotal}&nbsp;&euro;
                             </span>
                           </div>
                         )}
@@ -926,8 +926,8 @@ function Configurator({
                                 </span>
                               </div>
                               <span className="font-heading text-sm font-bold text-white/50">
-                                {fi.flocageFlat}&euro;/piece &times; {fi.qty} ={" "}
-                                {fi.qty * fi.flocageFlat}&euro;
+                                {fi.flocageFlat}&nbsp;&euro;/pièce &times; {fi.qty} ={" "}
+                                {fi.qty * fi.flocageFlat}&nbsp;&euro;
                               </span>
                             </div>
                           ))}
@@ -967,12 +967,12 @@ function Configurator({
                               {t.tag}
                             </span>
                             <span className="ml-auto font-body text-xs text-white/40">
-                              dos {t.prix.dos}&euro; &middot; coeur {t.prix.coeur}&euro;
+                              dos {t.prix.dos}&nbsp;&euro; &middot; cœur {t.prix.coeur}&nbsp;&euro;
                             </span>
                           </div>
                           {t.fraisFichier > 0 && (
                             <div className="mt-1.5 inline-block font-body text-[11px] text-[#C5FF00] bg-[#C5FF00]/10 rounded px-2 py-0.5">
-                              + {t.fraisFichier}&euro; de digitalisation par visuel,
+                              + {t.fraisFichier}&nbsp;&euro; de digitalisation par visuel,
                               une seule fois
                             </div>
                           )}
@@ -1007,7 +1007,7 @@ function Configurator({
                       L&apos;APPART 98
                     </p>
                     <p className="text-[11px] text-[#1a1a1a]/50 mt-1">
-                      65 rue Charles Frerot, 94250 Gentilly
+                      65 rue Charles Frérot, 94250 Gentilly
                     </p>
                     <p className="text-[11px] text-[#1a1a1a]/50">
                       06 75 00 86 33
@@ -1077,10 +1077,10 @@ function Configurator({
                                   x{c.qty}
                                 </span>
                                 <span className="w-12 text-right text-sm text-[#1a1a1a]/60">
-                                  {unitPrice}&euro;
+                                  {unitPrice}&nbsp;&euro;
                                 </span>
                                 <span className="w-14 text-right text-sm font-bold">
-                                  {c.qty * unitPrice}&euro;
+                                  {c.qty * unitPrice}&nbsp;&euro;
                                 </span>
                               </div>
                             </div>
@@ -1089,7 +1089,7 @@ function Configurator({
                     </div>
                   ) : (
                     <p className="text-sm text-[#1a1a1a]/40 text-center py-2">
-                      Aucun article ajoute
+                      Aucun article ajouté
                     </p>
                   )}
 
@@ -1097,7 +1097,7 @@ function Configurator({
                     <span className="text-[#1a1a1a]/60">
                       Sous-total textile
                     </span>
-                    <span className="font-bold">{textileTotal}&euro;</span>
+                    <span className="font-bold">{textileTotal}&nbsp;&euro;</span>
                   </div>
 
                   {!item.special && flocageTotal > 0 && (
@@ -1115,23 +1115,23 @@ function Configurator({
                             <span className="text-sm font-medium">Dos</span>
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
-                                {standardQty} &times; {tarifs.dos}&euro;
+                                {standardQty} &times; {tarifs.dos}&nbsp;&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
-                                {standardQty * tarifs.dos}&euro;
+                                {standardQty * tarifs.dos}&nbsp;&euro;
                               </span>
                             </div>
                           </div>
                         )}
                         {selectedFlocage.coeur && standardQty > 0 && (
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Coeur</span>
+                            <span className="text-sm font-medium">Cœur</span>
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
-                                {standardQty} &times; {tarifs.coeur}&euro;
+                                {standardQty} &times; {tarifs.coeur}&nbsp;&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
-                                {standardQty * tarifs.coeur}&euro;
+                                {standardQty * tarifs.coeur}&nbsp;&euro;
                               </span>
                             </div>
                           </div>
@@ -1144,11 +1144,11 @@ function Configurator({
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
                                 {standardQty} &times;{" "}
-                                {selectedFlocage.logoSup * tarifs.logoSup}&euro;
+                                {selectedFlocage.logoSup * tarifs.logoSup}&nbsp;&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
                                 {standardQty * selectedFlocage.logoSup * tarifs.logoSup}
-                                &euro;
+                                &nbsp;&euro;
                               </span>
                             </div>
                           </div>
@@ -1163,10 +1163,10 @@ function Configurator({
                             </span>
                             <div className="flex gap-4">
                               <span className="text-sm text-[#1a1a1a]/60">
-                                {fi.qty} &times; {fi.flocageFlat}&euro;
+                                {fi.qty} &times; {fi.flocageFlat}&nbsp;&euro;
                               </span>
                               <span className="w-14 text-right text-sm font-bold">
-                                {fi.qty * fi.flocageFlat}&euro;
+                                {fi.qty * fi.flocageFlat}&nbsp;&euro;
                               </span>
                             </div>
                           </div>
@@ -1177,7 +1177,7 @@ function Configurator({
                         <span className="text-[#1a1a1a]/60">
                           Sous-total flocage
                         </span>
-                        <span className="font-bold">{flocageTotal}&euro;</span>
+                        <span className="font-bold">{flocageTotal}&nbsp;&euro;</span>
                       </div>
                     </>
                   )}
@@ -1186,7 +1186,7 @@ function Configurator({
                     <>
                       <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-4" />
                       <p className="text-sm text-[#1a1a1a]/40 text-center py-2">
-                        Aucun flocage selectionne
+                        Aucun flocage sélectionné
                       </p>
                     </>
                   )}
@@ -1195,7 +1195,7 @@ function Configurator({
                     <>
                       <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-4" />
                       <div className="text-sm text-[#1a1a1a]/60 text-center">
-                        Flocage inclus : nom + numero + logo
+                        Flocage inclus : nom + numéro + logo
                       </div>
                     </>
                   )}
@@ -1208,12 +1208,12 @@ function Configurator({
                           Fichiers broderie
                           <span className="block text-[10px] text-[#1a1a1a]/50">
                             {nbLogos} visuel{nbLogos > 1 ? "s" : ""} &times;{" "}
-                            {technique.fraisFichier}&euro; &mdash; digitalisation,
+                            {technique.fraisFichier}&nbsp;&euro; &mdash; digitalisation,
                             une seule fois
                           </span>
                         </span>
                         <span className="text-sm font-bold">
-                          {fraisFichier}&euro;
+                          {fraisFichier}&nbsp;&euro;
                         </span>
                       </div>
                     </>
@@ -1225,7 +1225,7 @@ function Configurator({
                         Estimation
                       </span>
                       <span className="font-heading text-3xl font-black">
-                        ~{totalEstimate}&euro;*
+                        ~{totalEstimate}&nbsp;&euro;*
                       </span>
                     </div>
                   </div>
@@ -1233,7 +1233,7 @@ function Configurator({
                   <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-4" />
 
                   <p className="text-[10px] text-[#1a1a1a]/40 text-center leading-relaxed">
-                    *Prix indicatif HT &mdash; devis final apres validation du
+                    *Prix indicatif HT &mdash; devis final après validation du
                     BAT selon textile et visuel.
                   </p>
                   <p className="text-center mt-3 text-sm font-bold tracking-wider uppercase">
@@ -1242,7 +1242,7 @@ function Configurator({
 
                   <div className="border-t-2 border-dashed border-[#1a1a1a]/20 my-3" />
                   <p className="text-[11px] text-[#1a1a1a]/60 text-center leading-relaxed">
-                    Complete le formulaire juste en dessous pour recevoir ton
+                    Complète le formulaire juste en dessous pour recevoir ton
                     devis final et nous envoyer ton visuel.
                   </p>
 
@@ -1254,7 +1254,7 @@ function Configurator({
                     Recevoir mon devis
                   </h4>
                   <p className="font-body text-sm text-white/40 mt-1 mb-5">
-                    Reponse sous 2h. Joins ton visuel, on te renvoie un BAT.
+                    Réponse sous 2 h. Joins ton visuel, on te renvoie un BAT.
                   </p>
                   <DevisForm recap={devisBody} formule={activeMenu.name} />
                 </div>
@@ -1288,7 +1288,7 @@ function Configurator({
                 className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white px-4 py-3 font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#1da851] transition-colors duration-200 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" strokeWidth={2.5} />
-                Plutot par WhatsApp
+                Plutôt par WhatsApp
               </a>
           )}
         </div>
@@ -1317,7 +1317,7 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
         {isPopular && (
           <div className="flex justify-center mb-1.5 sm:mb-3">
             <span className="bg-[#C5FF00] text-[#0A0A0A] px-2 sm:px-5 py-1 sm:py-1.5 rounded-full font-heading text-[9px] sm:text-[11px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(197,255,0,0.3)]">
-              Le + commande
+              Le + commandé
             </span>
           </div>
         )}
@@ -1347,10 +1347,10 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
                     isPopular ? "text-[#C5FF00]" : "text-white"
                   }`}
                 >
-                  {item.price}&euro;
+                  {item.price}&nbsp;&euro;
                 </span>
                 <span className="font-body text-[11px] sm:text-sm text-white/30 -mt-0.5 sm:mt-0">
-                  /piece
+                  /pièce
                 </span>
               </div>
             </div>
@@ -1378,7 +1378,7 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
             </div>
 
             <p className="font-body text-xs font-medium text-white/50 mt-auto mb-2.5 sm:hidden">
-              {item.quantity} pieces
+              {item.quantity} pièces
             </p>
 
             <button
@@ -1422,13 +1422,13 @@ export default function MenuBoard() {
           className="text-center mb-16"
         >
           <span className="font-heading text-xs tracking-[0.3em] text-white/40 uppercase">
-            Sers-toi, c&apos;est a la commande
+            Sers-toi, c&apos;est à la commande
           </span>
           <h2 className="font-heading text-5xl sm:text-6xl md:text-7xl font-black uppercase mt-3">
             LES <span className="text-[#C5FF00]">MENUS</span>
           </h2>
           <p className="font-body text-base text-white/50 mt-4 max-w-lg mx-auto">
-            Choisis ta formule selon la quantite &mdash; clique pour composer ta
+            Choisis ta formule selon la quantité &mdash; clique pour composer ta
             commande
           </p>
         </motion.div>
@@ -1457,7 +1457,7 @@ export default function MenuBoard() {
           className="mt-12 text-center"
         >
           <p className="font-body text-xs text-white/30">
-            *Prix a partir de, hors flocage : le tarif depend du textile
+            *Prix à partir de, hors flocage : le tarif dépend du textile
             choisi et des emplacements de marquage.
           </p>
         </motion.div>

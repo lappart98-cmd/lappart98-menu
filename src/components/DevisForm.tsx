@@ -51,7 +51,7 @@ function LogoPicker({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const notice = detacheNotice
-    ? "Ton fichier a ete detache, re-joins-le avant de renvoyer."
+    ? "Ton fichier a été détaché, re-joins-le avant de renvoyer."
     : undefined;
 
   return (
@@ -199,7 +199,7 @@ export default function DevisForm({
             className={`${inputClass} ${borderFor("email")}`}
           />
         </Field>
-        <Field label="Telephone *" error={errors.telephone}>
+        <Field label="Téléphone *" error={errors.telephone}>
           <input
             name="telephone"
             type="tel"
@@ -213,7 +213,7 @@ export default function DevisForm({
         </Field>
       </div>
 
-      <Field label="Repartition des tailles" error={errors.tailles}>
+      <Field label="Répartition des tailles" error={errors.tailles}>
         <input
           name="tailles"
           defaultValue={values.tailles}
@@ -232,7 +232,7 @@ export default function DevisForm({
           name="message"
           rows={3}
           defaultValue={values.message}
-          placeholder="Couleurs, date de livraison souhaitee, details du visuel..."
+          placeholder="Couleurs, date de livraison souhaitée, détails du visuel..."
           className={`${inputClass} ${borderFor("message")} resize-none`}
         />
       </Field>

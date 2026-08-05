@@ -62,7 +62,7 @@ export default function CatalogueTeaser() {
               </div>
               <div className="mt-2 flex items-center justify-between px-1">
                 <span className="font-heading text-xs font-bold text-[#C5FF00]">
-                  {product.price.replace("A partir de ", "des ")}
+                  {product.price.replace("À partir de ", "dès ")}
                 </span>
                 <span className="font-body text-[10px] text-white/30">
                   {product.colors.length} col.

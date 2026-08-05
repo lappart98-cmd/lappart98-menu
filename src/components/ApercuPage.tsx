@@ -14,7 +14,7 @@ const champ =
 export default function ApercuPage() {
   const [etat, action, enCours] = useActionState(envoyerDevis, initial);
   const [composition, setComposition] = useState<Composition>({
-    logo: null,
+    logos: [],
     apercus: [],
     resume: "",
   });
@@ -30,7 +30,7 @@ export default function ApercuPage() {
     const input = fichiersRef.current;
     if (!input) return;
     const dt = new DataTransfer();
-    if (composition.logo) dt.items.add(composition.logo);
+    for (const l of composition.logos) dt.items.add(l);
     for (const a of composition.apercus) dt.items.add(a);
     input.files = dt.files;
   }, [composition]);
@@ -70,7 +70,7 @@ export default function ApercuPage() {
           </h2>
           <p className="font-body text-sm text-white/45 mt-3 max-w-xl">
             {composition.apercus.length > 0
-              ? `Ton visuel et ${
+              ? `${composition.logos.length > 1 ? "Tes visuels" : "Ton visuel"} et ${
                   composition.apercus.length === 1
                     ? "l'aperçu composé partiront"
                     : "les aperçus composés partiront"

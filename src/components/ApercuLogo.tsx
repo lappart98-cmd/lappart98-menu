@@ -37,6 +37,11 @@ interface Reglage {
   cm: number;
 }
 
+interface Visuel {
+  image: HTMLImageElement;
+  fichier: File;
+}
+
 function chargerImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -48,8 +53,8 @@ function chargerImage(src: string): Promise<HTMLImageElement> {
 }
 
 export interface Composition {
-  /** Le fichier d'origine depose par le client. */
-  logo: File | null;
+  /** Les fichiers d'origine deposes par le client, un par face distincte. */
+  logos: File[];
   /** Les PNG composes, une par vue marquee. */
   apercus: File[];
   /** Resume lisible des emplacements retenus, pour le courriel. */
@@ -66,8 +71,15 @@ export default function ApercuLogo({
     textiles.find((p) => p.ref === "NS332") ?? textiles[0]
   );
   const [coloris, setColoris] = useState<ProductColor>(produit.colors[0]);
-  const [logo, setLogo] = useState<HTMLImageElement | null>(null);
-  const [fichierLogo, setFichierLogo] = useState<File | null>(null);
+  // Un visuel par face : beaucoup de commandes portent un logo coeur devant
+  // et un tout autre motif dans le dos.
+  const [visuels, setVisuels] = useState<Record<Vue, Visuel | null>>({
+    face: null,
+    dos: null,
+  });
+  // Cas courant : le meme motif des deux cotes. Coche tant que le client n'a
+  // pas depose un visuel de dos distinct.
+  const [dosIdentique, setDosIdentique] = useState(true);
   const [erreurLogo, setErreurLogo] = useState<string | null>(null);
   const [vue, setVue] = useState<Vue>("face");
   const [telecharge, setTelecharge] = useState(false);
@@ -91,13 +103,20 @@ export default function ApercuLogo({
   const vetementsRef = useRef<
     Partial<Record<Vue, { image: HTMLImageElement; boite: BoiteVetement }>>
   >({});
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputsRef = useRef<Partial<Record<Vue, HTMLInputElement | null>>>({});
 
   const urls = useMemo(() => {
     const face = getColorImages(produit, coloris)[0];
     const dos = getPackshotImages(produit.ref, coloris.slug)[1];
     return { face: viaRelais(face), dos: viaRelais(dos) };
   }, [produit, coloris]);
+
+  /** Le visuel effectivement pose sur une face. */
+  const visuelPour = useCallback(
+    (cible: Vue): Visuel | null =>
+      cible === "dos" && dosIdentique ? visuels.face : visuels[cible],
+    [visuels, dosIdentique]
+  );
 
   const cle = `${urls.face}|${urls.dos}`;
   const enCours = charge?.cle !== cle;
@@ -146,7 +165,9 @@ export default function ApercuLogo({
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-      if (!logo) return true;
+      const visuel = visuelPour(cible);
+      if (!visuel) return true;
+      const logo = visuel.image;
 
       const k = canvas.width / image.naturalWidth;
       const cmParPixel = largeurVetementCm(produit) / (boite.largeur * k);
@@ -164,7 +185,7 @@ export default function ApercuLogo({
       }
       return true;
     },
-    [logo, produit, reglages]
+    [visuelPour, produit, reglages]
   );
 
   useEffect(() => {
@@ -179,7 +200,8 @@ export default function ApercuLogo({
       const utilisee = EMPLACEMENTS.some(
         (e) => e.vue === cible && reglages[e.id]?.actif
       );
-      if (!utilisee || !vetementsRef.current[cible]) continue;
+      if (!utilisee || !vetementsRef.current[cible] || !visuelPour(cible))
+        continue;
 
       const canvas = document.createElement("canvas");
       if (!composer(canvas, cible, RENDU * 2)) continue;
@@ -194,34 +216,44 @@ export default function ApercuLogo({
       );
     }
     return fichiers;
-  }, [composer, produit.ref, reglages]);
+  }, [composer, produit.ref, reglages, visuelPour]);
 
   const resume = useMemo(() => {
-    const parts = EMPLACEMENTS.filter((e) => reglages[e.id]?.actif).map(
-      (e) => `${e.nom} ${reglages[e.id].cm} cm`
-    );
+    const parts = EMPLACEMENTS.filter((e) => reglages[e.id]?.actif).map((e) => {
+      const v = e.vue === "dos" && dosIdentique ? visuels.face : visuels[e.vue];
+      const fichier = v ? ` (${v.fichier.name})` : " (aucun visuel)";
+      return `${e.nom} ${reglages[e.id].cm} cm${fichier}`;
+    });
     return parts.length
       ? `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}`
       : "";
-  }, [reglages, produit, coloris]);
+  }, [reglages, produit, coloris, visuels, dosIdentique]);
 
   // Les apercus composes remontent au formulaire, qui les joint au courriel.
+  // Les fichiers d'origine, sans doublon si le dos reprend celui du devant.
+  const originaux = useMemo(() => {
+    const liste: File[] = [];
+    if (visuels.face) liste.push(visuels.face.fichier);
+    if (!dosIdentique && visuels.dos) liste.push(visuels.dos.fichier);
+    return liste;
+  }, [visuels, dosIdentique]);
+
   useEffect(() => {
     if (!onComposition) return;
-    if (!logo || enCours) {
-      onComposition({ logo: fichierLogo, apercus: [], resume });
+    if (originaux.length === 0 || enCours) {
+      onComposition({ logos: originaux, apercus: [], resume });
       return;
     }
     let annule = false;
     exporter().then((apercus) => {
-      if (!annule) onComposition({ logo: fichierLogo, apercus, resume });
+      if (!annule) onComposition({ logos: originaux, apercus, resume });
     });
     return () => {
       annule = true;
     };
-  }, [exporter, onComposition, logo, enCours, fichierLogo, resume]);
+  }, [exporter, onComposition, enCours, originaux, resume]);
 
-  const choisirLogo = async (file: File | undefined) => {
+  const choisirVisuel = async (cible: Vue, file: File | undefined) => {
     if (!file) return;
     setErreurLogo(null);
     if (file.size > POIDS_MAX) {
@@ -232,14 +264,19 @@ export default function ApercuLogo({
       setErreurLogo("Formats acceptés : PNG, JPG, WEBP, SVG.");
       return;
     }
-    const url = URL.createObjectURL(file);
     try {
-      const img = await chargerImage(url);
-      setLogo(img);
-      setFichierLogo(file);
+      const img = await chargerImage(URL.createObjectURL(file));
+      setVisuels((p) => ({ ...p, [cible]: { image: img, fichier: file } }));
+      // Deposer un visuel de dos, c'est vouloir un motif different.
+      if (cible === "dos") setDosIdentique(false);
     } catch {
       setErreurLogo("Ce fichier n'a pas pu être lu.");
     }
+  };
+
+  const retirerVisuel = (cible: Vue) => {
+    setVisuels((p) => ({ ...p, [cible]: null }));
+    if (cible === "dos") setDosIdentique(true);
   };
 
   const telecharger = async () => {
@@ -320,9 +357,9 @@ export default function ApercuLogo({
             />
           )}
 
-          {!logo && !enCours && (
+          {!visuelPour(vue) && !enCours && (
             <button
-              onClick={() => inputRef.current?.click()}
+              onClick={() => inputsRef.current[vue]?.click()}
               className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45 backdrop-blur-[2px] cursor-pointer group"
             >
               <Upload
@@ -330,7 +367,9 @@ export default function ApercuLogo({
                 strokeWidth={2}
               />
               <span className="font-heading text-sm font-bold uppercase tracking-wider text-white">
-                Dépose ton logo
+                {vue === "face"
+                  ? "Dépose ton visuel"
+                  : "Dépose le visuel du dos"}
               </span>
               <span className="font-body text-xs text-white/60">
                 PNG, JPG, WEBP ou SVG
@@ -338,7 +377,7 @@ export default function ApercuLogo({
             </button>
           )}
 
-          {logo && marquagesSurLaVue === 0 && (
+          {visuelPour(vue) && marquagesSurLaVue === 0 && (
             <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-body text-[11px] text-black/45 bg-white/85 rounded-full px-3 py-1.5">
               Aucun marquage sur cette vue
             </span>
@@ -356,48 +395,83 @@ export default function ApercuLogo({
       <div className="space-y-6">
         <div>
           <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2.5">
-            Ton visuel
+            Tes visuels
           </span>
-          <input
-            ref={inputRef}
-            type="file"
-            accept={FORMATS_LOGO.join(",")}
-            onChange={(e) => choisirLogo(e.target.files?.[0])}
-            className="hidden"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-[#2a2a2a] font-heading text-xs font-bold uppercase tracking-wider text-white/70 hover:border-[#C5FF00]/50 hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
-            >
-              <Upload className="w-4 h-4" strokeWidth={2.5} />
-              {fichierLogo ? "Changer" : "Choisir un fichier"}
-            </button>
-            {logo && (
-              <button
-                onClick={() => {
-                  setLogo(null);
-                  setFichierLogo(null);
-                  if (inputRef.current) inputRef.current.value = "";
-                }}
-                aria-label="Retirer le visuel"
-                className="px-3 rounded-xl border border-[#2a2a2a] text-white/40 hover:text-red-400 hover:border-red-400/40 transition-colors duration-200 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+          <div className="space-y-2">
+            {(dosDisponible ? (["face", "dos"] as Vue[]) : (["face"] as Vue[])).map(
+              (cible) => {
+                const visuel = visuels[cible];
+                const herite = cible === "dos" && dosIdentique;
+                return (
+                  <div
+                    key={cible}
+                    className="rounded-xl border border-[#222] bg-[#111] p-3"
+                  >
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-white/70">
+                        {cible === "face" ? "Devant" : "Dos"}
+                      </span>
+                      {(visuel || herite) && (
+                        <span className="font-body text-[11px] text-white/30 truncate">
+                          {herite
+                            ? "reprend le visuel du devant"
+                            : visuel!.fichier.name}
+                        </span>
+                      )}
+                    </div>
+
+                    <input
+                      ref={(el) => {
+                        inputsRef.current[cible] = el;
+                      }}
+                      type="file"
+                      accept={FORMATS_LOGO.join(",")}
+                      onChange={(ev) =>
+                        choisirVisuel(cible, ev.target.files?.[0])
+                      }
+                      className="hidden"
+                    />
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => inputsRef.current[cible]?.click()}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[#2a2a2a] font-heading text-[11px] font-bold uppercase tracking-wider text-white/70 hover:border-[#C5FF00]/50 hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" strokeWidth={2.5} />
+                        {visuel
+                          ? "Changer"
+                          : cible === "dos"
+                            ? "Visuel différent"
+                            : "Choisir un fichier"}
+                      </button>
+                      {visuel && (
+                        <button
+                          onClick={() => {
+                            retirerVisuel(cible);
+                            const input = inputsRef.current[cible];
+                            if (input) input.value = "";
+                          }}
+                          aria-label={`Retirer le visuel ${cible === "face" ? "du devant" : "du dos"}`}
+                          className="px-3 rounded-lg border border-[#2a2a2a] text-white/40 hover:text-red-400 hover:border-red-400/40 transition-colors duration-200 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
             )}
           </div>
-          {fichierLogo && (
-            <p className="font-body text-[11px] text-white/35 mt-2 truncate">
-              {fichierLogo.name}
-            </p>
-          )}
+
           {erreurLogo && (
             <p className="font-body text-[11px] text-red-400 mt-2">{erreurLogo}</p>
           )}
           <p className="font-body text-[11px] text-white/25 mt-2 leading-relaxed">
-            Un PNG à fond transparent donne le rendu le plus fidèle. Ton fichier
-            reste dans ton navigateur tant que tu n&apos;envoies pas de demande.
+            Sans visuel de dos, le devant est repris à l&apos;identique. Un PNG à
+            fond transparent donne le rendu le plus fidèle. Tes fichiers restent
+            dans ton navigateur tant que tu n&apos;envoies pas de demande.
           </p>
         </div>
 
@@ -533,7 +607,7 @@ export default function ApercuLogo({
 
         <button
           onClick={telecharger}
-          disabled={!logo || actifs.length === 0}
+          disabled={originaux.length === 0 || actifs.length === 0}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#C5FF00] text-[#0A0A0A] font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#9ECC00] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors duration-200"
         >
           {telecharge ? (

@@ -313,10 +313,17 @@ export default function ApercuLogo({
   // Memoise : sans cela, le tableau vide par defaut serait recree a chaque
   // rendu et relancerait les calculs qui en dependent.
   const vuesChargees = useMemo(() => charge?.vues ?? [], [charge]);
-  const dosDisponible = vuesChargees.includes("dos");
+  // Un angle sans emplacement n'a rien a montrer : le profil d'un t-shirt ne
+  // se marque pas, son onglet ne serait qu'un detour.
+  const vuesUtiles = useMemo(
+    () => vuesChargees.filter((v) => emplacements.some((e) => e.vue === v)),
+    [vuesChargees, emplacements],
+  );
+  const dosDisponible = vuesUtiles.includes("dos");
+
   // Changer de textile peut faire disparaitre un angle : on retombe sur la
   // face sans avoir a corriger l'etat, donc sans rendu supplementaire.
-  const vueAffichee = vuesChargees.includes(vue) ? vue : "face";
+  const vueAffichee = vuesUtiles.includes(vue) ? vue : "face";
 
   // Charge les deux vues du vetement et mesure ses bords une fois pour toutes.
   useEffect(() => {
@@ -435,12 +442,12 @@ export default function ApercuLogo({
    */
   const vuesMarquees = useMemo(
     () =>
-      vuesChargees.filter(
+      vuesUtiles.filter(
         (cible) =>
           visuelPour(cible) &&
           emplacements.some((e) => e.vue === cible && reglageDe(e)?.actif),
       ),
-    [vuesChargees, visuelPour, emplacements, reglageDe],
+    [vuesUtiles, visuelPour, emplacements, reglageDe],
   );
 
   /**
@@ -640,6 +647,42 @@ export default function ApercuLogo({
       return suivant;
     });
 
+  /**
+   * Recto verso : un marquage devant et un dans le dos.
+   *
+   * C'est l'option que les clients demandent le plus souvent, et rien ne
+   * disait qu'elle etait possible : les cases devant et dos se cochent
+   * independamment, mais encore faut-il y penser. Le raccourci coche les
+   * deux, en gardant le format avant deja choisi.
+   */
+  const avant = emplacements.find((e) => e.vue === "face");
+  const arriere = emplacements.find((e) => e.vue === "dos");
+  const rectoVerso = Boolean(
+    avant &&
+    arriere &&
+    emplacements.some((e) => e.vue === "face" && reglageDe(e)?.actif) &&
+    reglageDe(arriere)?.actif,
+  );
+
+  const basculerRectoVerso = () =>
+    setReglages((prev) => {
+      if (!avant || !arriere) return prev;
+      const cleDos = cleReglage(famille, arriere.id);
+      if (rectoVerso)
+        return { ...prev, [cleDos]: { ...prev[cleDos], actif: false } };
+
+      const suivant = { ...prev, [cleDos]: { ...prev[cleDos], actif: true } };
+      // Aucun format avant retenu : on prend le premier de la famille.
+      const dejaDevant = emplacements.some(
+        (e) => e.vue === "face" && prev[cleReglage(famille, e.id)]?.actif,
+      );
+      if (!dejaDevant) {
+        const cleFace = cleReglage(famille, avant.id);
+        suivant[cleFace] = { ...prev[cleFace], actif: true };
+      }
+      return suivant;
+    });
+
   const regler = (e: Emplacement, cm: number) =>
     setReglages((p) => {
       const cle = cleReglage(famille, e.id);
@@ -653,9 +696,9 @@ export default function ApercuLogo({
     <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-10">
       {/* ── Aperçu ─────────────────────────────────────────────── */}
       <div>
-        {vuesChargees.length > 1 && (
+        {vuesUtiles.length > 1 && (
           <div className="flex gap-2 mb-3">
-            {vuesChargees.map((v) => {
+            {vuesUtiles.map((v) => {
               const n = actifs.filter((e) => e.vue === v).length;
               return (
                 <button
@@ -814,10 +857,48 @@ export default function ApercuLogo({
           <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2.5">
             Emplacements
           </span>
+
+          {avant && arriere && (
+            <button
+              onClick={basculerRectoVerso}
+              role="switch"
+              aria-checked={rectoVerso}
+              className={`w-full flex items-center gap-3 p-3 mb-2 rounded-xl border transition-colors duration-200 cursor-pointer ${
+                rectoVerso
+                  ? "border-[#C5FF00] bg-[#C5FF00]/10"
+                  : "border-[#222] bg-[#111] hover:border-white/25"
+              }`}
+            >
+              <span
+                className={`w-9 h-5 rounded-full relative shrink-0 transition-colors duration-200 ${
+                  rectoVerso ? "bg-[#C5FF00]" : "bg-white/15"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 w-3 h-3 rounded-full transition-all duration-200 ${
+                    rectoVerso ? "left-5 bg-[#0A0A0A]" : "left-1 bg-white/60"
+                  }`}
+                />
+              </span>
+              <span className="text-left">
+                <span
+                  className={`font-heading text-sm font-bold uppercase block ${
+                    rectoVerso ? "text-[#C5FF00]" : "text-white"
+                  }`}
+                >
+                  Recto verso
+                </span>
+                <span className="font-body text-[11px] text-white/35">
+                  Un marquage devant et un dans le dos.
+                </span>
+              </span>
+            </button>
+          )}
+
           <div className="space-y-2">
             {emplacements.map((e) => {
               const r = reglageDe(e);
-              const indisponible = !vuesChargees.includes(e.vue);
+              const indisponible = !vuesUtiles.includes(e.vue);
               return (
                 <div
                   key={e.id}

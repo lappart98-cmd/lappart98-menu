@@ -86,18 +86,6 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       aide: "Le format qui se voit de loin.",
     },
     {
-      id: "manche",
-      nom: "Manche",
-      vue: "profil",
-      cmDefaut: 7,
-      cmMin: 4,
-      cmMax: 10,
-      hauteurMaxCm: 9,
-      centreX: 0.52,
-      hautY: 0.22,
-      aide: "Petit marquage sur la manche.",
-    },
-    {
       id: "dos",
       nom: "Dos",
       vue: "dos",
@@ -149,18 +137,6 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       centreX: 0.5,
       hautY: 0.23,
       aide: "Le format qui se voit de loin.",
-    },
-    {
-      id: "manche",
-      nom: "Manche",
-      vue: "profil",
-      cmDefaut: 7,
-      cmMin: 4,
-      cmMax: 10,
-      hauteurMaxCm: 9,
-      centreX: 0.52,
-      hautY: 0.24,
-      aide: "Petit marquage sur la manche.",
     },
     {
       id: "dos",
@@ -215,18 +191,6 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       centreX: 0.5,
       hautY: 0.27,
       aide: "Limité par la poche kangourou.",
-    },
-    {
-      id: "manche",
-      nom: "Manche",
-      vue: "profil",
-      cmDefaut: 7,
-      cmMin: 4,
-      cmMax: 10,
-      hauteurMaxCm: 9,
-      centreX: 0.52,
-      hautY: 0.28,
-      aide: "Petit marquage sur la manche.",
     },
     {
       id: "dos",
@@ -301,8 +265,10 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmMax: 7,
       // Le panneau lateral est court : la hauteur limite avant la couture.
       hauteurMaxCm: 3.5,
-      centreX: 0.56,
-      hautY: 0.44,
+      // Bas du panneau, juste au-dessus de la couture de visiere : c'est la
+      // que se pose un marquage de cote, pas au milieu de la calotte.
+      centreX: 0.54,
+      hautY: 0.68,
       ancrage: "centre",
       aide: "Petit marquage sur le panneau latéral.",
     },
@@ -313,10 +279,11 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 6,
       cmMin: 3,
       cmMax: 8,
-      // Au-dessus de la fermeture, qui occupe le bas du panneau arriere.
+      // Juste au-dessus de la fermeture, qui ouvre le bas du panneau arriere
+      // vers 58 % de la hauteur.
       hauteurMaxCm: 3.5,
       centreX: 0.5,
-      hautY: 0.42,
+      hautY: 0.52,
       ancrage: "centre",
       aide: "Au-dessus de la fermeture.",
     },

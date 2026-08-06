@@ -13,6 +13,7 @@ import {
 } from "@/data/products";
 import {
   emplacementsDe,
+  photosPorteesDe,
   familleDe,
   largeurVetementCm,
   mesurerVetement,
@@ -209,6 +210,7 @@ export default function ApercuLogo({
   const [erreurLogo, setErreurLogo] = useState<string | null>(null);
   const [vue, setVue] = useState<Vue>("face");
   const [telecharge, setTelecharge] = useState(false);
+  const [rendureel, setRenduReel] = useState(false);
   // Un seul etat pour le chargement, pose une fois les deux vues pretes.
   // Le deduire evite un setState synchrone dans l'effet, qui relancerait un
   // rendu avant meme que le chargement ait commence.
@@ -251,7 +253,20 @@ export default function ApercuLogo({
     [reglages, famille]
   );
 
+  const portees = photosPorteesDe(produit.ref);
+  const rendureelPossible = Boolean(portees);
+  // Le mode s'eteint tout seul sur un textile sans photo portee, sans avoir
+  // a corriger l'etat.
+  const porte = rendureel && rendureelPossible;
+
   const urls = useMemo(() => {
+    if (rendureel && portees) {
+      return {
+        face: portees.face ? viaRelais(portees.face.url) : null,
+        profil: null,
+        dos: portees.dos ? viaRelais(portees.dos.url) : null,
+      };
+    }
     const face = getColorImages(produit, coloris)[0];
     // Seul Toptex publie le dos (-B) et le profil (-S).
     const autres =
@@ -263,7 +278,7 @@ export default function ApercuLogo({
       profil: autres ? viaRelais(autres[2]) : null,
       dos: autres ? viaRelais(autres[1]) : null,
     };
-  }, [produit, coloris]);
+  }, [produit, coloris, rendureel, portees]);
 
   /** Le visuel effectivement pose sur une face. */
   const visuelPour = useCallback(
@@ -343,7 +358,16 @@ export default function ApercuLogo({
       const ctx = canvas.getContext("2d");
       if (!ctx || !vetement) return false;
 
-      const { image, boite } = vetement;
+      const { image } = vetement;
+      const releve = porte ? portees?.[cible]?.boite : null;
+      const boite: BoiteVetement = releve
+        ? {
+            x: releve.x * image.naturalWidth,
+            y: releve.y * image.naturalHeight,
+            largeur: releve.largeur * image.naturalWidth,
+            hauteur: releve.hauteur * image.naturalHeight,
+          }
+        : vetement.boite;
       const ratio = image.naturalHeight / image.naturalWidth;
       canvas.width = cote;
       canvas.height = Math.round(cote * ratio);
@@ -360,13 +384,23 @@ export default function ApercuLogo({
       // Les trois packshots sont pris a la meme echelle : la hauteur du
       // vetement y est identique. On calibre donc les centimetres sur la vue
       // de face, ou la largeur reelle est connue, et on reporte le rapport.
-      const face = vetementsRef.current.face;
-      const reference = face ?? vetement;
-      const rapport = reference.boite.hauteur
-        ? boite.hauteur / reference.boite.hauteur
-        : 1;
-      const cmParPixel =
-        largeurVetementCm(produit) / (reference.boite.largeur * k * rapport);
+      let cmParPixel: number;
+      if (releve) {
+        // Chaque photo portee a son propre cadrage : la boite relevee porte
+        // deja la largeur du vetement, on s'y fie directement.
+        cmParPixel = largeurVetementCm(produit) / (boite.largeur * k);
+      } else {
+        // Les trois packshots sont pris a la meme echelle : la hauteur du
+        // vetement y est identique. On calibre donc les centimetres sur la
+        // vue de face, ou la largeur reelle est connue, et on reporte.
+        const face = vetementsRef.current.face;
+        const reference = face ?? vetement;
+        const rapport = reference.boite.hauteur
+          ? boite.hauteur / reference.boite.hauteur
+          : 1;
+        cmParPixel =
+          largeurVetementCm(produit) / (reference.boite.largeur * k * rapport);
+      }
 
       for (const e of emplacements) {
         if (e.vue !== cible) continue;
@@ -399,7 +433,7 @@ export default function ApercuLogo({
       }
       return true;
     },
-    [visuelPour, produit, emplacements, reglageDe]
+    [visuelPour, produit, emplacements, reglageDe, porte, portees]
   );
 
   useEffect(() => {
@@ -510,10 +544,10 @@ export default function ApercuLogo({
       const fichier = v ? ` (${v.fichier.name})` : " (aucun visuel)";
       return `${e.nom} ${largeurEffective(e, reglageDe(e).cm)} cm${fichier}`;
     });
-    return parts.length
-      ? `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}`
-      : "";
-  }, [emplacements, reglageDe, largeurEffective, produit, coloris, visuels, dosIdentique]);
+    if (!parts.length) return "";
+    const base = porte ? " (aperçu sur photo portée)" : "";
+    return `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}${base}`;
+  }, [emplacements, reglageDe, largeurEffective, produit, coloris, visuels, dosIdentique, porte]);
 
   // Les apercus composes remontent au formulaire, qui les joint au courriel.
   // Les fichiers d'origine, sans doublon si le dos reprend celui du devant.
@@ -615,6 +649,41 @@ export default function ApercuLogo({
     <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-10">
       {/* ── Aperçu ─────────────────────────────────────────────── */}
       <div>
+        {rendureelPossible && (
+          <div className="flex items-center gap-2.5 mb-3">
+            <button
+              onClick={() => setRenduReel((v) => !v)}
+              role="switch"
+              aria-checked={rendureel}
+              className={`flex items-center gap-2.5 px-3.5 py-2 rounded-lg border transition-colors duration-200 cursor-pointer ${
+                rendureel
+                  ? "border-[#C5FF00] bg-[#C5FF00]/10 text-[#C5FF00]"
+                  : "border-[#2a2a2a] text-white/50 hover:border-white/30"
+              }`}
+            >
+              <span
+                className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${
+                  rendureel ? "bg-[#C5FF00]" : "bg-white/15"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 w-3 h-3 rounded-full bg-[#0A0A0A] transition-all duration-200 ${
+                    rendureel ? "left-4.5" : "left-0.5 bg-white/60"
+                  }`}
+                />
+              </span>
+              <span className="font-heading text-xs font-bold uppercase tracking-wider">
+                Rendu réel
+              </span>
+            </button>
+            {rendureel && portees && (
+              <span className="font-body text-[11px] text-white/35">
+                porté en {portees.face?.coloris ?? portees.dos?.coloris}
+              </span>
+            )}
+          </div>
+        )}
+
         {vuesChargees.length > 1 && (
           <div className="flex gap-2 mb-3">
             {vuesChargees.map((v) => {
@@ -678,9 +747,9 @@ export default function ApercuLogo({
         </div>
 
         <p className="font-body text-[11px] text-white/30 mt-3 leading-relaxed">
-          Simulation indicative : les proportions sont calculées sur une largeur
-          de vêtement moyenne, la teinte dépend de ton écran. Le BAT reste la
-          référence avant production.
+          {porte
+            ? `Photo du fournisseur, portée en ${portees?.face?.coloris ?? portees?.dos?.coloris} : elle montre le tombé et l'échelle du marquage, pas le coloris que tu as choisi. Repasse en packshot pour juger la teinte.`
+            : "Simulation indicative : les proportions sont calculées sur une largeur de vêtement moyenne, la teinte dépend de ton écran. Le BAT reste la référence avant production."}
         </p>
       </div>
 
@@ -897,7 +966,7 @@ export default function ApercuLogo({
 
           {/* Sans photo par coloris, les pastilles ne feraient que promettre un
               changement qui n'arrive pas. On annonce le coloris du visuel. */}
-          {produit.packshotSource !== "none" && (
+          {produit.packshotSource !== "none" && !porte && (
             <div className="flex flex-wrap gap-2 mt-3">
               {produit.colors.map((c) => (
                 <button

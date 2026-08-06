@@ -378,3 +378,72 @@ export function mesurerVetement(image: HTMLImageElement): BoiteVetement {
   );
   return parBlanc ?? parAlpha ?? entier;
 }
+
+/**
+ * Photos portees, pour l'option « rendu reel ».
+ *
+ * Un packshot est net mais mort ; une photo portee montre le tombe, les plis
+ * et l'echelle reelle du marquage sur quelqu'un. Le relief calcule a partir
+ * de l'image y gagne beaucoup : un vetement porte a des plis, un packshot
+ * presque pas.
+ *
+ * La boite decrit le vetement dans la photo, en fractions de l'image, du haut
+ * des epaules au bas du vetement et d'un bord de manche a l'autre. Elle joue
+ * le meme role que la boite mesuree sur un packshot, si bien que les
+ * emplacements definis plus haut s'y appliquent sans changement.
+ *
+ * Ces boites sont relevees a la main sur chaque photo : le detourage par le
+ * canal alpha ne marche pas ici, la photo a un fond et un mannequin.
+ */
+export interface PhotoPortee {
+  url: string;
+  boite: BoiteVetement;
+  /** Coloris reellement photographie, a annoncer pour ne pas tromper. */
+  coloris: string;
+}
+
+const PICTURES = "https://cdn.toptex.com/pictures";
+
+export const PHOTOS_PORTEES: Record<
+  string,
+  Partial<Record<Vue, PhotoPortee>>
+> = {
+  NS332: {
+    face: {
+      url: `${PICTURES}/NS332-2_2025.jpg`,
+      boite: { x: 0.19, y: 0.24, largeur: 0.61, hauteur: 0.44 },
+      coloris: "Organic Khaki",
+    },
+    dos: {
+      url: `${PICTURES}/NS332-4_2025.jpg`,
+      boite: { x: 0.135, y: 0.275, largeur: 0.64, hauteur: 0.48 },
+      coloris: "Organic Khaki",
+    },
+  },
+  NS443: {
+    face: {
+      url: `${PICTURES}/NS443-3_2026.jpg`,
+      boite: { x: 0.22, y: 0.26, largeur: 0.46, hauteur: 0.42 },
+      coloris: "Navy Blue",
+    },
+    dos: {
+      url: `${PICTURES}/NS443-7_2026.jpg`,
+      boite: { x: 0.24, y: 0.26, largeur: 0.48, hauteur: 0.45 },
+      coloris: "Navy Blue",
+    },
+  },
+  NS444: {
+    face: {
+      url: `${PICTURES}/NS444-4_2026.jpg`,
+      boite: { x: 0.29, y: 0.28, largeur: 0.39, hauteur: 0.44 },
+      coloris: "Black",
+    },
+    dos: {
+      url: `${PICTURES}/NS444-7_2026.jpg`,
+      boite: { x: 0.28, y: 0.24, largeur: 0.42, hauteur: 0.48 },
+      coloris: "Black",
+    },
+  },
+};
+
+export const photosPorteesDe = (ref: string) => PHOTOS_PORTEES[ref];

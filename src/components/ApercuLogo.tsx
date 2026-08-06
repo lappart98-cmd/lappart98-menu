@@ -13,7 +13,6 @@ import {
 } from "@/data/products";
 import {
   emplacementsDe,
-  photosPorteesDe,
   familleDe,
   largeurVetementCm,
   mesurerVetement,
@@ -24,7 +23,8 @@ import {
 } from "@/lib/apercu";
 
 /** Le relais rend l'image de meme origine, seule condition pour l'exporter. */
-const viaRelais = (url: string) => `/api/packshot?url=${encodeURIComponent(url)}`;
+const viaRelais = (url: string) =>
+  `/api/packshot?url=${encodeURIComponent(url)}`;
 
 /** Cote du rendu a l'ecran. L'export double cette resolution. */
 const RENDU = 900;
@@ -35,10 +35,10 @@ const POIDS_MAX = 6 * 1024 * 1024;
 // Un article par famille : proposer les vingt references du catalogue noyait
 // le choix, alors que la geometrie du marquage ne depend que de la famille.
 // Changer un modele ici suffit a changer celui de l'apercu.
-const REFERENCES = ["NS332", "NS443", "NS444", "KP162"];
+const REFERENCES = ["NS332", "NS443", "NS444", "KP162", "KI3223"];
 
-const textiles = REFERENCES.map(
-  (ref) => products.find((p) => p.ref === ref)!
+const textiles = REFERENCES.map((ref) =>
+  products.find((p) => p.ref === ref)!,
 ).filter(Boolean);
 
 const ETIQUETTE_VUE: Record<Vue, string> = {
@@ -52,6 +52,7 @@ const ETIQUETTE_FAMILLE: Record<Famille, string> = {
   sweat: "Sweat col rond",
   hoodie: "Sweat à capuche",
   casquette: "Casquette",
+  totebag: "Tote bag",
 };
 
 /** Un reglage par famille et par emplacement : changer de textile ne perd rien. */
@@ -67,11 +68,19 @@ interface Visuel {
   fichier: File;
 }
 
+/** Dimensions du pictogramme « image absente » de Toptex. */
+const PLACEHOLDER = { l: 1900, h: 2848 };
+
 function chargerImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
+    img.onload = () =>
+      // Second filet, si le fournisseur omet l'en-tete de poids que le relais
+      // controle : le pictogramme se reconnait aussi a ses dimensions.
+      img.naturalWidth === PLACEHOLDER.l && img.naturalHeight === PLACEHOLDER.h
+        ? reject(new Error(`visuel absent : ${src}`))
+        : resolve(img);
     img.onerror = () => reject(new Error(src));
     img.src = src;
   });
@@ -94,7 +103,7 @@ function poserDansLeTissu(
   ctx: CanvasRenderingContext2D,
   calque: HTMLCanvasElement,
   logo: HTMLImageElement,
-  rect: { x: number; y: number; l: number; h: number }
+  rect: { x: number; y: number; l: number; h: number },
 ) {
   const x = Math.round(rect.x);
   const y = Math.round(rect.y);
@@ -130,7 +139,9 @@ function poserDansLeTissu(
   for (let i = 0; i < l * h; i++) {
     const p = i * 4;
     const v =
-      0.2126 * fond.data[p] + 0.7152 * fond.data[p + 1] + 0.0722 * fond.data[p + 2];
+      0.2126 * fond.data[p] +
+      0.7152 * fond.data[p + 1] +
+      0.0722 * fond.data[p + 2];
     lum[i] = v;
     somme += v;
   }
@@ -147,10 +158,12 @@ function poserDansLeTissu(
       const n = j * l + i;
 
       const gx =
-        (lum[j * l + Math.min(l - 1, i + 1)] - lum[j * l + Math.max(0, i - 1)]) /
+        (lum[j * l + Math.min(l - 1, i + 1)] -
+          lum[j * l + Math.max(0, i - 1)]) /
         255;
       const gy =
-        (lum[Math.min(h - 1, j + 1) * l + i] - lum[Math.max(0, j - 1) * l + i]) /
+        (lum[Math.min(h - 1, j + 1) * l + i] -
+          lum[Math.max(0, j - 1) * l + i]) /
         255;
 
       const si = Math.round(i - gx * amplitude);
@@ -163,7 +176,7 @@ function poserDansLeTissu(
 
       const ombre = Math.max(
         0.5,
-        Math.min(1.5, 1 + (lum[n] / moyenne - 1) * FORCE_OMBRE)
+        Math.min(1.5, 1 + (lum[n] / moyenne - 1) * FORCE_OMBRE),
       );
       const dst = n * 4;
       sortie.data[dst] = Math.min(255, source.data[src] * ombre);
@@ -194,7 +207,7 @@ export default function ApercuLogo({
   onComposition?: (composition: Composition) => void;
 }) {
   const [produit, setProduit] = useState<Product>(
-    textiles.find((p) => p.ref === "NS332") ?? textiles[0]
+    textiles.find((p) => p.ref === "NS332") ?? textiles[0],
   );
   const [coloris, setColoris] = useState<ProductColor>(produit.colors[0]);
   // Un visuel par face : beaucoup de commandes portent un logo coeur devant
@@ -210,12 +223,11 @@ export default function ApercuLogo({
   const [erreurLogo, setErreurLogo] = useState<string | null>(null);
   const [vue, setVue] = useState<Vue>("face");
   const [telecharge, setTelecharge] = useState(false);
-  const [rendureel, setRenduReel] = useState(false);
   // Un seul etat pour le chargement, pose une fois les deux vues pretes.
   // Le deduire evite un setState synchrone dans l'effet, qui relancerait un
   // rendu avant meme que le chargement ait commence.
   const [charge, setCharge] = useState<{ cle: string; vues: Vue[] } | null>(
-    null
+    null,
   );
 
   const [reglages, setReglages] = useState<Record<string, Reglage>>(() => {
@@ -243,30 +255,17 @@ export default function ApercuLogo({
   const calqueRef = useRef<HTMLCanvasElement>(
     typeof document === "undefined"
       ? (null as unknown as HTMLCanvasElement)
-      : document.createElement("canvas")
+      : document.createElement("canvas"),
   );
 
   const famille = familleDe(produit);
   const emplacements = emplacementsDe(famille);
   const reglageDe = useCallback(
     (e: Emplacement) => reglages[cleReglage(famille, e.id)],
-    [reglages, famille]
+    [reglages, famille],
   );
 
-  const portees = photosPorteesDe(produit.ref);
-  const rendureelPossible = Boolean(portees);
-  // Le mode s'eteint tout seul sur un textile sans photo portee, sans avoir
-  // a corriger l'etat.
-  const porte = rendureel && rendureelPossible;
-
   const urls = useMemo(() => {
-    if (rendureel && portees) {
-      return {
-        face: portees.face ? viaRelais(portees.face.url) : null,
-        profil: null,
-        dos: portees.dos ? viaRelais(portees.dos.url) : null,
-      };
-    }
     const face = getColorImages(produit, coloris)[0];
     // Seul Toptex publie le dos (-B) et le profil (-S).
     const autres =
@@ -278,7 +277,7 @@ export default function ApercuLogo({
       profil: autres ? viaRelais(autres[2]) : null,
       dos: autres ? viaRelais(autres[1]) : null,
     };
-  }, [produit, coloris, rendureel, portees]);
+  }, [produit, coloris]);
 
   /** Le visuel effectivement pose sur une face. */
   const visuelPour = useCallback(
@@ -289,7 +288,7 @@ export default function ApercuLogo({
       if (cible === "dos" && dosIdentique) return visuels.face;
       return visuels[cible];
     },
-    [visuels, dosIdentique]
+    [visuels, dosIdentique],
   );
 
   /**
@@ -301,13 +300,12 @@ export default function ApercuLogo({
     (e: Emplacement, cm: number) => {
       const visuel = visuelPour(e.vue);
       if (!visuel || !e.hauteurMaxCm) return cm;
-      const proportion =
-        visuel.image.naturalHeight / visuel.image.naturalWidth;
+      const proportion = visuel.image.naturalHeight / visuel.image.naturalWidth;
       const hauteurCm = cm * proportion;
       if (hauteurCm <= e.hauteurMaxCm) return cm;
       return Math.round((e.hauteurMaxCm / proportion) * 10) / 10;
     },
-    [visuelPour]
+    [visuelPour],
   );
 
   const cle = `${urls.face}|${urls.profil}|${urls.dos}`;
@@ -340,7 +338,10 @@ export default function ApercuLogo({
         Vue,
         HTMLImageElement,
       ][]) {
-        vetementsRef.current[cible] = { image: img, boite: mesurerVetement(img) };
+        vetementsRef.current[cible] = {
+          image: img,
+          boite: mesurerVetement(img),
+        };
         vues.push(cible);
       }
       setCharge({ cle, vues });
@@ -358,16 +359,7 @@ export default function ApercuLogo({
       const ctx = canvas.getContext("2d");
       if (!ctx || !vetement) return false;
 
-      const { image } = vetement;
-      const releve = porte ? portees?.[cible]?.boite : null;
-      const boite: BoiteVetement = releve
-        ? {
-            x: releve.x * image.naturalWidth,
-            y: releve.y * image.naturalHeight,
-            largeur: releve.largeur * image.naturalWidth,
-            hauteur: releve.hauteur * image.naturalHeight,
-          }
-        : vetement.boite;
+      const { image, boite } = vetement;
       const ratio = image.naturalHeight / image.naturalWidth;
       canvas.width = cote;
       canvas.height = Math.round(cote * ratio);
@@ -384,24 +376,17 @@ export default function ApercuLogo({
       // Les trois packshots sont pris a la meme echelle : la hauteur du
       // vetement y est identique. On calibre donc les centimetres sur la vue
       // de face, ou la largeur reelle est connue, et on reporte le rapport.
-      let cmParPixel: number;
-      if (releve) {
-        // Chaque photo portee a son propre cadrage : la boite relevee porte
-        // deja la largeur du vetement, on s'y fie directement.
-        cmParPixel = largeurVetementCm(produit) / (boite.largeur * k);
-      } else {
-        // Les packshots d'une meme reference sont pris a la meme echelle : le
-        // rapport pixels/centimetre y est constant. On le calibre donc une
-        // fois sur la vue de face, ou la largeur reelle est connue, et on
-        // l'applique tel quel aux autres vues.
-        //
-        // Le reporter au prorata des hauteurs serait faux : un t-shirt fait
-        // la meme hauteur de face et de profil, mais une casquette non.
-        const reference = vetementsRef.current.face ?? vetement;
-        const kFace = canvas.width / reference.image.naturalWidth;
-        cmParPixel =
-          largeurVetementCm(produit) / (reference.boite.largeur * kFace);
-      }
+      // Les packshots d'une meme reference sont pris a la meme echelle : le
+      // rapport pixels/centimetre y est constant. On le calibre donc une fois
+      // sur la vue de face, ou la largeur reelle est connue, et on l'applique
+      // tel quel aux autres vues.
+      //
+      // Le reporter au prorata des hauteurs serait faux : un t-shirt fait la
+      // meme hauteur de face et de profil, mais une casquette non.
+      const reference = vetementsRef.current.face ?? vetement;
+      const kFace = canvas.width / reference.image.naturalWidth;
+      const cmParPixel =
+        largeurVetementCm(produit) / (reference.boite.largeur * kFace);
 
       for (const e of emplacements) {
         if (e.vue !== cible) continue;
@@ -434,7 +419,7 @@ export default function ApercuLogo({
       }
       return true;
     },
-    [visuelPour, produit, emplacements, reglageDe, porte, portees]
+    [visuelPour, produit, emplacements, reglageDe],
   );
 
   useEffect(() => {
@@ -453,9 +438,9 @@ export default function ApercuLogo({
       vuesChargees.filter(
         (cible) =>
           visuelPour(cible) &&
-          emplacements.some((e) => e.vue === cible && reglageDe(e)?.actif)
+          emplacements.some((e) => e.vue === cible && reglageDe(e)?.actif),
       ),
-    [vuesChargees, visuelPour, emplacements, reglageDe]
+    [vuesChargees, visuelPour, emplacements, reglageDe],
   );
 
   /**
@@ -503,7 +488,7 @@ export default function ApercuLogo({
       ctx.fillText(
         `${produit.ref} · ${produit.name}`,
         marge,
-        hauteurVues + bandeau * 0.36
+        hauteurVues + bandeau * 0.36,
       );
       ctx.fillStyle = "#FFFFFF";
       ctx.font = `${Math.round(bandeau * 0.26)}px sans-serif`;
@@ -516,12 +501,20 @@ export default function ApercuLogo({
       ctx.fillText(
         `${teinte}  ·  ${details}`,
         marge,
-        hauteurVues + bandeau * 0.72
+        hauteurVues + bandeau * 0.72,
       );
 
       return planche;
     },
-    [composer, vuesMarquees, emplacements, reglageDe, largeurEffective, produit, coloris]
+    [
+      composer,
+      vuesMarquees,
+      emplacements,
+      reglageDe,
+      largeurEffective,
+      produit,
+      coloris,
+    ],
   );
 
   /** La planche, prete a joindre ou a telecharger. */
@@ -531,7 +524,7 @@ export default function ApercuLogo({
     const blob = await new Promise<Blob | null>((r) =>
       // JPEG plutot que PNG : une planche de trois vues en PNG depasse les
       // 4 Mo acceptes en piece jointe, pour un gain invisible sur un apercu.
-      planche.toBlob(r, "image/jpeg", 0.92)
+      planche.toBlob(r, "image/jpeg", 0.92),
     );
     if (!blob) return [];
     return [
@@ -540,15 +533,25 @@ export default function ApercuLogo({
   }, [composerPlanche, produit.ref]);
 
   const resume = useMemo(() => {
-    const parts = emplacements.filter((e) => reglageDe(e)?.actif).map((e) => {
-      const v = e.vue === "dos" && dosIdentique ? visuels.face : visuels[e.vue];
-      const fichier = v ? ` (${v.fichier.name})` : " (aucun visuel)";
-      return `${e.nom} ${largeurEffective(e, reglageDe(e).cm)} cm${fichier}`;
-    });
+    const parts = emplacements
+      .filter((e) => reglageDe(e)?.actif)
+      .map((e) => {
+        const v =
+          e.vue === "dos" && dosIdentique ? visuels.face : visuels[e.vue];
+        const fichier = v ? ` (${v.fichier.name})` : " (aucun visuel)";
+        return `${e.nom} ${largeurEffective(e, reglageDe(e).cm)} cm${fichier}`;
+      });
     if (!parts.length) return "";
-    const base = porte ? " (aperçu sur photo portée)" : "";
-    return `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}${base}`;
-  }, [emplacements, reglageDe, largeurEffective, produit, coloris, visuels, dosIdentique, porte]);
+    return `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}`;
+  }, [
+    emplacements,
+    reglageDe,
+    largeurEffective,
+    produit,
+    coloris,
+    visuels,
+    dosIdentique,
+  ]);
 
   // Les apercus composes remontent au formulaire, qui les joint au courriel.
   // Les fichiers d'origine, sans doublon si le dos reprend celui du devant.
@@ -604,7 +607,7 @@ export default function ApercuLogo({
     const planche = composerPlanche(RENDU * 2);
     if (!planche) return;
     const blob = await new Promise<Blob | null>((r) =>
-      planche.toBlob(r, "image/jpeg", 0.95)
+      planche.toBlob(r, "image/jpeg", 0.95),
     );
     if (!blob) return;
 
@@ -650,41 +653,6 @@ export default function ApercuLogo({
     <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-10">
       {/* ── Aperçu ─────────────────────────────────────────────── */}
       <div>
-        {rendureelPossible && (
-          <div className="flex items-center gap-2.5 mb-3">
-            <button
-              onClick={() => setRenduReel((v) => !v)}
-              role="switch"
-              aria-checked={rendureel}
-              className={`flex items-center gap-2.5 px-3.5 py-2 rounded-lg border transition-colors duration-200 cursor-pointer ${
-                rendureel
-                  ? "border-[#C5FF00] bg-[#C5FF00]/10 text-[#C5FF00]"
-                  : "border-[#2a2a2a] text-white/50 hover:border-white/30"
-              }`}
-            >
-              <span
-                className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${
-                  rendureel ? "bg-[#C5FF00]" : "bg-white/15"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-3 h-3 rounded-full bg-[#0A0A0A] transition-all duration-200 ${
-                    rendureel ? "left-4.5" : "left-0.5 bg-white/60"
-                  }`}
-                />
-              </span>
-              <span className="font-heading text-xs font-bold uppercase tracking-wider">
-                Rendu réel
-              </span>
-            </button>
-            {rendureel && portees && (
-              <span className="font-body text-[11px] text-white/35">
-                porté en {portees.face?.coloris ?? portees.dos?.coloris}
-              </span>
-            )}
-          </div>
-        )}
-
         {vuesChargees.length > 1 && (
           <div className="flex gap-2 mb-3">
             {vuesChargees.map((v) => {
@@ -748,9 +716,9 @@ export default function ApercuLogo({
         </div>
 
         <p className="font-body text-[11px] text-white/30 mt-3 leading-relaxed">
-          {porte
-            ? `Photo du fournisseur, portée en ${portees?.face?.coloris ?? portees?.dos?.coloris} : elle montre le tombé et l'échelle du marquage, pas le coloris que tu as choisi. Repasse en packshot pour juger la teinte.`
-            : "Simulation indicative : les proportions sont calculées sur une largeur de vêtement moyenne, la teinte dépend de ton écran. Le BAT reste la référence avant production."}
+          Simulation indicative : les proportions sont calculées sur une largeur
+          de vêtement moyenne, la teinte dépend de ton écran. Le BAT reste la
+          référence avant production.
         </p>
       </div>
 
@@ -762,79 +730,83 @@ export default function ApercuLogo({
           </span>
 
           <div className="space-y-2">
-            {(dosDisponible ? (["face", "dos"] as Vue[]) : (["face"] as Vue[])).map(
-              (cible) => {
-                const visuel = visuels[cible];
-                const herite = cible === "dos" && dosIdentique;
-                return (
-                  <div
-                    key={cible}
-                    className="rounded-xl border border-[#222] bg-[#111] p-3"
-                  >
-                    <div className="flex items-center gap-2 mb-2.5">
-                      <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-white/70">
-                        {cible === "face" ? "Devant" : "Dos"}
+            {(dosDisponible
+              ? (["face", "dos"] as Vue[])
+              : (["face"] as Vue[])
+            ).map((cible) => {
+              const visuel = visuels[cible];
+              const herite = cible === "dos" && dosIdentique;
+              return (
+                <div
+                  key={cible}
+                  className="rounded-xl border border-[#222] bg-[#111] p-3"
+                >
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-white/70">
+                      {cible === "face" ? "Devant" : "Dos"}
+                    </span>
+                    {(visuel || herite) && (
+                      <span className="font-body text-[11px] text-white/30 truncate">
+                        {herite
+                          ? "reprend le visuel du devant"
+                          : visuel!.fichier.name}
                       </span>
-                      {(visuel || herite) && (
-                        <span className="font-body text-[11px] text-white/30 truncate">
-                          {herite
-                            ? "reprend le visuel du devant"
-                            : visuel!.fichier.name}
-                        </span>
-                      )}
-                    </div>
-
-                    <input
-                      ref={(el) => {
-                        inputsRef.current[cible] = el;
-                      }}
-                      type="file"
-                      accept={FORMATS_LOGO.join(",")}
-                      onChange={(ev) =>
-                        choisirVisuel(cible, ev.target.files?.[0])
-                      }
-                      className="hidden"
-                    />
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => inputsRef.current[cible]?.click()}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[#2a2a2a] font-heading text-[11px] font-bold uppercase tracking-wider text-white/70 hover:border-[#C5FF00]/50 hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
-                      >
-                        <Upload className="w-3.5 h-3.5" strokeWidth={2.5} />
-                        {visuel
-                          ? "Changer"
-                          : cible === "dos"
-                            ? "Visuel différent"
-                            : "Choisir un fichier"}
-                      </button>
-                      {visuel && (
-                        <button
-                          onClick={() => {
-                            retirerVisuel(cible);
-                            const input = inputsRef.current[cible];
-                            if (input) input.value = "";
-                          }}
-                          aria-label={`Retirer le visuel ${cible === "face" ? "du devant" : "du dos"}`}
-                          className="px-3 rounded-lg border border-[#2a2a2a] text-white/40 hover:text-red-400 hover:border-red-400/40 transition-colors duration-200 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
+                    )}
                   </div>
-                );
-              }
-            )}
+
+                  <input
+                    ref={(el) => {
+                      inputsRef.current[cible] = el;
+                    }}
+                    type="file"
+                    accept={FORMATS_LOGO.join(",")}
+                    onChange={(ev) =>
+                      choisirVisuel(cible, ev.target.files?.[0])
+                    }
+                    className="hidden"
+                  />
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => inputsRef.current[cible]?.click()}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[#2a2a2a] font-heading text-[11px] font-bold uppercase tracking-wider text-white/70 hover:border-[#C5FF00]/50 hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" strokeWidth={2.5} />
+                      {visuel
+                        ? "Changer"
+                        : cible === "dos"
+                          ? "Visuel différent"
+                          : "Choisir un fichier"}
+                    </button>
+                    {visuel && (
+                      <button
+                        onClick={() => {
+                          retirerVisuel(cible);
+                          const input = inputsRef.current[cible];
+                          if (input) input.value = "";
+                        }}
+                        aria-label={`Retirer le visuel ${cible === "face" ? "du devant" : "du dos"}`}
+                        className="px-3 rounded-lg border border-[#2a2a2a] text-white/40 hover:text-red-400 hover:border-red-400/40 transition-colors duration-200 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {erreurLogo && (
-            <p className="font-body text-[11px] text-red-400 mt-2">{erreurLogo}</p>
+            <p className="font-body text-[11px] text-red-400 mt-2">
+              {erreurLogo}
+            </p>
           )}
           <p className="font-body text-[11px] text-white/25 mt-2 leading-relaxed">
-            Sans visuel de dos, le devant est repris à l&apos;identique. Un PNG à
-            fond transparent donne le rendu le plus fidèle. Tes fichiers restent
-            dans ton navigateur tant que tu n&apos;envoies pas de demande.
+            Sans visuel de dos, le devant est repris à l&apos;identique. Un PNG
+            à fond transparent donne le rendu le plus fidèle. Tes fichiers
+            restent dans ton navigateur tant que tu n&apos;envoies pas de
+            demande.
           </p>
         </div>
 
@@ -910,8 +882,8 @@ export default function ApercuLogo({
                       {largeurEffective(e, r.cm) < r.cm && (
                         <p className="font-body text-[10px] text-white/40 mt-1.5 leading-relaxed">
                           Réduit à {largeurEffective(e, r.cm)} cm : ton visuel
-                          est trop haut pour la zone, limitée à{" "}
-                          {e.hauteurMaxCm} cm.
+                          est trop haut pour la zone, limitée à {e.hauteurMaxCm}{" "}
+                          cm.
                         </p>
                       )}
                     </div>
@@ -923,9 +895,11 @@ export default function ApercuLogo({
           <p className="font-body text-[11px] text-white/25 mt-2.5 leading-relaxed">
             {famille === "casquette"
               ? "Trois zones étroites sur une casquette : le panneau avant, un côté, l'arrière au-dessus de la fermeture. Un seul marquage par vue."
-              : famille === "hoodie"
-                ? "Un seul marquage par face. Le grand devant s'arrête à 26 cm pour ne pas mordre sur la poche kangourou."
-                : "Un seul marquage par face : les formats avant occupent la même zone. Largeur limitée à 30 cm, celle du film DTF de l'atelier."}
+              : famille === "totebag"
+                ? "Une seule face marquable sur un tote bag. Largeur limitée à 28 cm pour garder une marge sur les coutures."
+                : famille === "hoodie"
+                  ? "Un seul marquage par face. Le grand devant s'arrête à 26 cm pour ne pas mordre sur la poche kangourou."
+                  : "Un seul marquage par face : les formats avant occupent la même zone. Largeur limitée à 30 cm, celle du film DTF de l'atelier."}
           </p>
         </div>
 
@@ -967,7 +941,7 @@ export default function ApercuLogo({
 
           {/* Sans photo par coloris, les pastilles ne feraient que promettre un
               changement qui n'arrive pas. On annonce le coloris du visuel. */}
-          {produit.packshotSource !== "none" && !porte && (
+          {produit.packshotSource !== "none" && (
             <div className="flex flex-wrap gap-2 mt-3">
               {produit.colors.map((c) => (
                 <button

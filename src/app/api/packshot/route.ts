@@ -13,6 +13,9 @@ const HOTES_AUTORISES = new Set([
   "stospweb0pro01a237.blob.core.windows.net",
 ]);
 
+/** Poids exact du pictogramme « image absente » de Toptex, identique partout. */
+const PLACEHOLDER_OCTETS = 20748;
+
 /** Les packshots ne changent jamais : un an de cache, revalidation en fond. */
 const CACHE = "public, max-age=3600, s-maxage=31536000, stale-while-revalidate=86400";
 
@@ -46,6 +49,16 @@ export async function GET(request: Request) {
   const type = amont.headers.get("content-type") ?? "";
   if (!type.startsWith("image/")) {
     return new Response("Ce n'est pas une image", { status: 415 });
+  }
+
+  // Toptex repond 200 avec son pictogramme « image absente » quand la vue
+  // demandee n'existe pas. Le fichier est le meme partout, au poids pres :
+  // le renvoyer en 404 evite d'afficher un placard gris a la place du
+  // vetement, et laisse l'appelant conclure que l'angle n'existe pas.
+  if (amont.headers.get("content-length") === String(PLACEHOLDER_OCTETS)) {
+    return new Response("Le fournisseur ne publie pas ce visuel", {
+      status: 404,
+    });
   }
 
   return new Response(amont.body, {

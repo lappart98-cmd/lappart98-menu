@@ -9,7 +9,7 @@
 import type { Product } from "@/data/products";
 
 export type Vue = "face" | "profil" | "dos";
-export type Famille = "tshirt" | "sweat" | "hoodie" | "casquette";
+export type Famille = "tshirt" | "sweat" | "hoodie" | "casquette" | "totebag";
 
 export interface Emplacement {
   id: string;
@@ -242,6 +242,36 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
     },
   ],
 
+  // Un tote bag n'a qu'une face utile. Le packshot montre les anses au-dessus
+  // du sac : la boite mesuree les inclut, donc les reperes verticaux partent
+  // de plus haut que le corps du sac, qui commence vers 44 % de la boite.
+  totebag: [
+    {
+      id: "grand-centre",
+      nom: "Grand centré",
+      vue: "face",
+      cmDefaut: 24,
+      cmMin: 14,
+      cmMax: 28,
+      hauteurMaxCm: 30,
+      centreX: 0.5,
+      hautY: 0.54,
+      aide: "Le format qui remplit la face du sac.",
+    },
+    {
+      id: "petit-centre",
+      nom: "Petit centré",
+      vue: "face",
+      cmDefaut: 12,
+      cmMin: 8,
+      cmMax: 18,
+      hauteurMaxCm: 20,
+      centreX: 0.5,
+      hautY: 0.56,
+      aide: "Format discret, haut de la face.",
+    },
+  ],
+
   // Une casquette se marque sur trois zones etroites : le panneau avant, un
   // cote, et l'arriere au-dessus de la fermeture. Aucun grand format : la
   // largeur utile d'un panneau plafonne vers 11 cm, et la hauteur bien avant.
@@ -296,6 +326,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
 /** A quelle famille de geometrie se rattache un article du catalogue. */
 export function familleDe(product: Product): Famille {
   if (product.category === "Casquettes") return "casquette";
+  if (product.category === "Sacs") return "totebag";
   if (product.category === "Sweats col rond") return "sweat";
   if (product.category === "Sweats à capuche") return "hoodie";
   return "tshirt";
@@ -314,7 +345,8 @@ export const emplacementsDe = (famille: Famille) =>
 export function largeurVetementCm(product: Product): number {
   const famille = familleDe(product);
   if (famille === "casquette") return 18;
-  if (product.category === "Sacs") return 38;
+  // 38 cm de large, mesure du fabricant.
+  if (famille === "totebag") return 38;
   if (product.cut.toLowerCase().includes("oversize")) return 58;
   if (famille === "hoodie" || famille === "sweat") return 56;
   return 52;
@@ -407,72 +439,3 @@ export function mesurerVetement(image: HTMLImageElement): BoiteVetement {
   );
   return parBlanc ?? parAlpha ?? entier;
 }
-
-/**
- * Photos portees, pour l'option « rendu reel ».
- *
- * Un packshot est net mais mort ; une photo portee montre le tombe, les plis
- * et l'echelle reelle du marquage sur quelqu'un. Le relief calcule a partir
- * de l'image y gagne beaucoup : un vetement porte a des plis, un packshot
- * presque pas.
- *
- * La boite decrit le vetement dans la photo, en fractions de l'image, du haut
- * des epaules au bas du vetement et d'un bord de manche a l'autre. Elle joue
- * le meme role que la boite mesuree sur un packshot, si bien que les
- * emplacements definis plus haut s'y appliquent sans changement.
- *
- * Ces boites sont relevees a la main sur chaque photo : le detourage par le
- * canal alpha ne marche pas ici, la photo a un fond et un mannequin.
- */
-export interface PhotoPortee {
-  url: string;
-  boite: BoiteVetement;
-  /** Coloris reellement photographie, a annoncer pour ne pas tromper. */
-  coloris: string;
-}
-
-const PICTURES = "https://cdn.toptex.com/pictures";
-
-export const PHOTOS_PORTEES: Record<
-  string,
-  Partial<Record<Vue, PhotoPortee>>
-> = {
-  NS332: {
-    face: {
-      url: `${PICTURES}/NS332-2_2025.jpg`,
-      boite: { x: 0.2, y: 0.285, largeur: 0.59, hauteur: 0.38 },
-      coloris: "Organic Khaki",
-    },
-    dos: {
-      url: `${PICTURES}/NS332-4_2025.jpg`,
-      boite: { x: 0.145, y: 0.335, largeur: 0.63, hauteur: 0.425 },
-      coloris: "Organic Khaki",
-    },
-  },
-  NS443: {
-    face: {
-      url: `${PICTURES}/NS443-3_2026.jpg`,
-      boite: { x: 0.22, y: 0.3, largeur: 0.46, hauteur: 0.4 },
-      coloris: "Navy Blue",
-    },
-    dos: {
-      url: `${PICTURES}/NS443-7_2026.jpg`,
-      boite: { x: 0.24, y: 0.3, largeur: 0.48, hauteur: 0.43 },
-      coloris: "Navy Blue",
-    },
-  },
-  NS444: {
-    face: {
-      url: `${PICTURES}/NS444-4_2026.jpg`,
-      boite: { x: 0.29, y: 0.3, largeur: 0.39, hauteur: 0.42 },
-      coloris: "Black",
-    },
-    dos: {
-      url: `${PICTURES}/NS444-7_2026.jpg`,
-      boite: { x: 0.28, y: 0.27, largeur: 0.42, hauteur: 0.46 },
-      coloris: "Black",
-    },
-  },
-};
-
-export const photosPorteesDe = (ref: string) => PHOTOS_PORTEES[ref];

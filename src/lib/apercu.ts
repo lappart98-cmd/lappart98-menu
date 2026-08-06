@@ -8,7 +8,7 @@
 
 import type { Product } from "@/data/products";
 
-export type Vue = "face" | "dos";
+export type Vue = "face" | "profil" | "dos";
 export type Famille = "tshirt" | "sweat" | "hoodie" | "casquette";
 
 export interface Emplacement {
@@ -71,6 +71,17 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       aide: "Le format qui se voit de loin.",
     },
     {
+      id: "manche",
+      nom: "Manche",
+      vue: "profil",
+      cmDefaut: 7,
+      cmMin: 4,
+      cmMax: 10,
+      centreX: 0.52,
+      hautY: 0.22,
+      aide: "Petit marquage sur la manche.",
+    },
+    {
       id: "dos",
       nom: "Dos",
       vue: "dos",
@@ -118,6 +129,17 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       centreX: 0.5,
       hautY: 0.23,
       aide: "Le format qui se voit de loin.",
+    },
+    {
+      id: "manche",
+      nom: "Manche",
+      vue: "profil",
+      cmDefaut: 7,
+      cmMin: 4,
+      cmMax: 10,
+      centreX: 0.52,
+      hautY: 0.24,
+      aide: "Petit marquage sur la manche.",
     },
     {
       id: "dos",
@@ -168,6 +190,17 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       centreX: 0.5,
       hautY: 0.27,
       aide: "Limité par la poche kangourou.",
+    },
+    {
+      id: "manche",
+      nom: "Manche",
+      vue: "profil",
+      cmDefaut: 7,
+      cmMin: 4,
+      cmMax: 10,
+      centreX: 0.52,
+      hautY: 0.28,
+      aide: "Petit marquage sur la manche.",
     },
     {
       id: "dos",

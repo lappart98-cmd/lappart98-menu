@@ -40,6 +40,12 @@ const textiles = REFERENCES.map(
   (ref) => products.find((p) => p.ref === ref)!
 ).filter(Boolean);
 
+const ETIQUETTE_VUE: Record<Vue, string> = {
+  face: "Devant",
+  profil: "Profil",
+  dos: "Dos",
+};
+
 const ETIQUETTE_FAMILLE: Record<Famille, string> = {
   tshirt: "T-shirt",
   sweat: "Sweat col rond",
@@ -70,6 +76,107 @@ function chargerImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+/**
+ * Pose le visuel dans le tissu plutot que par-dessus.
+ *
+ * Deux effets tires du packshot lui-meme, sans texture externe :
+ *  - le relief : chaque pixel du visuel est decale selon la pente locale de
+ *    luminosite du vetement, si bien que le marquage suit les plis ;
+ *  - l'ombrage : le visuel est multiplie par l'ecart local a la luminosite
+ *    moyenne, donc creux et bosses le traversent.
+ *
+ * Le rapport a la moyenne, plutot qu'une valeur absolue, evite d'assombrir un
+ * visuel pose sur un textile noir : ce sont les variations qui comptent, pas
+ * le niveau.
+ */
+function poserDansLeTissu(
+  ctx: CanvasRenderingContext2D,
+  calque: HTMLCanvasElement,
+  logo: HTMLImageElement,
+  rect: { x: number; y: number; l: number; h: number }
+) {
+  const x = Math.round(rect.x);
+  const y = Math.round(rect.y);
+  const l = Math.round(rect.l);
+  const h = Math.round(rect.h);
+  if (l < 2 || h < 2) return;
+
+  // Hors cadre, getImageData renverrait du vide : on retombe sur un poser plat.
+  if (x < 0 || y < 0 || x + l > ctx.canvas.width || y + h > ctx.canvas.height) {
+    ctx.drawImage(logo, x, y, l, h);
+    return;
+  }
+
+  const cctx = calque.getContext("2d", { willReadFrequently: true });
+  if (!cctx) return;
+  calque.width = l;
+  calque.height = h;
+  cctx.clearRect(0, 0, l, h);
+  cctx.drawImage(logo, 0, 0, l, h);
+
+  let fond: ImageData;
+  let source: ImageData;
+  try {
+    fond = ctx.getImageData(x, y, l, h);
+    source = cctx.getImageData(0, 0, l, h);
+  } catch {
+    ctx.drawImage(logo, x, y, l, h);
+    return;
+  }
+
+  const lum = new Float32Array(l * h);
+  let somme = 0;
+  for (let i = 0; i < l * h; i++) {
+    const p = i * 4;
+    const v =
+      0.2126 * fond.data[p] + 0.7152 * fond.data[p + 1] + 0.0722 * fond.data[p + 2];
+    lum[i] = v;
+    somme += v;
+  }
+  const moyenne = Math.max(1, somme / (l * h));
+
+  // Amplitude du decalage, proportionnelle a la taille du marquage : un logo
+  // de 7 cm ne doit pas gondoler autant qu'un dos de 30 cm.
+  const amplitude = Math.min(l, h) * 0.05;
+  const FORCE_OMBRE = 0.9;
+
+  const sortie = cctx.createImageData(l, h);
+  for (let j = 0; j < h; j++) {
+    for (let i = 0; i < l; i++) {
+      const n = j * l + i;
+
+      const gx =
+        (lum[j * l + Math.min(l - 1, i + 1)] - lum[j * l + Math.max(0, i - 1)]) /
+        255;
+      const gy =
+        (lum[Math.min(h - 1, j + 1) * l + i] - lum[Math.max(0, j - 1) * l + i]) /
+        255;
+
+      const si = Math.round(i - gx * amplitude);
+      const sj = Math.round(j - gy * amplitude);
+      if (si < 0 || si >= l || sj < 0 || sj >= h) continue;
+
+      const src = (sj * l + si) * 4;
+      const alpha = source.data[src + 3];
+      if (alpha === 0) continue;
+
+      const ombre = Math.max(
+        0.5,
+        Math.min(1.5, 1 + (lum[n] / moyenne - 1) * FORCE_OMBRE)
+      );
+      const dst = n * 4;
+      sortie.data[dst] = Math.min(255, source.data[src] * ombre);
+      sortie.data[dst + 1] = Math.min(255, source.data[src + 1] * ombre);
+      sortie.data[dst + 2] = Math.min(255, source.data[src + 2] * ombre);
+      sortie.data[dst + 3] = alpha;
+    }
+  }
+
+  cctx.putImageData(sortie, 0, 0);
+  // drawImage compose avec l'alpha, contrairement a putImageData qui ecrase.
+  ctx.drawImage(calque, x, y);
+}
+
 export interface Composition {
   /** Les fichiers d'origine deposes par le client, un par face distincte. */
   logos: File[];
@@ -93,6 +200,7 @@ export default function ApercuLogo({
   // et un tout autre motif dans le dos.
   const [visuels, setVisuels] = useState<Record<Vue, Visuel | null>>({
     face: null,
+    profil: null,
     dos: null,
   });
   // Cas courant : le meme motif des deux cotes. Coche tant que le client n'a
@@ -104,7 +212,7 @@ export default function ApercuLogo({
   // Un seul etat pour le chargement, pose une fois les deux vues pretes.
   // Le deduire evite un setState synchrone dans l'effet, qui relancerait un
   // rendu avant meme que le chargement ait commence.
-  const [charge, setCharge] = useState<{ cle: string; dos: boolean } | null>(
+  const [charge, setCharge] = useState<{ cle: string; vues: Vue[] } | null>(
     null
   );
 
@@ -129,6 +237,12 @@ export default function ApercuLogo({
     Partial<Record<Vue, { image: HTMLImageElement; boite: BoiteVetement }>>
   >({});
   const inputsRef = useRef<Partial<Record<Vue, HTMLInputElement | null>>>({});
+  // Un seul calque hors ecran, reutilise a chaque marquage.
+  const calqueRef = useRef<HTMLCanvasElement>(
+    typeof document === "undefined"
+      ? (null as unknown as HTMLCanvasElement)
+      : document.createElement("canvas")
+  );
 
   const famille = familleDe(produit);
   const emplacements = emplacementsDe(famille);
@@ -139,47 +253,62 @@ export default function ApercuLogo({
 
   const urls = useMemo(() => {
     const face = getColorImages(produit, coloris)[0];
-    // Seul Toptex publie une vue de dos, sous le suffixe -B.
-    const dos =
+    // Seul Toptex publie le dos (-B) et le profil (-S).
+    const autres =
       produit.packshotSource === "none"
         ? null
-        : getPackshotImages(produit.ref, coloris.slug)[1];
-    return { face: viaRelais(face), dos: dos ? viaRelais(dos) : null };
+        : getPackshotImages(produit.ref, coloris.slug);
+    return {
+      face: viaRelais(face),
+      profil: autres ? viaRelais(autres[2]) : null,
+      dos: autres ? viaRelais(autres[1]) : null,
+    };
   }, [produit, coloris]);
 
   /** Le visuel effectivement pose sur une face. */
   const visuelPour = useCallback(
-    (cible: Vue): Visuel | null =>
-      cible === "dos" && dosIdentique ? visuels.face : visuels[cible],
+    (cible: Vue): Visuel | null => {
+      // La manche porte forcement le visuel du devant : personne ne depose un
+      // troisieme fichier pour un marquage de 7 cm.
+      if (cible === "profil") return visuels.face;
+      if (cible === "dos" && dosIdentique) return visuels.face;
+      return visuels[cible];
+    },
     [visuels, dosIdentique]
   );
 
-  const cle = `${urls.face}|${urls.dos}`;
+  const cle = `${urls.face}|${urls.profil}|${urls.dos}`;
   const enCours = charge?.cle !== cle;
-  const dosDisponible = charge?.dos ?? false;
+  const vuesChargees = charge?.vues ?? [];
+  const dosDisponible = vuesChargees.includes("dos");
+  // Changer de textile peut faire disparaitre un angle : on retombe sur la
+  // face sans avoir a corriger l'etat, donc sans rendu supplementaire.
+  const vueAffichee = vuesChargees.includes(vue) ? vue : "face";
 
   // Charge les deux vues du vetement et mesure ses bords une fois pour toutes.
   useEffect(() => {
     let annule = false;
 
     (async () => {
-      const face = await chargerImage(urls.face).catch(() => null);
-      if (annule) return;
-      const dos = urls.dos
-        ? await chargerImage(urls.dos).catch(() => null)
-        : null;
-      if (annule) return;
+      const chargees: Partial<Record<Vue, HTMLImageElement>> = {};
+      for (const cible of ["face", "profil", "dos"] as Vue[]) {
+        const url = urls[cible];
+        if (!url) continue;
+        const img = await chargerImage(url).catch(() => null);
+        if (annule) return;
+        if (img) chargees[cible] = img;
+      }
 
       vetementsRef.current = {};
-      if (face) {
-        vetementsRef.current.face = { image: face, boite: mesurerVetement(face) };
+      const vues: Vue[] = [];
+      for (const [cible, img] of Object.entries(chargees) as [
+        Vue,
+        HTMLImageElement,
+      ][]) {
+        vetementsRef.current[cible] = { image: img, boite: mesurerVetement(img) };
+        vues.push(cible);
       }
-      if (dos) {
-        vetementsRef.current.dos = { image: dos, boite: mesurerVetement(dos) };
-      } else {
-        setVue("face");
-      }
-      setCharge({ cle, dos: Boolean(dos) });
+      setCharge({ cle, vues });
     })();
 
     return () => {
@@ -208,7 +337,16 @@ export default function ApercuLogo({
       const logo = visuel.image;
 
       const k = canvas.width / image.naturalWidth;
-      const cmParPixel = largeurVetementCm(produit) / (boite.largeur * k);
+      // Les trois packshots sont pris a la meme echelle : la hauteur du
+      // vetement y est identique. On calibre donc les centimetres sur la vue
+      // de face, ou la largeur reelle est connue, et on reporte le rapport.
+      const face = vetementsRef.current.face;
+      const reference = face ?? vetement;
+      const rapport = reference.boite.hauteur
+        ? boite.hauteur / reference.boite.hauteur
+        : 1;
+      const cmParPixel =
+        largeurVetementCm(produit) / (reference.boite.largeur * k * rapport);
 
       for (const e of emplacements) {
         if (e.vue !== cible) continue;
@@ -219,7 +357,12 @@ export default function ApercuLogo({
         const hauteur = (logo.naturalHeight / logo.naturalWidth) * largeur;
         const x = boite.x * k + boite.largeur * k * e.centreX - largeur / 2;
         const y = boite.y * k + boite.hauteur * k * e.hautY;
-        ctx.drawImage(logo, x, y, largeur, hauteur);
+        poserDansLeTissu(ctx, calqueRef.current, logo, {
+          x,
+          y,
+          l: largeur,
+          h: hauteur,
+        });
       }
       return true;
     },
@@ -228,13 +371,13 @@ export default function ApercuLogo({
 
   useEffect(() => {
     if (enCours || !canvasRef.current) return;
-    composer(canvasRef.current, vue, RENDU);
-  }, [composer, vue, enCours]);
+    composer(canvasRef.current, vueAffichee, RENDU);
+  }, [composer, vueAffichee, enCours]);
 
   /** Rend chaque vue portant un marquage, en PNG. */
   const exporter = useCallback(async (): Promise<File[]> => {
     const fichiers: File[] = [];
-    for (const cible of ["face", "dos"] as Vue[]) {
+    for (const cible of ["face", "profil", "dos"] as Vue[]) {
       const utilisee = emplacements.some(
         (e) => e.vue === cible && reglageDe(e)?.actif
       );
@@ -356,27 +499,27 @@ export default function ApercuLogo({
     });
 
   const actifs = emplacements.filter((e) => reglageDe(e)?.actif);
-  const marquagesSurLaVue = actifs.filter((e) => e.vue === vue).length;
+  const marquagesSurLaVue = actifs.filter((e) => e.vue === vueAffichee).length;
 
   return (
     <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-10">
       {/* ── Aperçu ─────────────────────────────────────────────── */}
       <div>
-        {dosDisponible && (
+        {vuesChargees.length > 1 && (
           <div className="flex gap-2 mb-3">
-            {(["face", "dos"] as Vue[]).map((v) => {
+            {vuesChargees.map((v) => {
               const n = actifs.filter((e) => e.vue === v).length;
               return (
                 <button
                   key={v}
                   onClick={() => setVue(v)}
                   className={`font-heading text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg border transition-colors duration-200 cursor-pointer ${
-                    vue === v
+                    vueAffichee === v
                       ? "border-[#C5FF00] bg-[#C5FF00]/10 text-[#C5FF00]"
                       : "border-[#2a2a2a] text-white/50 hover:border-white/30"
                   }`}
                 >
-                  {v === "face" ? "Devant" : "Dos"}
+                  {ETIQUETTE_VUE[v]}
                   {n > 0 && <span className="ml-1.5 text-white/40">{n}</span>}
                 </button>
               );
@@ -393,13 +536,13 @@ export default function ApercuLogo({
             <canvas
               ref={canvasRef}
               className="w-full h-full object-contain"
-              aria-label={`Aperçu ${produit.ref} ${coloris.name}, vue ${vue}`}
+              aria-label={`Aperçu ${produit.ref} ${coloris.name}, vue ${vueAffichee}`}
             />
           )}
 
-          {!visuelPour(vue) && !enCours && (
+          {!visuelPour(vueAffichee) && !enCours && (
             <button
-              onClick={() => inputsRef.current[vue]?.click()}
+              onClick={() => inputsRef.current.face?.click()}
               className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45 backdrop-blur-[2px] cursor-pointer group"
             >
               <Upload
@@ -407,9 +550,9 @@ export default function ApercuLogo({
                 strokeWidth={2}
               />
               <span className="font-heading text-sm font-bold uppercase tracking-wider text-white">
-                {vue === "face"
-                  ? "Dépose ton visuel"
-                  : "Dépose le visuel du dos"}
+                {vueAffichee === "dos"
+                  ? "Dépose le visuel du dos"
+                  : "Dépose ton visuel"}
               </span>
               <span className="font-body text-xs text-white/60">
                 PNG, JPG, WEBP ou SVG
@@ -417,7 +560,7 @@ export default function ApercuLogo({
             </button>
           )}
 
-          {visuelPour(vue) && marquagesSurLaVue === 0 && (
+          {visuelPour(vueAffichee) && marquagesSurLaVue === 0 && (
             <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-body text-[11px] text-black/45 bg-white/85 rounded-full px-3 py-1.5">
               Aucun marquage sur cette vue
             </span>
@@ -522,7 +665,7 @@ export default function ApercuLogo({
           <div className="space-y-2">
             {emplacements.map((e) => {
               const r = reglageDe(e);
-              const indisponible = e.vue === "dos" && !dosDisponible;
+              const indisponible = !vuesChargees.includes(e.vue);
               return (
                 <div
                   key={e.id}
@@ -557,7 +700,7 @@ export default function ApercuLogo({
                       </span>
                       <span className="font-body text-[11px] text-white/35">
                         {indisponible
-                          ? "Pas de visuel de dos pour ce coloris"
+                          ? "Le fournisseur ne publie pas cet angle"
                           : e.aide}
                       </span>
                     </span>

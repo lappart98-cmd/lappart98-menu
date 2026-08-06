@@ -794,49 +794,89 @@ export const products: Product[] = [
     grammage: "130 g/m²",
     cut: "Droite, manches raglan, col rond",
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
-    // Velilla ne publie pas de packshot par coloris pour cette reference :
-    // seules les pastilles existent, le visuel reste celui par defaut.
+    // Le fournisseur ne publie pas de packshot par coloris. Les visuels
+    // ci-dessous sont ceux de l'atelier, herberges avec le site.
     packshotSource: "none",
     colors: [
       {
         name: "White",
         slug: "100",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
+        images: [
+          "/textiles/mk520v/100-face.jpg",
+          "/textiles/mk520v/100-dos.jpg",
+          "/textiles/mk520v/100-profil.jpg",
+        ],
       },
       {
         name: "Black",
         slug: "200",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/200_100.jpg",
+        images: [
+          "/textiles/mk520v/200-face.jpg",
+          "/textiles/mk520v/200-dos.jpg",
+          "/textiles/mk520v/200-profil.jpg",
+        ],
       },
       {
         name: "Navy",
         slug: "500",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/500_100.jpg",
+        images: [
+          "/textiles/mk520v/500-face.jpg",
+          "/textiles/mk520v/500-dos.jpg",
+          "/textiles/mk520v/500-profil.jpg",
+        ],
       },
       {
         name: "Royal Blue",
         slug: "502",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/502_100.jpg",
+        images: [
+          "/textiles/mk520v/502-face.jpg",
+          "/textiles/mk520v/502-dos.jpg",
+          "/textiles/mk520v/502-profil.jpg",
+        ],
       },
       {
         name: "Atoll",
         slug: "505",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/505_100.jpg",
+        images: [
+          "/textiles/mk520v/505-face.jpg",
+          "/textiles/mk520v/505-dos.jpg",
+          "/textiles/mk520v/505-profil.jpg",
+        ],
       },
       {
         name: "Red",
         slug: "400",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/400_100.jpg",
+        images: [
+          "/textiles/mk520v/400-face.jpg",
+          "/textiles/mk520v/400-dos.jpg",
+          "/textiles/mk520v/400-profil.jpg",
+        ],
       },
       {
         name: "Fluor Orange",
         slug: "303",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/303_100.jpg",
+        images: [
+          "/textiles/mk520v/303-face.jpg",
+          "/textiles/mk520v/303-dos.jpg",
+          "/textiles/mk520v/303-profil.jpg",
+        ],
       },
       {
         name: "Fluor Yellow",
         slug: "304",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/304_100.jpg",
+        images: [
+          "/textiles/mk520v/304-face.jpg",
+          "/textiles/mk520v/304-dos.jpg",
+          "/textiles/mk520v/304-profil.jpg",
+        ],
       },
       {
         name: "Fluor Lime",
@@ -847,6 +887,11 @@ export const products: Product[] = [
         name: "Fluor Pink",
         slug: "408",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/408_100.jpg",
+        images: [
+          "/textiles/mk520v/408-face.jpg",
+          "/textiles/mk520v/408-dos.jpg",
+          "/textiles/mk520v/408-profil.jpg",
+        ],
       },
     ],
     certifications: [],

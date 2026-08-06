@@ -63,7 +63,7 @@ const SORTIE = join(ROOT, "public", "textiles", REF.toLowerCase());
 mkdirSync(SORTIE, { recursive: true });
 
 const script = `
-import sys, json, glob, os
+import sys, json, glob, os, re
 import numpy as np
 from PIL import Image
 
@@ -132,7 +132,14 @@ for p, r in photos.items(): par.setdefault(r["slug"], []).append(p)
 for slug, groupe in par.items():
     groupe.sort(key=lambda p: photos[p]["largeur"])
     photos[groupe[0]]["vue"] = "profil"
-    for p, v in zip(sorted(groupe[1:]), ["face", "dos"]): photos[p]["vue"] = v
+    # L'ordre de prise de vue departe face et dos. On trie sur le numero de
+    # photo, pas sur le nom de fichier : celui-ci peut porter un prefixe
+    # quelconque selon la facon dont les fichiers ont transite.
+    def rang(p):
+        nombres = re.findall(r"\\d+", os.path.basename(p))
+        return int(nombres[-1]) if nombres else 0
+    for p, v in zip(sorted(groupe[1:], key=rang), ["face", "dos"]):
+        photos[p]["vue"] = v
 
 rapport = {}
 for p, r in sorted(photos.items()):

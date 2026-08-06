@@ -226,6 +226,9 @@ export default function ApercuLogo({
   const [erreurLogo, setErreurLogo] = useState<string | null>(null);
   const [vue, setVue] = useState<Vue>("face");
   const [telecharge, setTelecharge] = useState(false);
+  // Voir le visuel sur toute la gamme d'un coup, plutot qu'article par article.
+  const [galerie, setGalerie] = useState(false);
+  const [galeriePrete, setGaleriePrete] = useState(false);
   // Un seul etat pour le chargement, pose une fois les deux vues pretes.
   // Le deduire evite un setState synchrone dans l'effet, qui relancerait un
   // rendu avant meme que le chargement ait commence.
@@ -254,6 +257,11 @@ export default function ApercuLogo({
     Partial<Record<Vue, { image: HTMLImageElement; boite: BoiteVetement }>>
   >({});
   const inputsRef = useRef<Partial<Record<Vue, HTMLInputElement | null>>>({});
+  // Vue de face de chaque textile, chargee a la demande pour la galerie.
+  const galerieRef = useRef<
+    Record<string, { image: HTMLImageElement; boite: BoiteVetement }>
+  >({});
+  const canvasGalerieRef = useRef<Record<string, HTMLCanvasElement | null>>({});
   // Un seul calque hors ecran, reutilise a chaque marquage.
   const calqueRef = useRef<HTMLCanvasElement>(
     typeof document === "undefined"
@@ -363,12 +371,52 @@ export default function ApercuLogo({
     };
   }, [urls, cle, emplacements]);
 
-  /** Compose une vue sur un canvas ; sert a l'ecran comme a l'export. */
-  const composer = useCallback(
-    (canvas: HTMLCanvasElement, cible: Vue, cote: number) => {
-      const vetement = vetementsRef.current[cible];
+  // Les six vetements ne sont telecharges qu'a l'ouverture de la galerie :
+  // inutile de les charger pour qui reste sur un seul article.
+  useEffect(() => {
+    if (!galerie || galeriePrete) return;
+    let annule = false;
+    (async () => {
+      for (const article of textiles) {
+        if (galerieRef.current[article.ref]) continue;
+        const url = getColorImages(article, article.colors[0])[0];
+        const img = await chargerImage(viaRelais(url)).catch(() => null);
+        if (annule) return;
+        if (img) {
+          galerieRef.current[article.ref] = {
+            image: img,
+            boite: mesurerVetement(img),
+          };
+        }
+      }
+      setGaleriePrete(true);
+    })();
+    return () => {
+      annule = true;
+    };
+  }, [galerie, galeriePrete]);
+
+  /**
+   * Compose une vue d'un textile sur un canvas.
+   *
+   * Prend le vetement et sa reference de face en parametres plutot que de les
+   * lire dans l'etat : la vue « tous les textiles » dessine six articles a la
+   * suite, dont un seul est celui selectionne.
+   */
+  const dessiner = useCallback(
+    (
+      canvas: HTMLCanvasElement,
+      article: Product,
+      vetement: { image: HTMLImageElement; boite: BoiteVetement },
+      reference: { image: HTMLImageElement; boite: BoiteVetement },
+      cible: Vue,
+      cote: number,
+    ) => {
       const ctx = canvas.getContext("2d");
-      if (!ctx || !vetement) return false;
+      if (!ctx) return false;
+      const zones = emplacementsDe(familleDe(article));
+      const reglagesArticle = (e: Emplacement) =>
+        reglages[cleReglage(familleDe(article), e.id)];
 
       const { image, boite } = vetement;
       const ratio = image.naturalHeight / image.naturalWidth;
@@ -394,14 +442,13 @@ export default function ApercuLogo({
       //
       // Le reporter au prorata des hauteurs serait faux : un t-shirt fait la
       // meme hauteur de face et de profil, mais une casquette non.
-      const reference = vetementsRef.current.face ?? vetement;
       const kFace = canvas.width / reference.image.naturalWidth;
       const cmParPixel =
-        largeurVetementCm(produit) / (reference.boite.largeur * kFace);
+        largeurVetementCm(article) / (reference.boite.largeur * kFace);
 
-      for (const e of emplacements) {
+      for (const e of zones) {
         if (e.vue !== cible) continue;
-        const r = reglageDe(e);
+        const r = reglagesArticle(e);
         if (!r?.actif) continue;
 
         let largeur = r.cm / cmParPixel;
@@ -430,13 +477,35 @@ export default function ApercuLogo({
       }
       return true;
     },
-    [visuelPour, produit, emplacements, reglageDe],
+    [visuelPour, reglages],
+  );
+
+  /** Le textile selectionne, dessine depuis les images deja chargees. */
+  const composer = useCallback(
+    (canvas: HTMLCanvasElement, cible: Vue, cote: number) => {
+      const vetement = vetementsRef.current[cible];
+      if (!vetement) return false;
+      const reference = vetementsRef.current.face ?? vetement;
+      return dessiner(canvas, produit, vetement, reference, cible, cote);
+    },
+    [dessiner, produit],
   );
 
   useEffect(() => {
-    if (enCours || !canvasRef.current) return;
+    if (galerie || enCours || !canvasRef.current) return;
     composer(canvasRef.current, vueAffichee, RENDU);
-  }, [composer, vueAffichee, enCours]);
+  }, [composer, vueAffichee, enCours, galerie]);
+
+  useEffect(() => {
+    if (!galerie || !galeriePrete) return;
+    for (const article of textiles) {
+      const canvas = canvasGalerieRef.current[article.ref];
+      const vetement = galerieRef.current[article.ref];
+      if (canvas && vetement) {
+        dessiner(canvas, article, vetement, vetement, "face", RENDU / 2);
+      }
+    }
+  }, [galerie, galeriePrete, dessiner]);
 
   /**
    * Les vues qui portent un marquage et disposent d'un visuel.
@@ -464,12 +533,22 @@ export default function ApercuLogo({
    */
   const composerPlanche = useCallback(
     (cote: number): HTMLCanvasElement | null => {
-      if (vuesMarquees.length === 0) return null;
-
       const vignettes: HTMLCanvasElement[] = [];
-      for (const cible of vuesMarquees) {
-        const c = document.createElement("canvas");
-        if (composer(c, cible, cote)) vignettes.push(c);
+      if (galerie) {
+        // En galerie, la planche montre le visuel sur toute la gamme.
+        for (const article of textiles) {
+          const vetement = galerieRef.current[article.ref];
+          if (!vetement) continue;
+          const c = document.createElement("canvas");
+          if (dessiner(c, article, vetement, vetement, "face", cote))
+            vignettes.push(c);
+        }
+      } else {
+        if (vuesMarquees.length === 0) return null;
+        for (const cible of vuesMarquees) {
+          const c = document.createElement("canvas");
+          if (composer(c, cible, cote)) vignettes.push(c);
+        }
       }
       if (vignettes.length === 0) return null;
 
@@ -484,9 +563,11 @@ export default function ApercuLogo({
       ctx.fillStyle = "#f5f5f5";
       ctx.fillRect(0, 0, planche.width, planche.height);
 
+      // Les articles n'ont pas la meme proportion : une casquette est bien
+      // plus courte qu'un sweat. On les centre pour que la planche se tienne.
       let x = 0;
       for (const v of vignettes) {
-        ctx.drawImage(v, x, 0);
+        ctx.drawImage(v, x, Math.round((hauteurVues - v.height) / 2));
         x += v.width;
       }
 
@@ -497,7 +578,9 @@ export default function ApercuLogo({
       ctx.textBaseline = "middle";
       const marge = Math.round(cote * 0.03);
       ctx.fillText(
-        `${produit.ref} · ${produit.name}`,
+        galerie
+          ? "L'Appart 98 · toute la gamme"
+          : `${produit.ref} · ${produit.name}`,
         marge,
         hauteurVues + bandeau * 0.36,
       );
@@ -510,7 +593,9 @@ export default function ApercuLogo({
       const teinte =
         produit.packshotSource === "none" ? "coloris à préciser" : coloris.name;
       ctx.fillText(
-        `${teinte}  ·  ${details}`,
+        galerie
+          ? textiles.map((t) => LIBELLE[t.ref]).join("  ·  ")
+          : `${teinte}  ·  ${details}`,
         marge,
         hauteurVues + bandeau * 0.72,
       );
@@ -525,6 +610,8 @@ export default function ApercuLogo({
       largeurEffective,
       produit,
       coloris,
+      dessiner,
+      galerie,
     ],
   );
 
@@ -625,7 +712,9 @@ export default function ApercuLogo({
     const url = URL.createObjectURL(blob);
     const lien = document.createElement("a");
     lien.href = url;
-    lien.download = `apercu-${produit.ref}-${coloris.slug.toLowerCase()}.jpg`;
+    lien.download = galerie
+      ? "apercu-lappart98-tous-textiles.jpg"
+      : `apercu-${produit.ref}-${coloris.slug.toLowerCase()}.jpg`;
     lien.click();
     URL.revokeObjectURL(url);
 
@@ -700,7 +789,40 @@ export default function ApercuLogo({
     <div className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-10">
       {/* ── Aperçu ─────────────────────────────────────────────── */}
       <div>
-        {vuesUtiles.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <button
+            onClick={() => setGalerie((v) => !v)}
+            role="switch"
+            aria-checked={galerie}
+            className={`flex items-center gap-2.5 px-3.5 py-2 rounded-lg border transition-colors duration-200 cursor-pointer ${
+              galerie
+                ? "border-[#C5FF00] bg-[#C5FF00]/10 text-[#C5FF00]"
+                : "border-[#2a2a2a] text-white/50 hover:border-white/30"
+            }`}
+          >
+            <span
+              className={`w-8 h-4 rounded-full relative shrink-0 transition-colors duration-200 ${
+                galerie ? "bg-[#C5FF00]" : "bg-white/15"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 w-3 h-3 rounded-full transition-all duration-200 ${
+                  galerie ? "left-4.5 bg-[#0A0A0A]" : "left-0.5 bg-white/60"
+                }`}
+              />
+            </span>
+            <span className="font-heading text-xs font-bold uppercase tracking-wider">
+              Tous les textiles
+            </span>
+          </button>
+          {galerie && (
+            <span className="font-body text-[11px] text-white/35">
+              vue de face, {textiles.length} articles
+            </span>
+          )}
+        </div>
+
+        {!galerie && vuesUtiles.length > 1 && (
           <div className="flex gap-2 mb-3">
             {vuesUtiles.map((v) => {
               const n = actifs.filter((e) => e.vue === v).length;
@@ -722,55 +844,169 @@ export default function ApercuLogo({
           </div>
         )}
 
-        <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#f5f5f5]">
-          {enCours ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-black/25" />
-            </div>
-          ) : (
-            <canvas
-              ref={canvasRef}
-              className="w-full h-full object-contain"
-              aria-label={`Aperçu ${produit.ref} ${coloris.name}, vue ${vueAffichee}`}
-            />
-          )}
-
-          {!visuelPour(vueAffichee) && !enCours && (
-            <button
-              onClick={() => inputsRef.current.face?.click()}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45 backdrop-blur-[2px] cursor-pointer group"
-            >
-              <Upload
-                className="w-7 h-7 text-[#C5FF00] group-hover:scale-110 transition-transform duration-200"
-                strokeWidth={2}
+        {galerie ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            {textiles.map((article) => (
+              <button
+                key={article.ref}
+                onClick={() => {
+                  setProduit(article);
+                  setColoris(article.colors[0]);
+                  setVue("face");
+                  setGalerie(false);
+                }}
+                title={`Voir ${LIBELLE[article.ref]} en grand`}
+                className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-[#f5f5f5] cursor-pointer"
+              >
+                <canvas
+                  ref={(el) => {
+                    canvasGalerieRef.current[article.ref] = el;
+                  }}
+                  className="w-full h-full object-contain"
+                  aria-label={`Aperçu ${LIBELLE[article.ref]}`}
+                />
+                <span className="absolute inset-x-0 bottom-0 bg-[#0A0A0A]/75 py-1.5 font-heading text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white text-center group-hover:text-[#C5FF00] transition-colors duration-200">
+                  {LIBELLE[article.ref]}
+                </span>
+              </button>
+            ))}
+            {!galeriePrete && (
+              <span className="col-span-full font-body text-[11px] text-white/35 text-center py-2">
+                Chargement des textiles...
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#f5f5f5]">
+            {enCours ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-black/25" />
+              </div>
+            ) : (
+              <canvas
+                ref={canvasRef}
+                className="w-full h-full object-contain"
+                aria-label={`Aperçu ${produit.ref} ${coloris.name}, vue ${vueAffichee}`}
               />
-              <span className="font-heading text-sm font-bold uppercase tracking-wider text-white">
-                {vueAffichee === "dos"
-                  ? "Dépose le visuel du dos"
-                  : "Dépose ton visuel"}
-              </span>
-              <span className="font-body text-xs text-white/60">
-                PNG, JPG, WEBP ou SVG
-              </span>
-            </button>
-          )}
+            )}
 
-          {visuelPour(vueAffichee) && marquagesSurLaVue === 0 && (
-            <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-body text-[11px] text-black/45 bg-white/85 rounded-full px-3 py-1.5">
-              Aucun marquage sur cette vue
-            </span>
-          )}
-        </div>
+            {!visuelPour(vueAffichee) && !enCours && (
+              <button
+                onClick={() => inputsRef.current.face?.click()}
+                className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45 backdrop-blur-[2px] cursor-pointer group"
+              >
+                <Upload
+                  className="w-7 h-7 text-[#C5FF00] group-hover:scale-110 transition-transform duration-200"
+                  strokeWidth={2}
+                />
+                <span className="font-heading text-sm font-bold uppercase tracking-wider text-white">
+                  {vueAffichee === "dos"
+                    ? "Dépose le visuel du dos"
+                    : "Dépose ton visuel"}
+                </span>
+                <span className="font-body text-xs text-white/60">
+                  PNG, JPG, WEBP ou SVG
+                </span>
+              </button>
+            )}
+
+            {visuelPour(vueAffichee) && marquagesSurLaVue === 0 && (
+              <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-body text-[11px] text-black/45 bg-white/85 rounded-full px-3 py-1.5">
+                Aucun marquage sur cette vue
+              </span>
+            )}
+          </div>
+        )}
 
         <p className="font-body text-[11px] text-white/30 mt-3 leading-relaxed">
-          Simulation indicative : les proportions sont calculées sur une largeur
-          de vêtement moyenne, la teinte dépend de ton écran. Le BAT reste la
-          référence avant production.
+          {galerie
+            ? "Chaque article porte le marquage avant que tu as choisi pour sa famille. Clique une vignette pour l'ouvrir en grand."
+            : "Simulation indicative : les proportions sont calculées sur une largeur de vêtement moyenne, la teinte dépend de ton écran. Le BAT reste la référence avant production."}
         </p>
       </div>
 
       {/* ── Réglages ───────────────────────────────────────────── */}
       <div className="space-y-6">
+        <div>
+          <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2.5">
+            Textile
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            {textiles.map((p) => {
+              const choisi = p.ref === produit.ref;
+              return (
+                <button
+                  key={p.ref}
+                  onClick={() => {
+                    setProduit(p);
+                    setColoris(p.colors[0]);
+                    setVue("face");
+                  }}
+                  className={`p-3 rounded-xl border text-left transition-colors duration-200 cursor-pointer ${
+                    choisi
+                      ? "border-[#C5FF00] bg-[#C5FF00]/[0.06]"
+                      : "border-[#222] bg-[#111] hover:border-white/25"
+                  }`}
+                >
+                  <span
+                    className={`font-heading text-xs font-bold uppercase block ${
+                      choisi ? "text-[#C5FF00]" : "text-white"
+                    }`}
+                  >
+                    {LIBELLE[p.ref]}
+                  </span>
+                  <span className="font-body text-[10px] text-white/30 block mt-0.5">
+                    {p.ref} &middot; {p.grammage}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Sans photo par coloris, les pastilles ne feraient que promettre un
+              changement qui n'arrive pas. Ce qui compte est l'existence des
+              visuels, pas leur provenance : le t-shirt technique n'en a pas
+              chez son fournisseur, mais l'atelier les a photographies. */}
+          {colorisPhotographies && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {produit.colors.map((c) => (
+                <button
+                  key={c.slug}
+                  onClick={() => setColoris(c)}
+                  title={c.name}
+                  aria-label={c.name}
+                  className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                    coloris.slug === c.slug
+                      ? "border-[#C5FF00] scale-110"
+                      : "border-[#333] hover:border-white/40"
+                  }`}
+                >
+                  <Image
+                    src={getColorSwatch(produit.ref, c)}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+          <p className="font-body text-[11px] text-white/35 mt-2">
+            {colorisPhotographies
+              ? `${coloris.name} · ${produit.name}`
+              : produit.name}
+          </p>
+          {!colorisPhotographies && (
+            <p className="font-body text-[11px] text-white/25 mt-1.5 leading-relaxed">
+              {produit.colors.length} coloris au catalogue, mais le fournisseur
+              n&apos;en photographie qu&apos;un : l&apos;aperçu sert à juger le
+              placement, pas la teinte. Précise le coloris voulu dans ta
+              demande.
+            </p>
+          )}
+        </div>
+
         <div>
           <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2.5">
             Tes visuels
@@ -988,89 +1224,9 @@ export default function ApercuLogo({
           </p>
         </div>
 
-        <div>
-          <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2.5">
-            Textile
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            {textiles.map((p) => {
-              const choisi = p.ref === produit.ref;
-              return (
-                <button
-                  key={p.ref}
-                  onClick={() => {
-                    setProduit(p);
-                    setColoris(p.colors[0]);
-                    setVue("face");
-                  }}
-                  className={`p-3 rounded-xl border text-left transition-colors duration-200 cursor-pointer ${
-                    choisi
-                      ? "border-[#C5FF00] bg-[#C5FF00]/[0.06]"
-                      : "border-[#222] bg-[#111] hover:border-white/25"
-                  }`}
-                >
-                  <span
-                    className={`font-heading text-xs font-bold uppercase block ${
-                      choisi ? "text-[#C5FF00]" : "text-white"
-                    }`}
-                  >
-                    {LIBELLE[p.ref]}
-                  </span>
-                  <span className="font-body text-[10px] text-white/30 block mt-0.5">
-                    {p.ref} &middot; {p.grammage}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-                  {/* Sans photo par coloris, les pastilles ne feraient que promettre un
-              changement qui n'arrive pas. Ce qui compte est l'existence des
-              visuels, pas leur provenance : le t-shirt technique n'en a pas
-              chez son fournisseur, mais l'atelier les a photographies. */}
-          {colorisPhotographies && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {produit.colors.map((c) => (
-                <button
-                  key={c.slug}
-                  onClick={() => setColoris(c)}
-                  title={c.name}
-                  aria-label={c.name}
-                  className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
-                    coloris.slug === c.slug
-                      ? "border-[#C5FF00] scale-110"
-                      : "border-[#333] hover:border-white/40"
-                  }`}
-                >
-                  <Image
-                    src={getColorSwatch(produit.ref, c)}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-          <p className="font-body text-[11px] text-white/35 mt-2">
-            {colorisPhotographies
-              ? `${coloris.name} · ${produit.name}`
-              : produit.name}
-          </p>
-          {!colorisPhotographies && (
-            <p className="font-body text-[11px] text-white/25 mt-1.5 leading-relaxed">
-              {produit.colors.length} coloris au catalogue, mais le fournisseur
-              n&apos;en photographie qu&apos;un : l&apos;aperçu sert à juger le
-              placement, pas la teinte. Précise le coloris voulu dans ta
-              demande.
-            </p>
-          )}
-        </div>
-
         <button
           onClick={telecharger}
-          disabled={originaux.length === 0 || actifs.length === 0}
+          disabled={originaux.length === 0 || (!galerie && actifs.length === 0)}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#C5FF00] text-[#0A0A0A] font-heading text-sm font-bold uppercase tracking-wider hover:bg-[#9ECC00] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors duration-200"
         >
           {telecharge ? (
@@ -1082,10 +1238,16 @@ export default function ApercuLogo({
             <>
               <Download className="w-4 h-4" strokeWidth={2.5} />
               Télécharger l&apos;aperçu
-              {actifs.length > 1 && (
+              {galerie ? (
                 <span className="font-body text-[11px] normal-case tracking-normal opacity-60">
-                  ({vuesMarquees.length} vues, 1 fichier)
+                  ({textiles.length} textiles, 1 fichier)
                 </span>
+              ) : (
+                actifs.length > 1 && (
+                  <span className="font-body text-[11px] normal-case tracking-normal opacity-60">
+                    ({vuesMarquees.length} vues, 1 fichier)
+                  </span>
+                )
               )}
             </>
           )}

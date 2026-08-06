@@ -252,12 +252,12 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 8,
       cmMin: 4,
       cmMax: 11,
-      // Mesure sur le packshot CV300 : la visiere commence a 64 % de la
-      // hauteur, et la calotte n'est assez large qu'a partir de 26 %. Reste
-      // une bande d'environ 5 cm, qui borne la hauteur du marquage.
+      // Mesure sur le packshot KP162 : la couture calotte-visiere tombe a
+      // 58 % de la hauteur, et la calotte n'est assez large qu'a partir de
+      // 22 %. Reste une bande d'environ 5 cm, qui borne la hauteur.
       hauteurMaxCm: 5,
       centreX: 0.5,
-      hautY: 0.42,
+      hautY: 0.39,
       ancrage: "centre",
       aide: "Panneau avant, entre la couture et la visière.",
     },

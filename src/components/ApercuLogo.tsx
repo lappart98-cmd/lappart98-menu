@@ -34,7 +34,7 @@ const POIDS_MAX = 6 * 1024 * 1024;
 // Un article par famille : proposer les vingt references du catalogue noyait
 // le choix, alors que la geometrie du marquage ne depend que de la famille.
 // Changer un modele ici suffit a changer celui de l'apercu.
-const REFERENCES = ["NS332", "NS443", "NS444", "CV300"];
+const REFERENCES = ["NS332", "NS443", "NS444", "KP162"];
 
 const textiles = REFERENCES.map(
   (ref) => products.find((p) => p.ref === ref)!

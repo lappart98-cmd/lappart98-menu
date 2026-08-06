@@ -277,6 +277,24 @@ export default function ApercuLogo({
     [visuels, dosIdentique]
   );
 
+  /**
+   * Largeur reellement rendue, une fois la contrainte de hauteur appliquee.
+   * Le curseur demande une largeur, mais un visuel haut est reduit pour tenir
+   * dans sa zone : afficher la valeur demandee serait mentir sur le rendu.
+   */
+  const largeurEffective = useCallback(
+    (e: Emplacement, cm: number) => {
+      const visuel = visuelPour(e.vue);
+      if (!visuel || !e.hauteurMaxCm) return cm;
+      const proportion =
+        visuel.image.naturalHeight / visuel.image.naturalWidth;
+      const hauteurCm = cm * proportion;
+      if (hauteurCm <= e.hauteurMaxCm) return cm;
+      return Math.round((e.hauteurMaxCm / proportion) * 10) / 10;
+    },
+    [visuelPour]
+  );
+
   const cle = `${urls.face}|${urls.profil}|${urls.dos}`;
   const enCours = charge?.cle !== cle;
   // Memoise : sans cela, le tableau vide par defaut serait recree a chaque
@@ -355,10 +373,23 @@ export default function ApercuLogo({
         const r = reglageDe(e);
         if (!r?.actif) continue;
 
-        const largeur = r.cm / cmParPixel;
-        const hauteur = (logo.naturalHeight / logo.naturalWidth) * largeur;
+        let largeur = r.cm / cmParPixel;
+        let hauteur = (logo.naturalHeight / logo.naturalWidth) * largeur;
+
+        // Un visuel large et bas tient dans les centimetres demandes ; un
+        // visuel haut deborderait la zone. On le reduit alors, plutot que de
+        // le laisser mordre sur la visiere ou sur l'ourlet.
+        if (e.hauteurMaxCm) {
+          const plafond = e.hauteurMaxCm / cmParPixel;
+          if (hauteur > plafond) {
+            largeur *= plafond / hauteur;
+            hauteur = plafond;
+          }
+        }
+
         const x = boite.x * k + boite.largeur * k * e.centreX - largeur / 2;
-        const y = boite.y * k + boite.hauteur * k * e.hautY;
+        const repere = boite.y * k + boite.hauteur * k * e.hautY;
+        const y = e.ancrage === "centre" ? repere - hauteur / 2 : repere;
         poserDansLeTissu(ctx, calqueRef.current, logo, {
           x,
           y,
@@ -443,7 +474,7 @@ export default function ApercuLogo({
       ctx.font = `${Math.round(bandeau * 0.26)}px sans-serif`;
       const details = emplacements
         .filter((e) => reglageDe(e)?.actif)
-        .map((e) => `${e.nom} ${reglageDe(e).cm} cm`)
+        .map((e) => `${e.nom} ${largeurEffective(e, reglageDe(e).cm)} cm`)
         .join("  ·  ");
       const teinte =
         produit.packshotSource === "none" ? "coloris à préciser" : coloris.name;
@@ -455,7 +486,7 @@ export default function ApercuLogo({
 
       return planche;
     },
-    [composer, vuesMarquees, emplacements, reglageDe, produit, coloris]
+    [composer, vuesMarquees, emplacements, reglageDe, largeurEffective, produit, coloris]
   );
 
   /** La planche, prete a joindre ou a telecharger. */
@@ -477,12 +508,12 @@ export default function ApercuLogo({
     const parts = emplacements.filter((e) => reglageDe(e)?.actif).map((e) => {
       const v = e.vue === "dos" && dosIdentique ? visuels.face : visuels[e.vue];
       const fichier = v ? ` (${v.fichier.name})` : " (aucun visuel)";
-      return `${e.nom} ${reglageDe(e).cm} cm${fichier}`;
+      return `${e.nom} ${largeurEffective(e, reglageDe(e).cm)} cm${fichier}`;
     });
     return parts.length
       ? `${produit.ref} ${produit.name}, coloris ${coloris.name} — ${parts.join(", ")}`
       : "";
-  }, [emplacements, reglageDe, produit, coloris, visuels, dosIdentique]);
+  }, [emplacements, reglageDe, largeurEffective, produit, coloris, visuels, dosIdentique]);
 
   // Les apercus composes remontent au formulaire, qui les joint au courriel.
   // Les fichiers d'origine, sans doublon si le dos reprend celui du devant.
@@ -785,7 +816,7 @@ export default function ApercuLogo({
                     </span>
                     {r.actif && (
                       <span className="font-heading text-xs text-[#C5FF00] shrink-0">
-                        {r.cm} cm
+                        {largeurEffective(e, r.cm)} cm
                       </span>
                     )}
                   </button>
@@ -806,6 +837,13 @@ export default function ApercuLogo({
                         <span>{e.cmMin} cm</span>
                         <span>{e.cmMax} cm</span>
                       </div>
+                      {largeurEffective(e, r.cm) < r.cm && (
+                        <p className="font-body text-[10px] text-white/40 mt-1.5 leading-relaxed">
+                          Réduit à {largeurEffective(e, r.cm)} cm : ton visuel
+                          est trop haut pour la zone, limitée à{" "}
+                          {e.hauteurMaxCm} cm.
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

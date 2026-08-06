@@ -20,10 +20,22 @@ export interface Emplacement {
   cmDefaut: number;
   cmMin: number;
   cmMax: number;
+  /**
+   * Hauteur maximale du marquage, en centimetres. Un visuel plus haut que
+   * large est reduit pour tenir dans la zone : sur une casquette, la limite
+   * n'est pas la largeur du panneau mais la bande libre entre le haut de la
+   * calotte et la visiere.
+   */
+  hauteurMaxCm?: number;
   /** Centre horizontal, en fraction de la largeur du vetement. */
   centreX: number;
-  /** Haut du marquage, en fraction de la hauteur du vetement. */
+  /**
+   * Reperage vertical, en fraction de la hauteur du vetement. Par defaut il
+   * designe le haut du marquage ; avec ancrage "centre", son milieu, ce qui
+   * garde le visuel dans sa bande quelle que soit sa proportion.
+   */
   hautY: number;
+  ancrage?: "haut" | "centre";
   aide: string;
 }
 
@@ -44,6 +56,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 9,
       cmMin: 5,
       cmMax: 14,
+      hauteurMaxCm: 12,
       centreX: COEUR_X,
       hautY: 0.18,
       aide: "Le petit logo classique, poitrine gauche.",
@@ -55,6 +68,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 12,
       cmMin: 8,
       cmMax: 20,
+      hauteurMaxCm: 20,
       centreX: 0.5,
       hautY: 0.17,
       aide: "Centré sous le col, format discret.",
@@ -66,6 +80,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 26,
       cmMin: 16,
       cmMax: LARGEUR_FILM_CM,
+      hauteurMaxCm: 36,
       centreX: 0.5,
       hautY: 0.2,
       aide: "Le format qui se voit de loin.",
@@ -77,6 +92,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 7,
       cmMin: 4,
       cmMax: 10,
+      hauteurMaxCm: 9,
       centreX: 0.52,
       hautY: 0.22,
       aide: "Petit marquage sur la manche.",
@@ -88,6 +104,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 28,
       cmMin: 12,
       cmMax: LARGEUR_FILM_CM,
+      hauteurMaxCm: 40,
       centreX: 0.5,
       hautY: 0.22,
       aide: "Grand format entre les omoplates.",
@@ -104,6 +121,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 9,
       cmMin: 5,
       cmMax: 14,
+      hauteurMaxCm: 12,
       centreX: COEUR_X,
       hautY: 0.21,
       aide: "Le petit logo classique, poitrine gauche.",
@@ -115,6 +133,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 12,
       cmMin: 8,
       cmMax: 20,
+      hauteurMaxCm: 20,
       centreX: 0.5,
       hautY: 0.2,
       aide: "Centré sous le col, format discret.",
@@ -126,6 +145,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 26,
       cmMin: 16,
       cmMax: LARGEUR_FILM_CM,
+      hauteurMaxCm: 36,
       centreX: 0.5,
       hautY: 0.23,
       aide: "Le format qui se voit de loin.",
@@ -137,6 +157,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 7,
       cmMin: 4,
       cmMax: 10,
+      hauteurMaxCm: 9,
       centreX: 0.52,
       hautY: 0.24,
       aide: "Petit marquage sur la manche.",
@@ -148,6 +169,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 28,
       cmMin: 12,
       cmMax: LARGEUR_FILM_CM,
+      hauteurMaxCm: 40,
       centreX: 0.5,
       hautY: 0.24,
       aide: "Grand format entre les omoplates.",
@@ -164,6 +186,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 9,
       cmMin: 5,
       cmMax: 13,
+      hauteurMaxCm: 12,
       centreX: COEUR_X,
       hautY: 0.26,
       aide: "Le petit logo classique, sous la capuche.",
@@ -175,6 +198,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 11,
       cmMin: 8,
       cmMax: 18,
+      hauteurMaxCm: 20,
       centreX: 0.5,
       hautY: 0.25,
       aide: "Centré sous la capuche, format discret.",
@@ -187,6 +211,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmMin: 14,
       // Au-dela, le marquage mord sur la poche kangourou.
       cmMax: 26,
+      hauteurMaxCm: 36,
       centreX: 0.5,
       hautY: 0.27,
       aide: "Limité par la poche kangourou.",
@@ -198,6 +223,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 7,
       cmMin: 4,
       cmMax: 10,
+      hauteurMaxCm: 9,
       centreX: 0.52,
       hautY: 0.28,
       aide: "Petit marquage sur la manche.",
@@ -209,6 +235,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 28,
       cmMin: 12,
       cmMax: LARGEUR_FILM_CM,
+      hauteurMaxCm: 40,
       centreX: 0.5,
       hautY: 0.33,
       aide: "Sous la capuche, entre les omoplates.",
@@ -225,10 +252,14 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       cmDefaut: 8,
       cmMin: 4,
       cmMax: 11,
+      // Mesure sur le packshot CV300 : la visiere commence a 64 % de la
+      // hauteur, et la calotte n'est assez large qu'a partir de 26 %. Reste
+      // une bande d'environ 5 cm, qui borne la hauteur du marquage.
+      hauteurMaxCm: 5,
       centreX: 0.5,
-      // Sur le panneau frontal, au-dessus de la visiere.
       hautY: 0.42,
-      aide: "Le seul emplacement marquable sur une casquette.",
+      ancrage: "centre",
+      aide: "Panneau avant, entre la couture et la visière.",
     },
   ],
 };

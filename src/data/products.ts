@@ -794,8 +794,9 @@ export const products: Product[] = [
     grammage: "130 g/m²",
     cut: "Droite, manches raglan, col rond",
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
-    // Le fournisseur ne publie pas de packshot par coloris. Les visuels
-    // ci-dessous sont ceux de l'atelier, herberges avec le site.
+    // Le fournisseur ne publie qu'une photo de groupe. Les dix coloris ont
+    // desormais leurs propres visuels, pris a l'atelier et herberges avec le
+    // site : plus aucun ne retombe sur le visuel par defaut.
     packshotSource: "none",
     colors: [
       {
@@ -882,6 +883,11 @@ export const products: Product[] = [
         name: "Fluor Lime",
         slug: "610",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/610_100.jpg",
+        images: [
+          "/textiles/mk520v/610-face.jpg",
+          "/textiles/mk520v/610-dos.jpg",
+          "/textiles/mk520v/610-profil.jpg",
+        ],
       },
       {
         name: "Fluor Pink",
@@ -896,7 +902,9 @@ export const products: Product[] = [
     ],
     certifications: [],
     defaultImages: [
-      "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK520V_SERIE_01_1000.jpg",
+      "/textiles/mk520v/100-face.jpg",
+      "/textiles/mk520v/100-dos.jpg",
+      "/textiles/mk520v/100-profil.jpg",
     ],
     price: "À partir de 7 €/pièce",
     prices: { solo: 10, team: 8, bestof: 7 },

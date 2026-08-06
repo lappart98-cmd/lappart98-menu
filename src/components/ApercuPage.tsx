@@ -88,11 +88,7 @@ export default function ApercuPage() {
           </h2>
           <p className="font-body text-sm text-white/45 mt-3 max-w-xl">
             {composition.apercus.length > 0
-              ? `${composition.logos.length > 1 ? "Tes visuels" : "Ton visuel"} et ${
-                  composition.apercus.length === 1
-                    ? "l'aperçu composé partiront"
-                    : "les aperçus composés partiront"
-                } avec la demande.`
+              ? `${composition.logos.length > 1 ? "Tes visuels" : "Ton visuel"} et la planche d'aperçu partiront avec la demande.`
               : "Compose un aperçu ci-dessus et il partira avec ta demande."}
           </p>
 

@@ -279,7 +279,9 @@ export default function ApercuLogo({
 
   const cle = `${urls.face}|${urls.profil}|${urls.dos}`;
   const enCours = charge?.cle !== cle;
-  const vuesChargees = charge?.vues ?? [];
+  // Memoise : sans cela, le tableau vide par defaut serait recree a chaque
+  // rendu et relancerait les calculs qui en dependent.
+  const vuesChargees = useMemo(() => charge?.vues ?? [], [charge]);
   const dosDisponible = vuesChargees.includes("dos");
   // Changer de textile peut faire disparaitre un angle : on retombe sur la
   // face sans avoir a corriger l'etat, donc sans rendu supplementaire.
@@ -374,30 +376,102 @@ export default function ApercuLogo({
     composer(canvasRef.current, vueAffichee, RENDU);
   }, [composer, vueAffichee, enCours]);
 
-  /** Rend chaque vue portant un marquage, en PNG. */
-  const exporter = useCallback(async (): Promise<File[]> => {
-    const fichiers: File[] = [];
-    for (const cible of ["face", "profil", "dos"] as Vue[]) {
-      const utilisee = emplacements.some(
-        (e) => e.vue === cible && reglageDe(e)?.actif
-      );
-      if (!utilisee || !vetementsRef.current[cible] || !visuelPour(cible))
-        continue;
+  /**
+   * Les vues qui portent un marquage et disposent d'un visuel.
+   *
+   * Deduit de l'etat, pas du ref des images : lire un ref pendant le rendu
+   * ne declencherait pas de nouveau rendu quand il change.
+   */
+  const vuesMarquees = useMemo(
+    () =>
+      vuesChargees.filter(
+        (cible) =>
+          visuelPour(cible) &&
+          emplacements.some((e) => e.vue === cible && reglageDe(e)?.actif)
+      ),
+    [vuesChargees, visuelPour, emplacements, reglageDe]
+  );
 
-      const canvas = document.createElement("canvas");
-      if (!composer(canvas, cible, RENDU * 2)) continue;
-      const blob = await new Promise<Blob | null>((r) =>
-        canvas.toBlob(r, "image/png")
+  /**
+   * Une seule planche pour toutes les vues marquees.
+   *
+   * Un fichier par cote obligeait a lancer autant de telechargements, et
+   * l'atelier recevait des images separees a rapprocher a la main. La planche
+   * porte son propre libelle : ouverte seule, elle dit de quel modele, de quel
+   * coloris et de quels marquages elle parle.
+   */
+  const composerPlanche = useCallback(
+    (cote: number): HTMLCanvasElement | null => {
+      if (vuesMarquees.length === 0) return null;
+
+      const vignettes: HTMLCanvasElement[] = [];
+      for (const cible of vuesMarquees) {
+        const c = document.createElement("canvas");
+        if (composer(c, cible, cote)) vignettes.push(c);
+      }
+      if (vignettes.length === 0) return null;
+
+      const hauteurVues = Math.max(...vignettes.map((v) => v.height));
+      const bandeau = Math.round(cote * 0.09);
+      const planche = document.createElement("canvas");
+      planche.width = vignettes.reduce((t, v) => t + v.width, 0);
+      planche.height = hauteurVues + bandeau;
+
+      const ctx = planche.getContext("2d");
+      if (!ctx) return null;
+      ctx.fillStyle = "#f5f5f5";
+      ctx.fillRect(0, 0, planche.width, planche.height);
+
+      let x = 0;
+      for (const v of vignettes) {
+        ctx.drawImage(v, x, 0);
+        x += v.width;
+      }
+
+      ctx.fillStyle = "#0A0A0A";
+      ctx.fillRect(0, hauteurVues, planche.width, bandeau);
+      ctx.fillStyle = "#C5FF00";
+      ctx.font = `bold ${Math.round(bandeau * 0.3)}px sans-serif`;
+      ctx.textBaseline = "middle";
+      const marge = Math.round(cote * 0.03);
+      ctx.fillText(
+        `${produit.ref} · ${produit.name}`,
+        marge,
+        hauteurVues + bandeau * 0.36
       );
-      if (!blob) continue;
-      fichiers.push(
-        new File([blob], `apercu-${produit.ref}-${cible}.png`, {
-          type: "image/png",
-        })
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = `${Math.round(bandeau * 0.26)}px sans-serif`;
+      const details = emplacements
+        .filter((e) => reglageDe(e)?.actif)
+        .map((e) => `${e.nom} ${reglageDe(e).cm} cm`)
+        .join("  ·  ");
+      const teinte =
+        produit.packshotSource === "none" ? "coloris à préciser" : coloris.name;
+      ctx.fillText(
+        `${teinte}  ·  ${details}`,
+        marge,
+        hauteurVues + bandeau * 0.72
       );
-    }
-    return fichiers;
-  }, [composer, produit.ref, emplacements, reglageDe, visuelPour]);
+
+      return planche;
+    },
+    [composer, vuesMarquees, emplacements, reglageDe, produit, coloris]
+  );
+
+  /** La planche, prete a joindre ou a telecharger. */
+  const exporter = useCallback(async (): Promise<File[]> => {
+    const planche = composerPlanche(RENDU);
+    if (!planche) return [];
+    const blob = await new Promise<Blob | null>((r) =>
+      // JPEG plutot que PNG : une planche de trois vues en PNG depasse les
+      // 4 Mo acceptes en piece jointe, pour un gain invisible sur un apercu.
+      planche.toBlob(r, "image/jpeg", 0.92)
+    );
+    if (!blob) return [];
+    return [
+      new File([blob], `apercu-${produit.ref}.jpg`, { type: "image/jpeg" }),
+    ];
+  }, [composerPlanche, produit.ref]);
 
   const resume = useMemo(() => {
     const parts = emplacements.filter((e) => reglageDe(e)?.actif).map((e) => {
@@ -461,15 +535,20 @@ export default function ApercuLogo({
   };
 
   const telecharger = async () => {
-    const fichiers = await exporter();
-    for (const f of fichiers) {
-      const url = URL.createObjectURL(f);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = f.name;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    const planche = composerPlanche(RENDU * 2);
+    if (!planche) return;
+    const blob = await new Promise<Blob | null>((r) =>
+      planche.toBlob(r, "image/jpeg", 0.95)
+    );
+    if (!blob) return;
+
+    const url = URL.createObjectURL(blob);
+    const lien = document.createElement("a");
+    lien.href = url;
+    lien.download = `apercu-${produit.ref}-${coloris.slug.toLowerCase()}.jpg`;
+    lien.click();
+    URL.revokeObjectURL(url);
+
     setTelecharge(true);
     setTimeout(() => setTelecharge(false), 2200);
   };
@@ -778,36 +857,43 @@ export default function ApercuLogo({
             })}
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-3">
-            {produit.colors.map((c) => (
-              <button
-                key={c.slug}
-                onClick={() => setColoris(c)}
-                title={c.name}
-                aria-label={c.name}
-                className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
-                  coloris.slug === c.slug
-                    ? "border-[#C5FF00] scale-110"
-                    : "border-[#333] hover:border-white/40"
-                }`}
-              >
-                <Image
-                  src={getColorSwatch(produit.ref, c)}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
+          {/* Sans photo par coloris, les pastilles ne feraient que promettre un
+              changement qui n'arrive pas. On annonce le coloris du visuel. */}
+          {produit.packshotSource !== "none" && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {produit.colors.map((c) => (
+                <button
+                  key={c.slug}
+                  onClick={() => setColoris(c)}
+                  title={c.name}
+                  aria-label={c.name}
+                  className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                    coloris.slug === c.slug
+                      ? "border-[#C5FF00] scale-110"
+                      : "border-[#333] hover:border-white/40"
+                  }`}
+                >
+                  <Image
+                    src={getColorSwatch(produit.ref, c)}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
           <p className="font-body text-[11px] text-white/35 mt-2">
-            {coloris.name} &middot; {produit.name}
+            {produit.packshotSource === "none"
+              ? produit.name
+              : `${coloris.name} · ${produit.name}`}
           </p>
           {produit.packshotSource === "none" && (
             <p className="font-body text-[11px] text-white/25 mt-1.5 leading-relaxed">
-              Le fournisseur ne photographie pas chaque coloris : l&apos;aperçu
-              garde la même teinte, mais le coloris choisi part bien avec ta
+              {produit.colors.length} coloris au catalogue, mais le fournisseur
+              n&apos;en photographie qu&apos;un : l&apos;aperçu sert à juger le
+              placement, pas la teinte. Précise le coloris voulu dans ta
               demande.
             </p>
           )}
@@ -827,6 +913,11 @@ export default function ApercuLogo({
             <>
               <Download className="w-4 h-4" strokeWidth={2.5} />
               Télécharger l&apos;aperçu
+              {actifs.length > 1 && (
+                <span className="font-body text-[11px] normal-case tracking-normal opacity-60">
+                  ({vuesMarquees.length} vues, 1 fichier)
+                </span>
+              )}
             </>
           )}
         </button>

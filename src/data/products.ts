@@ -990,7 +990,7 @@ export const products: Product[] = [
     brand: "K-Up",
     category: "Casquettes",
     description:
-      "Casquette trucker rétro 6 panneaux en polycoton. Visière mi-profil, panneaux avant rigidifiés du même coloris, filet arrière et languette de réglage plastique.",
+      "Casquette trucker rétro 6 panneaux en polycoton. Visière mi-profil, panneaux avant rigidifiés du même coloris, filet arrière et languette de réglage plastique. Existe aussi en Rouge et en quatre bicolores — Black/White, Navy/White, Forest Green/Light Grey, Rustic Orange/Beige — sur demande : le fournisseur ne les photographie pas.",
     material: "60 % coton / 40 % polyester",
     grammage: "210 g/m²",
     cut: "6 panneaux, visière mi-profil, réglage plastique",
@@ -1002,10 +1002,10 @@ export const products: Product[] = [
     ],
     certifications: [],
     defaultImages: getPackshotImages("KP912", "BLACK"),
-    // Prix repris de l'ancienne casquette : le tarif d'achat de cette
-    // reference n'a pas encore ete releve chez Toptex.
-    price: "À partir de 8 €/pièce",
-    prices: { solo: 11, team: 9, bestof: 8 },
+    // Achat 5,53 EUR HT : positionne comme le polo MK215CV (4,35 EUR HT),
+    // la reference la plus proche en prix de revient.
+    price: "À partir de 11 €/pièce",
+    prices: { solo: 14, team: 12, bestof: 11 },
   },
   {
     ref: "KP162",
@@ -1034,6 +1034,7 @@ export const products: Product[] = [
       { name: "Navy", slug: "NAVY" },
       { name: "Royal Blue", slug: "ROYALBLUE" },
       { name: "Forest Green", slug: "FORESTGREEN" },
+      { name: "Kelly Green", slug: "KELLYGREEN" },
       { name: "Khaki", slug: "KHAKI" },
       { name: "Lime", slug: "LIME" },
       { name: "Yellow", slug: "YELLOW" },
@@ -1042,6 +1043,8 @@ export const products: Product[] = [
     ],
     certifications: [],
     defaultImages: getPackshotImages("KP162", "BLACK"),
+    // Achat 1,67 EUR HT, moins cher que l'ancienne casquette a 2,73 : prix
+    // inchange pour le client, marge amelioree d'autant.
     price: "À partir de 8 €/pièce",
     prices: { solo: 11, team: 9, bestof: 8 },
   },

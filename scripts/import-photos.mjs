@@ -64,6 +64,7 @@ mkdirSync(SORTIE, { recursive: true });
 
 const script = `
 import sys, json, glob, os, re, colorsys
+from scipy.optimize import linear_sum_assignment
 import numpy as np
 from PIL import Image
 
@@ -105,8 +106,8 @@ def ecart(t, ref):
 import re as _re
 CHINE = _re.compile(r"heather|chin", _re.I)
 
-def couleur(t, grain):
-    """Le coloris le plus proche.
+def penalite(t, grain, slug):
+    """Cout d'attribuer une teinte photographiee a un coloris du nuancier.
 
     Trois cas resistent a la simple distance de couleur :
 
@@ -114,27 +115,26 @@ def couleur(t, grain):
       remontent vers 40, ce qui le rapproche numeriquement d'un marine. Ce
       qui les separe est l'absence de dominante, pas la luminosite ;
     - le blanc, symetriquement, plafonne bien avant 255 ;
-    - un gris chine est plus sombre en photo que sur sa pastille, au point
-      de tomber du cote du gris fonce. Mais il est mouchete, donc bien plus
-      granuleux : c'est le grain qui les departage, pas la teinte.
+    - un gris chine est plus sombre en photo que sur sa pastille, au point de
+      tomber du cote du gris fonce. Mais il est mouchete, donc bien plus
+      granuleux : c'est le grain qui les departage. Le critere ne vaut que sur
+      des teintes neutres, un pli sur un coloris franc elevant le grain aussi.
     """
     mx, mn = max(t), min(t)
     sat = (mx - mn) / mx if mx else 0
-    # Un vert bouteille ou un marine tres sombre passent sous 90 eux aussi.
-    # Seule l'absence de dominante signe le noir, d'ou un seuil serre.
-    if mx < 90 and sat < 0.20 and "200" in pastilles: return "200"
-    if mn > 190 and "100" in pastilles: return "100"
+    chine = CHINE.search(noms[slug]) is not None
 
-    autres = [s for s in pastilles if s not in ("100", "200")]
-    chines = [s for s in autres if CHINE.search(noms[s])]
-    if chines:
-        # Le grain ne departage que des gris : sur un coloris franc il monte
-        # aussi, par un pli ou une ombre, sans rien vouloir dire.
-        if sat < 0.15:
-            autres = chines if grain > 6 else [s for s in autres if s not in chines]
-        else:
-            autres = [s for s in autres if s not in chines]
-    return min(autres, key=lambda s: ecart(t, pastilles[s]))
+    if sat < 0.15 and chine != (grain > 6):
+        return 9.0
+    if mx < 90 and sat < 0.20:
+        return 0.0 if slug == "200" else 9.0
+    if slug == "200":
+        return 9.0
+    if mn > 190:
+        return 0.0 if slug == "100" else 9.0
+    if slug == "100":
+        return 9.0
+    return ecart(t, pastilles[slug])
 
 def sans_filigrane(im):
     """Blanchit le logo du fabricant sans toucher au vetement.
@@ -162,14 +162,55 @@ for p in sorted(glob.glob(os.path.join(source, "*"))):
     grain = float(np.asarray(z).astype(int).reshape(-1, 3).std(0).mean())
     y = int(H * .6)
     xs = [x for x in range(W) if sum(px[x, y]) < 735]
-    photos[p] = {"slug": couleur(t, grain), "teinte": t, "grain": round(grain, 1),
+    photos[p] = {"teinte": t, "grain": round(grain, 1),
                  "largeur": (max(xs) - min(xs) + 1) / W if xs else 0}
 
-par = {}
-for p, r in photos.items(): par.setdefault(r["slug"], []).append(p)
+# --- Regrouper les photos d'un meme vetement ---------------------------------
+#
+# Les vues d'un meme polo se suivent a la prise de vue et leur teinte ne varie
+# que de quelques unites ; d'un vetement au suivant elle saute. On coupe donc
+# la suite ordonnee sur ces ruptures.
+#
+# Regrouper par simple proximite de couleur ne marchait pas : de proche en
+# proche, un marron sombre, un noir et un kaki fonce finissaient dans le meme
+# paquet. L'ordre de prise de vue evite ce glissement.
+def rang(p):
+    nombres = re.findall(r"\\d+", os.path.basename(p))
+    return int(nombres[-1]) if nombres else 0
 
-# Trois vues par coloris. Au-dela, deux coloris ont ete confondus et les
-# fichiers s'ecraseraient en silence : mieux vaut le dire et ne rien ecrire.
+ordre = sorted(photos, key=rang)
+series = [[ordre[0]]]
+for precedent, courant in zip(ordre, ordre[1:]):
+    saut = sum(abs(a - b) for a, b in
+               zip(photos[precedent]["teinte"], photos[courant]["teinte"]))
+    if saut > 25:
+        series.append([courant])
+    else:
+        series[-1].append(courant)
+
+# --- Affecter un coloris distinct a chaque serie ------------------------------
+#
+# Deux verts proches designaient tous deux Kelly Green, laissant Real Green
+# vide. Une affectation un-a-un, qui minimise le total des ecarts plutot que
+# chaque ecart pris seul, tranche d'elle-meme ce genre de cas.
+libres = list(pastilles)
+cout = np.zeros((len(series), len(libres)))
+for i, serie in enumerate(series):
+    t = tuple(sum(c) / len(serie) for c in zip(*[photos[q]["teinte"] for q in serie]))
+    grain = sum(photos[q]["grain"] for q in serie) / len(serie)
+    for j, slug in enumerate(libres):
+        cout[i][j] = penalite(t, grain, slug)
+
+lignes, colonnes = linear_sum_assignment(cout)
+par = {}
+for i, j in zip(lignes, colonnes):
+    par[libres[j]] = series[i]
+    for p in series[i]:
+        photos[p]["slug"] = libres[j]
+
+# Une serie de plus de trois photos signale un regroupement rate : deux
+# coloris trop voisins auraient ete fondus, et les fichiers s'ecraseraient en
+# silence. Mieux vaut le dire et ne rien ecrire.
 trop = {s: len(g) for s, g in par.items() if len(g) > 3}
 if trop:
     print(json.dumps({"erreur": "trop de photos", "detail": {
@@ -178,18 +219,11 @@ if trop:
         for s in trop}}, ensure_ascii=False))
     sys.exit(2)
 
-# L'ordre de prise de vue departe face et dos. On trie sur le numero de photo,
-# pas sur le nom de fichier : celui-ci peut porter un prefixe quelconque selon
-# la facon dont les fichiers ont transite.
-def rang(p):
-    nombres = re.findall(r"\\d+", os.path.basename(p))
-    return int(nombres[-1]) if nombres else 0
-
 for slug, groupe in par.items():
     if len(groupe) == 3:
         # La vue de profil se reconnait a elle seule : le vetement y est bien
         # plus etroit que de face ou de dos.
-        groupe.sort(key=lambda p: photos[p]["largeur"])
+        groupe = sorted(groupe, key=lambda p: photos[p]["largeur"])
         photos[groupe[0]]["vue"] = "profil"
         reste = sorted(groupe[1:], key=rang)
     else:

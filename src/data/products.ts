@@ -922,115 +922,209 @@ export const products: Product[] = [
     grammage: "210 g/m²",
     cut: "Regular, patte 3 boutons, fentes latérales",
     sizes: ["S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
-    // Aucun packshot par coloris publie : seules les pastilles existent.
+    // Le fournisseur ne publie qu'une photo de groupe. Les coloris ci-dessous
+    // portent les visuels pris a l'atelier, herberges avec le site.
     packshotSource: "none",
     colors: [
       {
-        // Blanc vendu sous la reference MK215WV, avec son propre visuel.
         name: "White",
         slug: "100",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
-        images: [
-          "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK215WV_SERIE_01_1000.jpg",
-        ],
       },
       {
         name: "Black",
         slug: "200",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/200_100.jpg",
+        images: [
+          "/textiles/mk215cv/200-face.jpg",
+          "/textiles/mk215cv/200-dos.jpg",
+          "/textiles/mk215cv/200-profil.jpg",
+        ],
       },
       {
         name: "Dark Grey",
         slug: "201",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/201_100.jpg",
+        images: [
+          "/textiles/mk215cv/201-face.jpg",
+          "/textiles/mk215cv/201-dos.jpg",
+          "/textiles/mk215cv/201-profil.jpg",
+        ],
       },
       {
         name: "Heather Grey",
         slug: "202",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/202_100.jpg",
+        images: [
+          "/textiles/mk215cv/202-face.jpg",
+          "/textiles/mk215cv/202-dos.jpg",
+          "/textiles/mk215cv/202-profil.jpg",
+        ],
       },
       {
         name: "Sand",
         slug: "103",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/103_100.jpg",
+        images: [
+          "/textiles/mk215cv/103-face.jpg",
+          "/textiles/mk215cv/103-dos.jpg",
+          "/textiles/mk215cv/103-profil.jpg",
+        ],
       },
       {
         name: "Brown",
         slug: "104",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/104_100.jpg",
+        images: [
+          "/textiles/mk215cv/104-face.jpg",
+          "/textiles/mk215cv/104-dos.jpg",
+          "/textiles/mk215cv/104-profil.jpg",
+        ],
       },
       {
         name: "Gold",
         slug: "305",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/305_100.jpg",
+        images: [
+          "/textiles/mk215cv/305-face.jpg",
+          "/textiles/mk215cv/305-dos.jpg",
+          "/textiles/mk215cv/305-profil.jpg",
+        ],
       },
       {
         name: "Orange",
         slug: "301",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/301_100.jpg",
+        images: [
+          "/textiles/mk215cv/301-face.jpg",
+          "/textiles/mk215cv/301-dos.jpg",
+          "/textiles/mk215cv/301-profil.jpg",
+        ],
       },
       {
         name: "Red",
         slug: "400",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/400_100.jpg",
+        images: [
+          "/textiles/mk215cv/400-face.jpg",
+          "/textiles/mk215cv/400-dos.jpg",
+          "/textiles/mk215cv/400-profil.jpg",
+        ],
       },
       {
         name: "Wine",
         slug: "403",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/403_100.jpg",
+        images: [
+          "/textiles/mk215cv/403-face.jpg",
+          "/textiles/mk215cv/403-dos.jpg",
+          "/textiles/mk215cv/403-profil.jpg",
+        ],
       },
       {
         name: "Navy",
         slug: "500",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/500_100.jpg",
+        images: [
+          "/textiles/mk215cv/500-face.jpg",
+          "/textiles/mk215cv/500-dos.jpg",
+          "/textiles/mk215cv/500-profil.jpg",
+        ],
       },
       {
         name: "Royal Blue",
         slug: "502",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/502_100.jpg",
+        images: [
+          "/textiles/mk215cv/502-face.jpg",
+          "/textiles/mk215cv/502-dos.jpg",
+          "/textiles/mk215cv/502-profil.jpg",
+        ],
       },
       {
         name: "Sky Blue",
         slug: "501",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/501_100.jpg",
+        images: [
+          "/textiles/mk215cv/501-face.jpg",
+          "/textiles/mk215cv/501-dos.jpg",
+          "/textiles/mk215cv/501-profil.jpg",
+        ],
       },
       {
         name: "Atoll",
         slug: "505",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/505_100.jpg",
+        images: [
+          "/textiles/mk215cv/505-face.jpg",
+          "/textiles/mk215cv/505-dos.jpg",
+          "/textiles/mk215cv/505-profil.jpg",
+        ],
       },
       {
         name: "Kelly Green",
         slug: "600",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/600_100.jpg",
+        images: [
+          "/textiles/mk215cv/600-face.jpg",
+          "/textiles/mk215cv/600-dos.jpg",
+          "/textiles/mk215cv/600-profil.jpg",
+        ],
       },
       {
         name: "Real Green",
         slug: "605",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/605_100.jpg",
+        images: [
+          "/textiles/mk215cv/605-face.jpg",
+          "/textiles/mk215cv/605-dos.jpg",
+          "/textiles/mk215cv/605-profil.jpg",
+        ],
       },
       {
         name: "Khaki Green",
         slug: "601",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/601_100.jpg",
+        images: [
+          "/textiles/mk215cv/601-face.jpg",
+          "/textiles/mk215cv/601-dos.jpg",
+          "/textiles/mk215cv/601-profil.jpg",
+        ],
       },
       {
         name: "Bottle Green",
         slug: "602",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/602_100.jpg",
+        images: [
+          "/textiles/mk215cv/602-face.jpg",
+          "/textiles/mk215cv/602-dos.jpg",
+          "/textiles/mk215cv/602-profil.jpg",
+        ],
       },
       {
         name: "Sage",
         slug: "613",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/613_100.jpg",
+        images: [
+          "/textiles/mk215cv/613-face.jpg",
+          "/textiles/mk215cv/613-dos.jpg",
+          "/textiles/mk215cv/613-profil.jpg",
+        ],
       },
       {
         name: "Lime",
         slug: "604",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/604_100.jpg",
+        images: [
+          "/textiles/mk215cv/604-face.jpg",
+          "/textiles/mk215cv/604-dos.jpg",
+          "/textiles/mk215cv/604-profil.jpg",
+        ],
       },
     ],
     certifications: [],
+    // Le blanc n'est pas encore photographie : le visuel par defaut reste la
+    // photo de groupe du fournisseur, plutot qu'un polo d'un autre coloris.
     defaultImages: [
       "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK215CV_SERIE_01_1000.jpg",
     ],

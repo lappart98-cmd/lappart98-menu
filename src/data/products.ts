@@ -927,9 +927,16 @@ export const products: Product[] = [
     packshotSource: "none",
     colors: [
       {
+        // Le blanc est vendu sous une reference distincte, MK215WV, comme le
+        // t-shirt MK023. Regroupe ici sur une seule fiche.
         name: "White",
         slug: "100",
         swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
+        images: [
+          "/textiles/mk215cv/100-face.jpg",
+          "/textiles/mk215cv/100-dos.jpg",
+          "/textiles/mk215cv/100-profil.jpg",
+        ],
       },
       {
         name: "Black",
@@ -1113,10 +1120,10 @@ export const products: Product[] = [
       },
     ],
     certifications: [],
-    // Le blanc n'est pas encore photographie : le visuel par defaut reste la
-    // photo de groupe du fournisseur, plutot qu'un polo d'un autre coloris.
     defaultImages: [
-      "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK215CV_SERIE_01_1000.jpg",
+      "/textiles/mk215cv/100-face.jpg",
+      "/textiles/mk215cv/100-dos.jpg",
+      "/textiles/mk215cv/100-profil.jpg",
     ],
     price: "À partir de 11 €/pièce",
     prices: { solo: 14, team: 12, bestof: 11 },

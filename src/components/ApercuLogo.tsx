@@ -6,8 +6,8 @@ import { Upload, Download, Loader2, X, Check } from "lucide-react";
 import {
   products,
   getColorImages,
-  getPackshotImages,
   getColorSwatch,
+  hasColorPhoto,
   type Product,
   type ProductColor,
 } from "@/data/products";
@@ -22,9 +22,12 @@ import {
   type Vue,
 } from "@/lib/apercu";
 
-/** Le relais rend l'image de meme origine, seule condition pour l'exporter. */
+/**
+ * Rend l'image de meme origine, seule condition pour pouvoir exporter le
+ * canvas. Nos propres fichiers le sont deja : les relayer serait un detour.
+ */
 const viaRelais = (url: string) =>
-  `/api/packshot?url=${encodeURIComponent(url)}`;
+  url.startsWith("http") ? `/api/packshot?url=${encodeURIComponent(url)}` : url;
 
 /** Cote du rendu a l'ecran. L'export double cette resolution. */
 const RENDU = 900;
@@ -32,12 +35,20 @@ const RENDU = 900;
 const FORMATS_LOGO = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 const POIDS_MAX = 6 * 1024 * 1024;
 
-// Un article par famille : proposer les vingt references du catalogue noyait
-// le choix, alors que la geometrie du marquage ne depend que de la famille.
-// Changer un modele ici suffit a changer celui de l'apercu.
-const REFERENCES = ["NS332", "NS443", "NS444", "KP162", "KI3223"];
+// Une poignee de references plutot que les vingt du catalogue, qui noyaient
+// le choix. Ajouter une ligne ici suffit a proposer un modele de plus.
+const REFERENCES: Array<[string, string]> = [
+  ["NS332", "T-shirt oversize"],
+  ["MK520V", "T-shirt technique"],
+  ["NS443", "Sweat col rond"],
+  ["NS444", "Sweat à capuche"],
+  ["KP162", "Casquette"],
+  ["KI3223", "Tote bag"],
+];
 
-const textiles = REFERENCES.map((ref) =>
+const LIBELLE: Record<string, string> = Object.fromEntries(REFERENCES);
+
+const textiles = REFERENCES.map(([ref]) =>
   products.find((p) => p.ref === ref)!,
 ).filter(Boolean);
 
@@ -45,14 +56,6 @@ const ETIQUETTE_VUE: Record<Vue, string> = {
   face: "Devant",
   profil: "Profil",
   dos: "Dos",
-};
-
-const ETIQUETTE_FAMILLE: Record<Famille, string> = {
-  tshirt: "T-shirt",
-  sweat: "Sweat col rond",
-  hoodie: "Sweat à capuche",
-  casquette: "Casquette",
-  totebag: "Tote bag",
 };
 
 /** Un reglage par famille et par emplacement : changer de textile ne perd rien. */
@@ -260,22 +263,22 @@ export default function ApercuLogo({
 
   const famille = familleDe(produit);
   const emplacements = emplacementsDe(famille);
+  const colorisPhotographies = produit.colors.some((c) =>
+    hasColorPhoto(produit, c),
+  );
   const reglageDe = useCallback(
     (e: Emplacement) => reglages[cleReglage(famille, e.id)],
     [reglages, famille],
   );
 
   const urls = useMemo(() => {
-    const face = getColorImages(produit, coloris)[0];
-    // Seul Toptex publie le dos (-B) et le profil (-S).
-    const autres =
-      produit.packshotSource === "none"
-        ? null
-        : getPackshotImages(produit.ref, coloris.slug);
+    // Meme ordre partout : face, dos, profil. C'est celui des packshots
+    // Toptex comme celui des visuels pris a l'atelier.
+    const [face, dos, profil] = getColorImages(produit, coloris);
     return {
-      face: viaRelais(face),
-      profil: autres ? viaRelais(autres[2]) : null,
-      dos: autres ? viaRelais(autres[1]) : null,
+      face: face ? viaRelais(face) : null,
+      dos: dos ? viaRelais(dos) : null,
+      profil: profil ? viaRelais(profil) : null,
     };
   }, [produit, coloris]);
 
@@ -333,7 +336,8 @@ export default function ApercuLogo({
       const chargees: Partial<Record<Vue, HTMLImageElement>> = {};
       for (const cible of ["face", "profil", "dos"] as Vue[]) {
         const url = urls[cible];
-        if (!url) continue;
+        // Un angle sans marquage possible n'a pas a etre telecharge.
+        if (!url || !emplacements.some((e) => e.vue === cible)) continue;
         const img = await chargerImage(url).catch(() => null);
         if (annule) return;
         if (img) chargees[cible] = img;
@@ -357,7 +361,7 @@ export default function ApercuLogo({
     return () => {
       annule = true;
     };
-  }, [urls, cle]);
+  }, [urls, cle, emplacements]);
 
   /** Compose une vue sur un canvas ; sert a l'ecran comme a l'export. */
   const composer = useCallback(
@@ -1010,7 +1014,7 @@ export default function ApercuLogo({
                       choisi ? "text-[#C5FF00]" : "text-white"
                     }`}
                   >
-                    {ETIQUETTE_FAMILLE[familleDe(p)]}
+                    {LIBELLE[p.ref]}
                   </span>
                   <span className="font-body text-[10px] text-white/30 block mt-0.5">
                     {p.ref} &middot; {p.grammage}
@@ -1020,9 +1024,11 @@ export default function ApercuLogo({
             })}
           </div>
 
-          {/* Sans photo par coloris, les pastilles ne feraient que promettre un
-              changement qui n'arrive pas. On annonce le coloris du visuel. */}
-          {produit.packshotSource !== "none" && (
+                  {/* Sans photo par coloris, les pastilles ne feraient que promettre un
+              changement qui n'arrive pas. Ce qui compte est l'existence des
+              visuels, pas leur provenance : le t-shirt technique n'en a pas
+              chez son fournisseur, mais l'atelier les a photographies. */}
+          {colorisPhotographies && (
             <div className="flex flex-wrap gap-2 mt-3">
               {produit.colors.map((c) => (
                 <button
@@ -1048,11 +1054,11 @@ export default function ApercuLogo({
             </div>
           )}
           <p className="font-body text-[11px] text-white/35 mt-2">
-            {produit.packshotSource === "none"
-              ? produit.name
-              : `${coloris.name} · ${produit.name}`}
+            {colorisPhotographies
+              ? `${coloris.name} · ${produit.name}`
+              : produit.name}
           </p>
-          {produit.packshotSource === "none" && (
+          {!colorisPhotographies && (
             <p className="font-body text-[11px] text-white/25 mt-1.5 leading-relaxed">
               {produit.colors.length} coloris au catalogue, mais le fournisseur
               n&apos;en photographie qu&apos;un : l&apos;aperçu sert à juger le

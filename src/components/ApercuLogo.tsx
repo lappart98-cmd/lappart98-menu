@@ -40,6 +40,7 @@ const POIDS_MAX = 6 * 1024 * 1024;
 const REFERENCES: Array<[string, string]> = [
   ["NS332", "T-shirt oversize"],
   ["MK520V", "T-shirt technique"],
+  ["MK215CV", "Polo"],
   ["NS443", "Sweat col rond"],
   ["NS444", "Sweat à capuche"],
   ["KP162", "Casquette"],

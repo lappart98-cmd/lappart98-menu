@@ -9,7 +9,13 @@
 import type { Product } from "@/data/products";
 
 export type Vue = "face" | "profil" | "dos";
-export type Famille = "tshirt" | "sweat" | "hoodie" | "casquette" | "totebag";
+export type Famille =
+  | "tshirt"
+  | "polo"
+  | "sweat"
+  | "hoodie"
+  | "casquette"
+  | "totebag";
 
 export interface Emplacement {
   id: string;
@@ -95,6 +101,35 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       hauteurMaxCm: 40,
       centreX: 0.5,
       hautY: 0.22,
+      aide: "Grand format entre les omoplates.",
+    },
+  ],
+
+  // Un polo ne se marque ni au centre ni en grand devant : la patte de boutons
+  // occupe toute la hauteur utile de la poitrine. Restent le coeur et le dos.
+  polo: [
+    {
+      id: "coeur",
+      nom: "Cœur",
+      vue: "face",
+      cmDefaut: 9,
+      cmMin: 5,
+      cmMax: 12,
+      hauteurMaxCm: 12,
+      centreX: 0.68,
+      hautY: 0.21,
+      aide: "Poitrine gauche, à côté de la patte de boutons.",
+    },
+    {
+      id: "dos",
+      nom: "Dos",
+      vue: "dos",
+      cmDefaut: 28,
+      cmMin: 12,
+      cmMax: LARGEUR_FILM_CM,
+      hauteurMaxCm: 40,
+      centreX: 0.5,
+      hautY: 0.24,
       aide: "Grand format entre les omoplates.",
     },
   ],
@@ -294,6 +329,7 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
 export function familleDe(product: Product): Famille {
   if (product.category === "Casquettes") return "casquette";
   if (product.category === "Sacs") return "totebag";
+  if (product.category === "Polos") return "polo";
   if (product.category === "Sweats col rond") return "sweat";
   if (product.category === "Sweats à capuche") return "hoodie";
   return "tshirt";
@@ -316,6 +352,7 @@ export function largeurVetementCm(product: Product): number {
   if (famille === "totebag") return 38;
   if (product.cut.toLowerCase().includes("oversize")) return 58;
   if (famille === "hoodie" || famille === "sweat") return 56;
+  if (famille === "polo") return 54;
   return 52;
 }
 

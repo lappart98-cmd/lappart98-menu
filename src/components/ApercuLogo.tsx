@@ -390,16 +390,17 @@ export default function ApercuLogo({
         // deja la largeur du vetement, on s'y fie directement.
         cmParPixel = largeurVetementCm(produit) / (boite.largeur * k);
       } else {
-        // Les trois packshots sont pris a la meme echelle : la hauteur du
-        // vetement y est identique. On calibre donc les centimetres sur la
-        // vue de face, ou la largeur reelle est connue, et on reporte.
-        const face = vetementsRef.current.face;
-        const reference = face ?? vetement;
-        const rapport = reference.boite.hauteur
-          ? boite.hauteur / reference.boite.hauteur
-          : 1;
+        // Les packshots d'une meme reference sont pris a la meme echelle : le
+        // rapport pixels/centimetre y est constant. On le calibre donc une
+        // fois sur la vue de face, ou la largeur reelle est connue, et on
+        // l'applique tel quel aux autres vues.
+        //
+        // Le reporter au prorata des hauteurs serait faux : un t-shirt fait
+        // la meme hauteur de face et de profil, mais une casquette non.
+        const reference = vetementsRef.current.face ?? vetement;
+        const kFace = canvas.width / reference.image.naturalWidth;
         cmParPixel =
-          largeurVetementCm(produit) / (reference.boite.largeur * k * rapport);
+          largeurVetementCm(produit) / (reference.boite.largeur * kFace);
       }
 
       for (const e of emplacements) {
@@ -921,7 +922,7 @@ export default function ApercuLogo({
           </div>
           <p className="font-body text-[11px] text-white/25 mt-2.5 leading-relaxed">
             {famille === "casquette"
-              ? "Une casquette ne se marque que sur son panneau avant : ni dos, ni grand format."
+              ? "Trois zones étroites sur une casquette : le panneau avant, un côté, l'arrière au-dessus de la fermeture. Un seul marquage par vue."
               : famille === "hoodie"
                 ? "Un seul marquage par face. Le grand devant s'arrête à 26 cm pour ne pas mordre sur la poche kangourou."
                 : "Un seul marquage par face : les formats avant occupent la même zone. Largeur limitée à 30 cm, celle du film DTF de l'atelier."}

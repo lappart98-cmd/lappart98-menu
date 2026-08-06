@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
+import ApercuTeaser from "@/components/ApercuTeaser";
 import MenuBoard from "@/components/MenuBoard";
 import Process from "@/components/Process";
 import Contact from "@/components/Contact";
@@ -16,6 +17,7 @@ export default function Home() {
       <Hero />
       <Marquee />
       <MenuBoard />
+      <ApercuTeaser />
       <Process />
       <Marquee />
       <CatalogueTeaser />

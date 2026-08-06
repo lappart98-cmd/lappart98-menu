@@ -242,8 +242,9 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
     },
   ],
 
-  // Une casquette ne se marque que sur le panneau avant : pas de dos, pas de
-  // grand format. La largeur utile d'un panneau plafonne vers 11 cm.
+  // Une casquette se marque sur trois zones etroites : le panneau avant, un
+  // cote, et l'arriere au-dessus de la fermeture. Aucun grand format : la
+  // largeur utile d'un panneau plafonne vers 11 cm, et la hauteur bien avant.
   casquette: [
     {
       id: "face-avant",
@@ -260,6 +261,34 @@ const EMPLACEMENTS_PAR_FAMILLE: Record<Famille, Emplacement[]> = {
       hautY: 0.39,
       ancrage: "centre",
       aide: "Panneau avant, entre la couture et la visière.",
+    },
+    {
+      id: "cote",
+      nom: "Côté",
+      vue: "profil",
+      cmDefaut: 5,
+      cmMin: 3,
+      cmMax: 7,
+      // Le panneau lateral est court : la hauteur limite avant la couture.
+      hauteurMaxCm: 3.5,
+      centreX: 0.56,
+      hautY: 0.44,
+      ancrage: "centre",
+      aide: "Petit marquage sur le panneau latéral.",
+    },
+    {
+      id: "arriere",
+      nom: "Arrière",
+      vue: "dos",
+      cmDefaut: 6,
+      cmMin: 3,
+      cmMax: 8,
+      // Au-dessus de la fermeture, qui occupe le bas du panneau arriere.
+      hauteurMaxCm: 3.5,
+      centreX: 0.5,
+      hautY: 0.42,
+      ancrage: "centre",
+      aide: "Au-dessus de la fermeture.",
     },
   ],
 };
@@ -411,36 +440,36 @@ export const PHOTOS_PORTEES: Record<
   NS332: {
     face: {
       url: `${PICTURES}/NS332-2_2025.jpg`,
-      boite: { x: 0.19, y: 0.24, largeur: 0.61, hauteur: 0.44 },
+      boite: { x: 0.2, y: 0.285, largeur: 0.59, hauteur: 0.38 },
       coloris: "Organic Khaki",
     },
     dos: {
       url: `${PICTURES}/NS332-4_2025.jpg`,
-      boite: { x: 0.135, y: 0.275, largeur: 0.64, hauteur: 0.48 },
+      boite: { x: 0.145, y: 0.335, largeur: 0.63, hauteur: 0.425 },
       coloris: "Organic Khaki",
     },
   },
   NS443: {
     face: {
       url: `${PICTURES}/NS443-3_2026.jpg`,
-      boite: { x: 0.22, y: 0.26, largeur: 0.46, hauteur: 0.42 },
+      boite: { x: 0.22, y: 0.3, largeur: 0.46, hauteur: 0.4 },
       coloris: "Navy Blue",
     },
     dos: {
       url: `${PICTURES}/NS443-7_2026.jpg`,
-      boite: { x: 0.24, y: 0.26, largeur: 0.48, hauteur: 0.45 },
+      boite: { x: 0.24, y: 0.3, largeur: 0.48, hauteur: 0.43 },
       coloris: "Navy Blue",
     },
   },
   NS444: {
     face: {
       url: `${PICTURES}/NS444-4_2026.jpg`,
-      boite: { x: 0.29, y: 0.28, largeur: 0.39, hauteur: 0.44 },
+      boite: { x: 0.29, y: 0.3, largeur: 0.39, hauteur: 0.42 },
       coloris: "Black",
     },
     dos: {
       url: `${PICTURES}/NS444-7_2026.jpg`,
-      boite: { x: 0.28, y: 0.24, largeur: 0.42, hauteur: 0.48 },
+      boite: { x: 0.28, y: 0.27, largeur: 0.42, hauteur: 0.46 },
       coloris: "Black",
     },
   },

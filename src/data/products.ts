@@ -917,7 +917,7 @@ export const products: Product[] = [
     brand: "Mukua",
     category: "Polos",
     description:
-      "Polo unisexe en tissu piqué 35 % coton RingSpun / 65 % polyester, 210 g. Patte 3 boutons, bande de propreté renforcée au col, col et manches côtes 1x1, fentes latérales, coupe regular.",
+      "Polo unisexe en tissu piqué 35 % coton RingSpun / 65 % polyester, 210 g. Patte 3 boutons, bande de propreté renforcée au col, col et manches côtes 1x1, fentes latérales, coupe regular. Le coloris Real Green, trop proche du Kelly Green pour être distingué en photo, reste commandable sur demande.",
     material: "35 % coton RingSpun / 65 % polyester (Heather Grey : 85 % coton / 15 % viscose)",
     grammage: "210 g/m²",
     cut: "Regular, patte 3 boutons, fentes latérales",
@@ -1069,16 +1069,6 @@ export const products: Product[] = [
           "/textiles/mk215cv/600-face.jpg",
           "/textiles/mk215cv/600-dos.jpg",
           "/textiles/mk215cv/600-profil.jpg",
-        ],
-      },
-      {
-        name: "Real Green",
-        slug: "605",
-        swatch: "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/605_100.jpg",
-        images: [
-          "/textiles/mk215cv/605-face.jpg",
-          "/textiles/mk215cv/605-dos.jpg",
-          "/textiles/mk215cv/605-profil.jpg",
         ],
       },
       {

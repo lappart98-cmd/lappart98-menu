@@ -19,6 +19,36 @@ export const ATELIER = {
   siteAffiche: "www.lappart98.com",
 } as const;
 
+/**
+ * Les horaires, sous deux formes.
+ *
+ * `affichage` est ce que lit un visiteur ; `machine` est ce que Google avale
+ * dans la fiche LocalBusiness. Les deux vivent cote a cote pour qu'un
+ * changement d'horaire ne puisse pas n'en corriger qu'une seule.
+ *
+ * Les jours feries ne s'expriment pas en JSON-LD sans lister chaque date : ils
+ * ne figurent donc que dans le texte visible.
+ */
+export const HORAIRES = {
+  affichage: {
+    jours: "Du lundi au samedi",
+    heures: "9h – 17h",
+    fermeture: "Fermé le dimanche et les jours fériés",
+  },
+  machine: {
+    jours: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ],
+    ouverture: "09:00",
+    fermeture: "17:00",
+  },
+} as const;
+
 /** Le lien « Email » des boutons d'appel : sujet et corps deja remplis. */
 export const LIEN_MAIL_DEVIS =
   `mailto:${ATELIER.email}` +

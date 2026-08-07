@@ -9,10 +9,12 @@ import InstagramFeed from "@/components/InstagramFeed";
 import GoogleReviews from "@/components/GoogleReviews";
 import CatalogueTeaser from "@/components/CatalogueTeaser";
 import Footer from "@/components/Footer";
+import DonneesStructurees from "@/components/DonneesStructurees";
 
 export default function Home() {
   return (
     <main>
+      <DonneesStructurees />
       <Navbar />
       <Hero />
       <Marquee />

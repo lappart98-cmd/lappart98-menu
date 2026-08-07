@@ -2,8 +2,16 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { MapPin, Phone, AtSign, Globe, MessageCircle, Mail } from "lucide-react";
-import { ATELIER, LIEN_MAIL_DEVIS } from "@/data/contact";
+import {
+  MapPin,
+  Phone,
+  AtSign,
+  Globe,
+  MessageCircle,
+  Mail,
+  Clock,
+} from "lucide-react";
+import { ATELIER, HORAIRES, LIEN_MAIL_DEVIS } from "@/data/contact";
 
 const contactItems = [
   {
@@ -87,6 +95,31 @@ export default function Contact() {
             </motion.a>
           ))}
         </div>
+
+        {/* Les horaires ne sont pas un lien : on les lit, on ne clique pas
+            dessus. D'ou la carte a part, hors de la grille. */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+          className="bg-[#141414] border border-[#222] p-6 flex items-center gap-4 mb-12"
+        >
+          <div className="w-12 h-12 bg-[#C5FF00]/10 rounded-xl flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5 text-[#C5FF00]" strokeWidth={1.5} />
+          </div>
+          <div>
+            <span className="font-heading text-[10px] tracking-[0.2em] text-white/40 uppercase block">
+              Horaires
+            </span>
+            <span className="font-body text-sm text-white">
+              {HORAIRES.affichage.jours}, {HORAIRES.affichage.heures}
+            </span>
+            <span className="font-body text-xs text-white/40 block mt-0.5">
+              {HORAIRES.affichage.fermeture}
+            </span>
+          </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

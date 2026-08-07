@@ -16,8 +16,11 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Marquee />
-      <MenuBoard />
+      {/* L'apercu passe avant le menu : c'est la seule chose que personne
+          d'autre ne propose, et c'est gratuit et sans engagement. Le tarif
+          vient ensuite, pour qui a deja vu son logo sur un vetement. */}
       <ApercuTeaser />
+      <MenuBoard />
       <Process />
       <Marquee />
       <CatalogueTeaser />

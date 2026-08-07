@@ -38,9 +38,10 @@ export default function ApercuTeaser() {
               </h2>
 
               <p className="font-body text-sm text-white/50 leading-relaxed mt-3 max-w-md">
-                Dépose ton visuel, choisis le vêtement et l&apos;emplacement :
-                cœur, grand devant, manche ou dos. Tu télécharges l&apos;aperçu
-                ou tu l&apos;envoies avec ta demande de devis.
+                T-shirt, polo, sweat, hoodie, casquette ou tote bag : dépose
+                ton visuel, place-le au cœur, en grand devant ou dans le dos.
+                Tu télécharges l&apos;aperçu ou tu l&apos;envoies avec ta
+                demande de devis.
               </p>
             </div>
 

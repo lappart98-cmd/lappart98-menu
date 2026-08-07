@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, MessageCircle, Mail } from "lucide-react";
+import { LIEN_MAIL_DEVIS } from "@/data/contact";
 
 const links = [
   { label: "Menus", href: "#menus" },
@@ -73,7 +74,7 @@ export default function Navbar() {
                   <span className="font-heading text-sm uppercase tracking-wider">WhatsApp</span>
                 </a>
                 <a
-                  href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+                  href={LIEN_MAIL_DEVIS}
                   className="flex items-center gap-3 px-4 py-3 text-white hover:bg-[#C5FF00] hover:text-[#0A0A0A] transition-colors duration-200 cursor-pointer"
                 >
                   <Mail className="w-4 h-4" strokeWidth={2} />
@@ -124,7 +125,7 @@ export default function Navbar() {
                   WhatsApp
                 </a>
                 <a
-                  href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+                  href={LIEN_MAIL_DEVIS}
                   onClick={() => setMobileOpen(false)}
                   className="flex-1 flex items-center justify-center gap-2 bg-[#C5FF00] text-[#0A0A0A] px-4 py-3 font-heading text-sm font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"
                 >

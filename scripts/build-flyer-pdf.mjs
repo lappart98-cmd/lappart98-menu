@@ -90,8 +90,15 @@ function dataUri(absPath, maxPx) {
   return `data:${MIME[ext] ?? "image/png"};base64,${readFileSync(src).toString("base64")}`;
 }
 
-const SITE = "https://lappart98-menu.vercel.app/catalogue";
-const qrPath = join(CACHE, "flyer-qr.png");
+// Le domaine definitif, pas l'URL de deploiement Vercel : un flyer vit des
+// mois, l'adresse imprimee doit survivre a un changement d'hebergeur.
+const SITE = "https://www.lappart98.com/catalogue";
+// Le cache porte l'empreinte de l'adresse : changer SITE regenere le QR au
+// lieu de resservir celui qui menait ailleurs.
+const qrPath = join(
+  CACHE,
+  `flyer-qr-${createHash("sha1").update(SITE).digest("hex").slice(0, 10)}.png`
+);
 if (!existsSync(qrPath)) {
   execFileSync("curl", ["-sL", "--max-time", "30", "-o", qrPath,
     `https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=0&ecc=M&data=${encodeURIComponent(SITE)}`]);
@@ -369,7 +376,7 @@ h1 em { color: ${LIME}; font-style: normal; }
       <div>
         <div class="h">Le catalogue<br>complet</div>
         <div class="d">${products.length} references, ${gammes.length} gammes, toutes les tailles et coloris.</div>
-        <div class="u">lappart98-menu.vercel.app</div>
+        <div class="u">www.lappart98.com/catalogue</div>
       </div>
     </div>
   </div>
@@ -380,7 +387,7 @@ h1 em { color: ${LIME}; font-style: normal; }
       <div><span class="k">Atelier</span>65 rue Charles Frerot, 94250 Gentilly</div>
       <div><span class="k">WhatsApp</span>06 75 00 86 33</div>
       <div><span class="k">Instagram</span>@lappart_98</div>
-      <div><span class="k">Mail</span>contact@lappart98.fr</div>
+      <div><span class="k">Mail</span>contact@lappart98.com</div>
     </div>
   </div>
 </div>

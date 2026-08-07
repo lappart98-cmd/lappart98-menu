@@ -3,31 +3,32 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { MapPin, Phone, AtSign, Globe, MessageCircle, Mail } from "lucide-react";
+import { ATELIER, LIEN_MAIL_DEVIS } from "@/data/contact";
 
 const contactItems = [
   {
     icon: MapPin,
     label: "Atelier",
-    value: "65 rue Charles Frérot, 94250 Gentilly",
+    value: ATELIER.adresse,
     href: "https://maps.google.com/?q=65+rue+Charles+Frerot+94250+Gentilly",
   },
   {
     icon: Phone,
     label: "WhatsApp",
-    value: "06 75 00 86 33",
-    href: "https://wa.me/33675008633",
+    value: ATELIER.telephone,
+    href: ATELIER.whatsapp,
   },
   {
     icon: AtSign,
     label: "Instagram",
-    value: "@lappart_98",
-    href: "https://instagram.com/lappart_98",
+    value: ATELIER.instagramPseudo,
+    href: ATELIER.instagram,
   },
   {
     icon: Globe,
     label: "Site web",
-    value: "www.lappart98.com",
-    href: "https://www.lappart98.com",
+    value: ATELIER.siteAffiche,
+    href: ATELIER.site,
   },
 ];
 
@@ -107,7 +108,7 @@ export default function Contact() {
               WhatsApp
             </motion.a>
             <motion.a
-              href="mailto:contact@lappart98.fr?subject=Demande%20de%20devis&body=Salut%20!%20Je%20voudrais%20un%20devis%20pour%20du%20textile%20personnalis%C3%A9.%0AMerci%20!"
+              href={LIEN_MAIL_DEVIS}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               className="inline-flex items-center gap-3 bg-[#C5FF00] text-[#0A0A0A] px-8 py-5 font-heading text-lg font-bold tracking-wider uppercase hover:bg-[#9ECC00] transition-colors duration-200 cursor-pointer"

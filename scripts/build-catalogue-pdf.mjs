@@ -70,8 +70,17 @@ function cacheImage(url, maxPx) {
   const out = join(CACHE, `${name}-${maxPx}.jpg`);
 
   if (!existsSync(out)) {
-    const raw = join(CACHE, `${name}.raw`);
+    // Les photos d'atelier (MK520V, MK215CV...) vivent dans public/ et sont
+    // referencees par un chemin absolu du site : curl ne sait pas les lire.
+    const raw = url.startsWith("/")
+      ? join(ROOT, "public", url.slice(1))
+      : join(CACHE, `${name}.raw`);
     if (!existsSync(raw)) {
+      if (url.startsWith("/")) {
+        console.warn(`  visuel local introuvable, ignore : ${url}`);
+        localFor.set(url, null);
+        return null;
+      }
       execFileSync("curl", ["-sL", "--max-time", "40", "-o", raw, url]);
     }
     try {
@@ -268,7 +277,7 @@ const html = `<!doctype html>
   <div class="meta">
     <b>${products.length} references</b> &middot; ${categories.length - 1} categories<br>
     65 rue Charles Frerot, 94250 Gentilly<br>
-    06 75 00 86 33 &middot; contact@lappart98.fr<br>
+    06 75 00 86 33 &middot; contact@lappart98.com<br>
     www.lappart98.com
   </div>
 </section>

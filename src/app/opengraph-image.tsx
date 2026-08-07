@@ -44,7 +44,8 @@ export default async function Image() {
           fontFamily: "Oswald",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* Pas de next/image ici : satori rend le JSX hors du navigateur et
+            ne connait que la balise brute. */}
         <img src={logoSrc} alt="" width={520} height={77} />
 
         <div style={{ display: "flex", flexDirection: "column" }}>

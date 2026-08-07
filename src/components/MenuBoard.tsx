@@ -6,6 +6,7 @@ import {
   Star,
   Users,
   Trophy,
+  Info,
   X,
   ChevronRight,
   Check,
@@ -138,7 +139,7 @@ const techniques = [
   {
     id: "broderie",
     name: "Broderie",
-    desc: "Rendu premium, idéal logos & casquettes",
+    desc: "Rendu premium, idéal logos & casquettes — 10 pièces minimum sur casquette",
     tag: "Premium",
     prix: { dos: 14, coeur: 6, logoSup: 5 },
     // Digitalisation : facturee par visuel distinct, une seule fois
@@ -146,6 +147,11 @@ const techniques = [
     fraisFichier: 40,
   },
 ];
+
+// Broder une casquette demande un calage machine par serie : en dessous de dix
+// pieces le reglage coute plus cher que la commande. Le DTF n'a pas cette
+// contrainte, d'ou une regle portee par la seule broderie.
+const MINI_BRODERIE_CASQUETTE = 10;
 
 const menus: MenuItem[] = [
   {
@@ -417,6 +423,16 @@ function Configurator({
   const fraisFichier = totalQty > 0 ? technique.fraisFichier * nbLogos : 0;
   const totalEstimate = textileTotal + flocageTotal + fraisFichier;
 
+  // La casquette brodee a son propre plancher. On previent au lieu de bloquer :
+  // le client peut vouloir en parler, ou basculer le reste de sa commande.
+  const qteCasquettes = cart
+    .filter((c) => c.textileId === "casquette")
+    .reduce((sum, c) => sum + c.qty, 0);
+  const casquetteSousMini =
+    technique.id === "broderie" &&
+    qteCasquettes > 0 &&
+    qteCasquettes < MINI_BRODERIE_CASQUETTE;
+
   const cartLines = cart
     .filter((c) => c.qty > 0)
     .map((c) => {
@@ -450,7 +466,12 @@ function Configurator({
     ? `\nFichiers broderie : ${nbLogos} x ${technique.fraisFichier}€ = ${fraisFichier}€ (une fois)`
     : "";
 
-  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "À définir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${technique.name}${ligneFichier}\nTotal pièces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT\n\nMerci !`;
+  // Le plancher casquette voyage avec la demande : sans lui, l'atelier recoit
+  // une estimation qu'il ne peut pas tenir sans rappeler le client.
+  const ligneMiniCasquette = casquetteSousMini
+    ? `\n\n/!\\ Broderie sur casquette demandee pour ${qteCasquettes} piece(s), le minimum est de ${MINI_BRODERIE_CASQUETTE}.`
+    : "";
+  const devisBody = `Salut ! Je voudrais un devis pour le ${activeMenu.name}.\n\nArticles :\n${cartLines || "À définir"}\n\nFlocage : ${flocageDesc}\nTechnique : ${technique.name}${ligneFichier}\nTotal pièces : ${totalQty}\nEstimation : ~${totalEstimate}€ HT${ligneMiniCasquette}\n\nMerci !`;
   const whatsappMsg = encodeURIComponent(devisBody);
 
   const steps = [
@@ -983,6 +1004,29 @@ function Configurator({
                       );
                     })}
                   </div>
+                  {casquetteSousMini && (
+                    <div
+                      role="status"
+                      className="mt-3 flex gap-2.5 items-start rounded-xl border border-[#C5FF00]/40 bg-[#C5FF00]/[0.07] px-3.5 py-3"
+                    >
+                      <Info
+                        className="w-4 h-4 text-[#C5FF00] shrink-0 mt-0.5"
+                        strokeWidth={2.5}
+                      />
+                      <p className="font-body text-xs text-white/70 leading-relaxed">
+                        La broderie sur casquette démarre à{" "}
+                        <strong className="text-[#C5FF00]">
+                          {MINI_BRODERIE_CASQUETTE} pièces
+                        </strong>
+                        {" "}: tu en as{" "}
+                        {qteCasquettes === 1
+                          ? "1 pour l'instant"
+                          : `${qteCasquettes} pour l'instant`}
+                        . Passe en DTF, monte la quantité, ou envoie quand même
+                        ta demande — on te répond au cas par cas.
+                      </p>
+                    </div>
+                  )}
                   <p className="font-body text-[11px] text-white/30 mt-3">
                     Stickers UV et vitrophanie : sur devis, dis-le-nous dans ton
                     message.

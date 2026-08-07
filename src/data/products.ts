@@ -1134,7 +1134,7 @@ export const products: Product[] = [
     brand: "K-Up",
     category: "Casquettes",
     description:
-      "Casquette trucker rétro 6 panneaux en polycoton. Visière mi-profil, panneaux avant rigidifiés du même coloris, filet arrière et languette de réglage plastique. Existe aussi en Rouge et en quatre bicolores — Black/White, Navy/White, Forest Green/Light Grey, Rustic Orange/Beige — sur demande : le fournisseur ne les photographie pas.",
+      "Casquette trucker rétro 6 panneaux en polycoton. Visière mi-profil, panneaux avant rigidifiés du même coloris, filet arrière et languette de réglage plastique. Existe aussi en Rouge et en quatre bicolores — Black/White, Navy/White, Forest Green/Light Grey, Rustic Orange/Beige — sur demande : le fournisseur ne les photographie pas. En broderie, minimum 10 pièces ; en DTF, dès la première.",
     material: "60 % coton / 40 % polyester",
     grammage: "210 g/m²",
     cut: "6 panneaux, visière mi-profil, réglage plastique",
@@ -1157,7 +1157,7 @@ export const products: Product[] = [
     brand: "K-Up",
     category: "Casquettes",
     description:
-      "Casquette 5 panneaux en coton brossé épais, souple au toucher et au tissage résistant. Fermeture arrière réglable par bande auto-agrippante.",
+      "Casquette 5 panneaux en coton brossé épais, souple au toucher et au tissage résistant. Fermeture arrière réglable par bande auto-agrippante. En broderie, minimum 10 pièces ; en DTF, dès la première.",
     material: "100 % coton brossé",
     grammage: "260 g/m²",
     cut: "5 panneaux, réglage auto-agrippant",

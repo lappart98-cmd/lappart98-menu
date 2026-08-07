@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-[#0A0A0A] border-t border-[#222] py-8">
@@ -16,6 +18,12 @@ export default function Footer() {
         </p>
 
         <div className="flex items-center gap-4">
+          <Link
+            href="/mentions"
+            className="font-body text-xs text-white/40 hover:text-[#C5FF00] transition-colors duration-200 cursor-pointer"
+          >
+            Mentions légales
+          </Link>
           <a
             href="https://instagram.com/lappart_98"
             target="_blank"

@@ -1380,11 +1380,13 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
             <h3 className="font-heading text-[13px] sm:text-3xl font-black uppercase text-white leading-[1.05]">
               {item.name}
             </h3>
-            <p className="font-body text-[10px] sm:text-sm text-white/40 mt-1 sm:mt-2 hidden sm:block">
+            <p className="font-body text-[9px] sm:text-sm text-white/40 leading-snug mt-1 sm:mt-2">
               {item.description}
             </p>
 
-            <div className="my-5 sm:my-8 flex-1 flex items-center sm:flex-none sm:block">
+            {/* Le prix ne pousse plus pour occuper le vide : la liste des
+                avantages remplit desormais cette place sur mobile aussi. */}
+            <div className="my-3 sm:my-8 flex items-center sm:flex-none sm:block">
               <div className="flex flex-col items-start sm:flex-row sm:items-baseline sm:gap-1">
                 <span
                   className={`font-heading text-[2.6rem] sm:text-6xl font-black leading-[0.9] tracking-tight ${
@@ -1399,11 +1401,17 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
               </div>
             </div>
 
-            <div className="flex-1 space-y-1.5 sm:space-y-3.5 mb-3 sm:mb-8 hidden sm:block">
+            {/* Sur mobile la carte ne fait qu'un tiers de l'ecran : la pastille
+                ronde disparait au profit d'un simple chevron, et le texte se
+                cale en haut pour rester lisible quand il passe a la ligne. */}
+            <div className="flex-1 space-y-1 sm:space-y-3.5 mb-3 sm:mb-8">
               {item.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-3">
+                <div
+                  key={feature}
+                  className="flex items-start sm:items-center gap-1 sm:gap-3"
+                >
                   <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                    className={`hidden sm:flex w-5 h-5 rounded-full items-center justify-center shrink-0 ${
                       isPopular ? "bg-[#C5FF00]/15" : "bg-white/10"
                     }`}
                   >
@@ -1414,16 +1422,18 @@ function MenuCard({ item, index }: { item: MenuItem; index: number }) {
                       strokeWidth={3}
                     />
                   </div>
-                  <span className="font-body text-sm text-white/60">
+                  <Check
+                    className={`sm:hidden w-2.5 h-2.5 shrink-0 mt-[2px] ${
+                      isPopular ? "text-[#C5FF00]" : "text-[#C5FF00]/70"
+                    }`}
+                    strokeWidth={4}
+                  />
+                  <span className="font-body text-[9px] sm:text-sm text-white/60 leading-snug">
                     {feature}
                   </span>
                 </div>
               ))}
             </div>
-
-            <p className="font-body text-xs font-medium text-white/50 mt-auto mb-2.5 sm:hidden">
-              {item.quantity} pièces
-            </p>
 
             <button
               className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-heading text-[11px] sm:text-sm font-bold uppercase tracking-wide transition-all duration-200 cursor-pointer ${

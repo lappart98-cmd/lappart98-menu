@@ -5,17 +5,16 @@ import { join } from "node:path";
 /**
  * L'image qui s'affiche quand on partage le lien du site.
  *
- * Sans elle, un lien envoye sur WhatsApp ou en story sort nu : un titre, une
- * ligne de texte, rien a regarder. Pour un atelier qui vend de l'image, c'est
- * le pire endroit ou economiser.
+ * Elle montre le produit au lieu de le decrire : un vetement qui porte la
+ * marque, ce qui est exactement ce qu'on vend. Le compositing est fait en
+ * amont par scripts/build-og-vetement.py — un crawler qui recupere une
+ * preview n'attend pas qu'on telecharge un packshot pour le detourer.
  *
- * Fond lime et logo noir, comme le favicon : le logo est un trace noir sur
- * transparence, il se pose donc directement sur la couleur de la marque sans
- * retouche.
+ * Fond lime et logo noir, comme le favicon.
  */
 
 export const alt =
-  "L'Appart 98 — atelier textile à Gentilly : DTF, broderie, stickers UV";
+  "L'Appart 98 — un t-shirt floqué à l'atelier de Gentilly : DTF, broderie, stickers UV";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -24,11 +23,12 @@ const NOIR = "#0A0A0A";
 
 export default async function Image() {
   // process.cwd() est la racine du projet pendant le rendu.
-  const [oswald, logo] = await Promise.all([
+  const [oswald, logo, vetement] = await Promise.all([
     readFile(join(process.cwd(), "assets/Oswald-Bold.ttf")),
     readFile(join(process.cwd(), "public/logo-lappart98.png")),
+    readFile(join(process.cwd(), "assets/og-vetement.png")),
   ]);
-  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+  const b64 = (b: Buffer) => `data:image/png;base64,${b.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -38,59 +38,75 @@ export default async function Image() {
           height: "100%",
           background: LIME,
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "68px 76px",
+          position: "relative",
           fontFamily: "Oswald",
         }}
       >
-        {/* Pas de next/image ici : satori rend le JSX hors du navigateur et
-            ne connait que la balise brute. */}
-        <img src={logoSrc} alt="" width={520} height={77} />
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              fontSize: 86,
-              lineHeight: 1,
-              color: NOIR,
-              textTransform: "uppercase",
-              letterSpacing: -1,
-            }}
-          >
-            Vois ton logo
-          </div>
-          <div
-            style={{
-              fontSize: 86,
-              lineHeight: 1.05,
-              color: NOIR,
-              textTransform: "uppercase",
-              letterSpacing: -1,
-              opacity: 0.55,
-            }}
-          >
-            avant de commander
-          </div>
-        </div>
+        {/* Le vetement deborde volontairement en bas : cadre serre, on lit
+            un objet plutot qu'un packshot pose au milieu du vide. */}
+        <img
+          src={b64(vetement)}
+          alt=""
+          height={700}
+          style={{ position: "absolute", right: 44, top: 52 }}
+        />
 
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            flexDirection: "column",
             justifyContent: "space-between",
-            borderTop: `3px solid ${NOIR}`,
-            paddingTop: 26,
-            fontSize: 27,
-            color: NOIR,
-            textTransform: "uppercase",
-            letterSpacing: 2,
+            padding: "64px 0 60px 72px",
+            width: 700,
           }}
         >
-          <div style={{ display: "flex" }}>
-            DTF · Broderie · Stickers UV
+          {/* Pas de next/image : satori rend le JSX hors du navigateur et ne
+              connait que la balise brute. */}
+          <img src={b64(logo)} alt="" width={430} height={64} />
+
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              style={{
+                fontSize: 78,
+                lineHeight: 1,
+                color: NOIR,
+                textTransform: "uppercase",
+                letterSpacing: -1,
+              }}
+            >
+              Vois ton logo
+            </div>
+            <div
+              style={{
+                fontSize: 78,
+                lineHeight: 1.05,
+                color: NOIR,
+                textTransform: "uppercase",
+                letterSpacing: -1,
+                opacity: 0.55,
+              }}
+            >
+              avant de commander
+            </div>
           </div>
-          <div style={{ display: "flex", opacity: 0.6 }}>Gentilly (94)</div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              borderTop: `3px solid ${NOIR}`,
+              paddingTop: 22,
+              fontSize: 25,
+              color: NOIR,
+              textTransform: "uppercase",
+              letterSpacing: 2,
+            }}
+          >
+            <div style={{ display: "flex" }}>DTF · Broderie · Stickers UV</div>
+            <div style={{ display: "flex", opacity: 0.6, marginTop: 6 }}>
+              Atelier textile — Gentilly (94)
+            </div>
+          </div>
         </div>
       </div>
     ),

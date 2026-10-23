@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Loader2, Paperclip, Send, X } from "lucide-react";
 import { envoyerDevis, type DevisState } from "@/app/actions/devis";
@@ -126,6 +126,13 @@ export default function DevisForm({
 
   const errors = state.fieldErrors ?? {};
   const values = state.values ?? {};
+
+  // Remonte une conversion "Prospect" (event Lead) a Meta quand le devis part.
+  useEffect(() => {
+    if (state.status !== "success" || typeof window === "undefined") return;
+    const w = window as { fbq?: (...args: unknown[]) => void };
+    if (typeof w.fbq === "function") w.fbq("track", "Lead");
+  }, [state.status]);
 
   const borderFor = (key: string) =>
     errors[key] ? "border-red-500/60" : "border-[#333]";

@@ -20,6 +20,13 @@ const champ =
 
 export default function ApercuPage() {
   const [etat, action, enCours] = useActionState(envoyerDevis, initial);
+
+  // Remonte une conversion "Prospect" (event Lead) a Meta quand le devis part.
+  useEffect(() => {
+    if (etat.status !== "success" || typeof window === "undefined") return;
+    const w = window as { fbq?: (...args: unknown[]) => void };
+    if (typeof w.fbq === "function") w.fbq("track", "Lead");
+  }, [etat.status]);
   const [composition, setComposition] = useState<Composition>({
     logos: [],
     apercus: [],

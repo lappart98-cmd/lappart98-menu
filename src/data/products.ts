@@ -457,17 +457,7 @@ export const products: Product[] = [
     cut: "Regular, col rond bord-côte 1x1",
     sizes: ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"],
     colors: [
-      {
-        // Le blanc est vendu sous une reference distincte (MK023WV) avec sa
-        // propre convention d'images : une seule vue, chemin different.
-        name: "White",
-        slug: "100",
-        swatch:
-          "https://stospweb0pro01a237.blob.core.windows.net/media/colors/media/thumbnails/100_100.jpg",
-        images: [
-          "https://stospweb0pro01a237.blob.core.windows.net/media/product/media/thumbnails/MK023WV_SERIE_01_1000.jpg",
-        ],
-      },
+     
       {
         name: "Black",
         slug: "200",

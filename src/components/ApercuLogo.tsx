@@ -39,6 +39,7 @@ const POIDS_MAX = 6 * 1024 * 1024;
 // le choix. Ajouter une ligne ici suffit a proposer un modele de plus.
 const REFERENCES: Array<[string, string]> = [
   ["NS332", "T-shirt oversize"],
+  ["MK023CV", "T-shirt basique"],
   ["MK520V", "T-shirt technique"],
   ["MK215CV", "Polo"],
   ["NS443", "Sweat col rond"],

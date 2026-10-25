@@ -84,12 +84,34 @@ export async function envoyerDevis(
   const email = clean(formData.get("email"), 160);
   const telephone = clean(formData.get("telephone"), 40);
   const structure = clean(formData.get("structure"), 120);
+  const typeDemande = clean(formData.get("typeDemande"), 60);
+  const quantite = clean(formData.get("quantite"), 120);
+  const delai = clean(formData.get("delai"), 120);
+  const technique = clean(formData.get("technique"), 60);
+  const etatVisuel = clean(formData.get("etatVisuel"), 60);
+  const source = clean(formData.get("source"), 60);
+  const preferenceContact = clean(formData.get("preferenceContact"), 20);
+  const consentement = clean(formData.get("consentement"), 10);
   const tailles = clean(formData.get("tailles"), 600);
   const message = clean(formData.get("message"), 2000);
   const recap = clean(formData.get("recap"), 4000);
   const formule = clean(formData.get("formule"), 80);
 
-  const values = { nom, email, telephone, structure, tailles, message };
+  const values = {
+    nom,
+    email,
+    telephone,
+    structure,
+    typeDemande,
+    quantite,
+    delai,
+    technique,
+    etatVisuel,
+    source,
+    preferenceContact,
+    tailles,
+    message,
+  };
 
   const fieldErrors: Record<string, string> = {};
   if (nom.length < 2) fieldErrors.nom = "Indique ton nom";
@@ -97,6 +119,11 @@ export async function envoyerDevis(
     fieldErrors.email = "Email invalide";
   if (telephone.replace(/\D/g, "").length < 9)
     fieldErrors.telephone = "Numéro invalide";
+  if (typeDemande.length < 1) fieldErrors.typeDemande = "Précise le type";
+  if (quantite.length < 1) fieldErrors.quantite = "Indique une quantité";
+  if (delai.length < 1) fieldErrors.delai = "Indique une date ou un délai";
+  if (consentement !== "oui")
+    fieldErrors.consentement = "Coche la case pour continuer";
 
   // Plusieurs fichiers peuvent porter le meme nom de champ : le visuel du
   // client, et les apercus composes sur la page d'essai.
@@ -165,7 +192,14 @@ export async function envoyerDevis(
     ["Nom", nom],
     ["Email", email],
     ["Téléphone", telephone],
+    ["Contact préféré", preferenceContact || "-"],
     ["Structure", structure || "-"],
+    ["Type de demande", typeDemande || "-"],
+    ["Quantité estimée", quantite || "-"],
+    ["Date / délai", delai || "-"],
+    ["Technique", technique || "-"],
+    ["État du visuel", etatVisuel || "-"],
+    ["Connu via", source || "-"],
     ["Formule", formule || "-"],
     ["Tailles", tailles || "Non précisé"],
     ["Message", message || "-"],

@@ -18,6 +18,8 @@ const MENUS = [
 const champ =
   "w-full bg-[#111] border rounded-xl px-3.5 py-3 font-body text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#C5FF00]/50 transition-colors duration-200";
 
+const champSelect = `${champ} appearance-none cursor-pointer pr-10 bg-[length:14px] bg-[right_0.9rem_center] bg-no-repeat [background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23888'%20stroke-width='2'%3E%3Cpath%20d='M6%209l6%206%206-6'/%3E%3C/svg%3E\")]`;
+
 export default function ApercuPage() {
   const [etat, action, enCours] = useActionState(envoyerDevis, initial);
 
@@ -164,9 +166,41 @@ export default function ApercuPage() {
                   className={`${champ} ${bordure("telephone")}`}
                 />
               </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <select
+                  name="typeDemande"
+                  defaultValue={etat.values?.typeDemande ?? ""}
+                  className={`${champSelect} ${bordure("typeDemande")} ${
+                    etat.values?.typeDemande ? "" : "text-white/40"
+                  }`}
+                >
+                  <option value="" disabled>
+                    Type de demande *
+                  </option>
+                  <option value="Particulier">Particulier</option>
+                  <option value="Entreprise">Entreprise</option>
+                  <option value="Association / club">Association / club</option>
+                  <option value="Événement (EVJF, anniv…)">
+                    Événement (EVJF, anniv…)
+                  </option>
+                </select>
+                <input
+                  name="quantite"
+                  inputMode="numeric"
+                  placeholder="Quantité estimée *"
+                  defaultValue={etat.values?.quantite}
+                  className={`${champ} ${bordure("quantite")}`}
+                />
+              </div>
+              <input
+                name="delai"
+                placeholder="Date / délai souhaité *"
+                defaultValue={etat.values?.delai}
+                className={`${champ} ${bordure("delai")}`}
+              />
               <input
                 name="tailles"
-                placeholder="Quantité et répartition des tailles"
+                placeholder="Répartition des tailles (optionnel)"
                 defaultValue={etat.values?.tailles}
                 className={`${champ} ${bordure("tailles")}`}
               />
@@ -204,6 +238,47 @@ export default function ApercuPage() {
                   })}
                 </div>
               </div>
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                <select
+                  name="technique"
+                  defaultValue={etat.values?.technique ?? ""}
+                  className={`${champSelect} ${bordure("technique")} ${
+                    etat.values?.technique ? "" : "text-white/40"
+                  }`}
+                >
+                  <option value="">Technique (conseillez-moi)</option>
+                  <option value="DTF">DTF (impression)</option>
+                  <option value="Flocage">Flocage</option>
+                  <option value="Broderie">Broderie</option>
+                </select>
+                <select
+                  name="etatVisuel"
+                  defaultValue={etat.values?.etatVisuel ?? ""}
+                  className={`${champSelect} ${bordure("etatVisuel")} ${
+                    etat.values?.etatVisuel ? "" : "text-white/40"
+                  }`}
+                >
+                  <option value="">État du visuel ?</option>
+                  <option value="Fichier prêt">J&apos;ai un fichier prêt</option>
+                  <option value="À retravailler">À retravailler</option>
+                  <option value="À créer">À créer (je n&apos;ai rien)</option>
+                </select>
+              </div>
+              <select
+                name="source"
+                defaultValue={etat.values?.source ?? ""}
+                className={`${champSelect} ${bordure("source")} ${
+                  etat.values?.source ? "" : "text-white/40"
+                }`}
+              >
+                <option value="">Comment nous as-tu connus ? (optionnel)</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Google">Google / recherche</option>
+                <option value="Bouche-à-oreille">Bouche-à-oreille</option>
+                <option value="Publicité">Une publicité</option>
+                <option value="Autre">Autre</option>
+              </select>
 
               {/* Ce qui partira reellement, plus la possibilite d'ajouter un
                   fichier que l'apercu ne couvre pas : charte, bon de commande. */}
@@ -247,6 +322,44 @@ export default function ApercuPage() {
                   + Ajouter un autre fichier
                 </button>
               </div>
+
+              <div>
+                <span className="font-heading text-xs font-bold text-white/60 uppercase tracking-wider block mb-2">
+                  Je préfère être recontacté par
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  {["Email", "WhatsApp"].map((opt) => (
+                    <label key={opt} className="cursor-pointer">
+                      <input
+                        type="radio"
+                        name="preferenceContact"
+                        value={opt}
+                        defaultChecked={
+                          (etat.values?.preferenceContact || "Email") === opt
+                        }
+                        className="peer sr-only"
+                      />
+                      <span className="block text-center font-heading text-[11px] font-bold uppercase tracking-wider rounded-xl border border-[#222] bg-[#111] text-white/50 py-3 transition-colors duration-200 peer-checked:border-[#C5FF00] peer-checked:bg-[#C5FF00]/[0.06] peer-checked:text-[#C5FF00]">
+                        {opt}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="consentement"
+                  value="oui"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#C5FF00] cursor-pointer"
+                />
+                <span className="font-body text-[11px] text-white/45 leading-relaxed">
+                  J&apos;accepte d&apos;être recontacté par L&apos;Appart 98 au
+                  sujet de ma demande. Mes informations ne servent qu&apos;à
+                  traiter ce devis. *
+                </span>
+              </label>
 
               {Object.values(erreurs).length > 0 && (
                 <p className="font-body text-sm text-red-400">

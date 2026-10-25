@@ -12,6 +12,9 @@ const MAX_FILE_BYTES = 4 * 1024 * 1024;
 const inputClass =
   "w-full bg-[#1a1a1a] border rounded-lg px-3 py-2.5 font-body text-sm text-white placeholder:text-white/25 outline-none transition-colors duration-200 focus:border-[#C5FF00]";
 
+const selectClass =
+  "w-full bg-[#1a1a1a] border rounded-lg px-3 py-2.5 font-body text-sm text-white outline-none transition-colors duration-200 focus:border-[#C5FF00] appearance-none cursor-pointer bg-[length:14px] bg-[right_0.75rem_center] bg-no-repeat [background-image:url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23888'%20stroke-width='2'%3E%3Cpath%20d='M6%209l6%206%206-6'/%3E%3C/svg%3E\")]";
+
 function Field({
   label,
   error,
@@ -220,6 +223,74 @@ export default function DevisForm({
         </Field>
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Type de demande *" error={errors.typeDemande}>
+          <select
+            name="typeDemande"
+            required
+            defaultValue={values.typeDemande ?? ""}
+            className={`${selectClass} ${borderFor("typeDemande")}`}
+          >
+            <option value="" disabled>
+              Choisis…
+            </option>
+            <option value="Particulier">Particulier</option>
+            <option value="Entreprise">Entreprise</option>
+            <option value="Association / club">Association / club</option>
+            <option value="Événement (EVJF, anniv…)">
+              Événement (EVJF, anniv…)
+            </option>
+          </select>
+        </Field>
+        <Field label="Quantité estimée *" error={errors.quantite}>
+          <input
+            name="quantite"
+            required
+            defaultValue={values.quantite}
+            inputMode="numeric"
+            placeholder="ex : 30 pièces"
+            className={`${inputClass} ${borderFor("quantite")}`}
+          />
+        </Field>
+      </div>
+
+      <Field label="Date / délai souhaité *" error={errors.delai}>
+        <input
+          name="delai"
+          required
+          defaultValue={values.delai}
+          placeholder="ex : avant le 15/12, ou « pas pressé »"
+          className={`${inputClass} ${borderFor("delai")}`}
+        />
+      </Field>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Technique souhaitée" error={errors.technique}>
+          <select
+            name="technique"
+            defaultValue={values.technique ?? ""}
+            className={`${selectClass} ${borderFor("technique")}`}
+          >
+            <option value="">Je ne sais pas, conseillez-moi</option>
+            <option value="DTF">DTF (impression)</option>
+            <option value="Flocage">Flocage</option>
+            <option value="Broderie">Broderie</option>
+          </select>
+        </Field>
+        <Field label="État de ton visuel" error={errors.etatVisuel}>
+          <select
+            name="etatVisuel"
+            defaultValue={values.etatVisuel ?? ""}
+            className={`${selectClass} ${borderFor("etatVisuel")}`}
+          >
+            <option value="">À préciser</option>
+            <option value="Fichier prêt">J&apos;ai un fichier prêt</option>
+            <option value="À retravailler">À retravailler</option>
+            <option value="À créer">À créer (je n&apos;ai rien)</option>
+          </select>
+        </Field>
+      </div>
+
       <Field label="Répartition des tailles" error={errors.tailles}>
         <input
           name="tailles"
@@ -239,10 +310,62 @@ export default function DevisForm({
           name="message"
           rows={3}
           defaultValue={values.message}
-          placeholder="Couleurs, date de livraison souhaitée, détails du visuel..."
+          placeholder="Couleurs, détails du visuel, contraintes..."
           className={`${inputClass} ${borderFor("message")} resize-none`}
         />
       </Field>
+
+      <Field label="Comment nous as-tu connus ?" error={errors.source}>
+        <select
+          name="source"
+          defaultValue={values.source ?? ""}
+          className={`${selectClass} ${borderFor("source")}`}
+        >
+          <option value="">Optionnel</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Google">Google / recherche</option>
+          <option value="Bouche-à-oreille">Bouche-à-oreille</option>
+          <option value="Publicité">Une publicité</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </Field>
+
+      <Field label="Je préfère être recontacté par">
+        <div className="flex gap-2">
+          {["Email", "WhatsApp"].map((opt) => (
+            <label key={opt} className="flex-1 cursor-pointer">
+              <input
+                type="radio"
+                name="preferenceContact"
+                value={opt}
+                defaultChecked={(values.preferenceContact || "Email") === opt}
+                className="peer sr-only"
+              />
+              <span className="block text-center font-heading text-xs font-bold uppercase tracking-wider rounded-lg border border-[#333] bg-[#1a1a1a] text-white/50 py-2.5 transition-colors duration-200 peer-checked:border-[#C5FF00] peer-checked:bg-[#C5FF00]/[0.06] peer-checked:text-[#C5FF00]">
+                {opt}
+              </span>
+            </label>
+          ))}
+        </div>
+      </Field>
+
+      <label className="flex items-start gap-2.5 cursor-pointer">
+        <input
+          type="checkbox"
+          name="consentement"
+          value="oui"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-[#C5FF00] cursor-pointer"
+        />
+        <span className="font-body text-xs text-white/50 leading-relaxed">
+          J&apos;accepte d&apos;être recontacté par L&apos;Appart 98 au sujet de
+          ma demande. Mes informations ne servent qu&apos;à traiter ce devis. *
+        </span>
+      </label>
+      {errors.consentement && (
+        <span className="font-body text-xs text-red-400 -mt-2 block">
+          {errors.consentement}
+        </span>
+      )}
 
       {state.status === "error" && (
         <p className="font-body text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5">

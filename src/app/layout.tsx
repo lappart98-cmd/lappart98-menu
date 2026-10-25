@@ -50,6 +50,11 @@ export default function RootLayout({
             __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${FB_PIXEL_ID}');fbq('track','PageView');`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';if(h.indexOf('wa.me/')>-1||h.indexOf('whatsapp.com')>-1){window.fbq&&fbq('track','Contact',{method:'whatsapp'});}else if(h.indexOf('mailto:')===0){window.fbq&&fbq('track','Contact',{method:'email'});}},true);`,
+          }}
+        />
         <noscript>
           <img
             height="1"

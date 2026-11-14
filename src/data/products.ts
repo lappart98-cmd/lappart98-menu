@@ -1,3 +1,5 @@
+import { rolyProducts } from "./products-roly";
+
 export interface ProductColor {
   name: string;
   slug: string;
@@ -1193,6 +1195,8 @@ export const products: Product[] = [
     price: "À partir de 5 €/pièce",
     prices: { solo: 7, team: 6, bestof: 5 },
   },
+  // Selection Roly, generee par scripts/import-roly.mjs.
+  ...rolyProducts,
 ];
 
 export function getPackshotImages(ref: string, colorSlug: string): string[] {

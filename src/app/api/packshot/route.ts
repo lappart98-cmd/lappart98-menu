@@ -11,6 +11,7 @@
 const HOTES_AUTORISES = new Set([
   "cdn.toptex.com",
   "stospweb0pro01a237.blob.core.windows.net",
+  "static.gorfactory.es",
 ]);
 
 /** Poids exact du pictogramme « image absente » de Toptex, identique partout. */

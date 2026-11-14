@@ -100,8 +100,12 @@ const textiles: TextileOption[] = [
 ];
 
 // Modeles du catalogue proposes pour une famille de textile.
+// Seuls les modeles avec un tarif entrent dans le calcul : ceux « sur devis »
+// n'auraient pas de prix a additionner.
 function modelesPour(textile: TextileOption): Product[] {
-  return products.filter((p) => textile.categories.includes(p.category));
+  return products.filter(
+    (p) => p.prices && textile.categories.includes(p.category)
+  );
 }
 
 // Les prix vivent desormais sur chaque reference du catalogue, calcules a
@@ -115,10 +119,12 @@ function prixTextile(
   ref?: string
 ): number {
   const tarif = (p: Product) =>
-    (p.prices as Record<string, number>)[tier] ?? p.prices.bestof;
+    (p.prices as Record<string, number> | undefined)?.[tier] ??
+    p.prices?.bestof ??
+    0;
 
   if (ref) {
-    const choisi = products.find((p) => p.ref === ref);
+    const choisi = products.find((p) => p.ref === ref && p.prices);
     if (choisi) return tarif(choisi);
   }
   const modeles = modelesPour(textile);
@@ -663,7 +669,7 @@ function Configurator({
                               className="bg-[#141414] overflow-hidden"
                             >
                               <div className="p-3">
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-3 gap-2 max-h-[26rem] overflow-y-auto pr-1">
                                   {modeles.map((m) => {
                                     const sel = m.ref === chosenRef;
                                     const g = grammageValue(m);
@@ -685,6 +691,7 @@ function Configurator({
                                         <img
                                           src={m.defaultImages[0]}
                                           alt={m.name}
+                                          loading="lazy"
                                           className="w-full aspect-square object-contain bg-[#e8e8e8]"
                                         />
                                         <div className="p-1.5">

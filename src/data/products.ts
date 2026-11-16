@@ -1197,9 +1197,9 @@ export const products: Product[] = [
 
 export function getPackshotImages(ref: string, colorSlug: string): string[] {
   return [
-    `https://cdn.toptex.com/packshots/PS_${ref}_${colorSlug}.png`,
-    `https://cdn.toptex.com/packshots/PS_${ref}-B_${colorSlug}.png`,
-    `https://cdn.toptex.com/packshots/PS_${ref}-S_${colorSlug}.png`,
+    `/textiles/${ref}/PS_${ref}_${colorSlug}.webp`,
+    `/textiles/${ref}/PS_${ref}-B_${colorSlug}.webp`,
+    `/textiles/${ref}/PS_${ref}-S_${colorSlug}.webp`,
   ];
 }
 

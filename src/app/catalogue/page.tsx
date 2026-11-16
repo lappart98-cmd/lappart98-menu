@@ -172,9 +172,11 @@ function ProductCard({
           <span className="font-heading text-sm sm:text-base font-black text-[#C5FF00] block leading-tight">
             {product.price.replace("À partir de ", "dès ")}
           </span>
-          <span className="font-body text-[9px] sm:text-[10px] text-white/30 block leading-tight">
-            hors flocage
-          </span>
+          {product.prices && (
+            <span className="font-body text-[9px] sm:text-[10px] text-white/30 block leading-tight">
+              hors flocage
+            </span>
+          )}
         </span>
         <ChevronDown
           className={`w-5 h-5 text-white/40 shrink-0 transition-transform duration-300 ${
@@ -374,9 +376,11 @@ function ProductCard({
                       <span className="font-heading text-2xl sm:text-3xl font-black text-[#C5FF00]">
                         {product.price}
                       </span>
-                      <span className="font-body text-xs text-white/30 mb-1">
-                        hors flocage
-                      </span>
+                      {product.prices && (
+                        <span className="font-body text-xs text-white/30 mb-1">
+                          hors flocage
+                        </span>
+                      )}
                     </div>
                     <a
                       href={`https://wa.me/33675008633?text=${encodeURIComponent(

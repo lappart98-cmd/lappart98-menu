@@ -1,3 +1,5 @@
+import { rolyProducts } from "./products-roly";
+
 export interface ProductColor {
   name: string;
   slug: string;
@@ -5,6 +7,13 @@ export interface ProductColor {
   // produits d'autres fournisseurs (Velilla...) portent leurs propres URLs.
   swatch?: string;
   images?: string[];
+  // Teinte du coloris, quand le fournisseur ne publie pas de pastille image.
+  hex?: string;
+  // Roly : vues publiees pour ce coloris parmi 1 (face), 2 (dos), 7 (profil).
+  // Absent = les trois. Vide = aucun packshot, on se rabat sur `photo`.
+  views?: number[];
+  // Roly : chemin d'une photo du coloris, relatif a ROLY_MODELS.
+  photo?: string;
 }
 
 export interface Product {
@@ -23,11 +32,14 @@ export interface Product {
   price: string;
   // Prix de vente HT par palier de quantite, calcules a partir du prix
   // d'achat reel (cf. scripts/pricing.config.json et compute-prices.mjs).
-  prices: { solo: number; team: number; bestof: number };
+  // Absent quand le fournisseur ne communique pas de tarif : la fiche affiche
+  // alors « Prix sur devis ».
+  prices?: { solo: number; team: number; bestof: number };
   // Origine des visuels par coloris quand le coloris n'en porte pas lui-meme.
   // "toptex" (defaut) : deduits de la reference. "none" : le fournisseur n'en
-  // publie pas, on reste sur les visuels par defaut.
-  packshotSource?: "toptex" | "none";
+  // publie pas, on reste sur les visuels par defaut. "roly" : deduits de la
+  // reference et des vues declarees par le coloris.
+  packshotSource?: "toptex" | "none" | "roly";
 }
 
 export const categories = [
@@ -40,6 +52,14 @@ export const categories = [
   "Sweats col rond",
   "Casquettes",
   "Sacs",
+  "Vestes & parkas",
+  "Polaires & gilets",
+  "Pantalons & shorts",
+  "Chemises",
+  "Sport",
+  "Workwear",
+  "Chaussures",
+  "Accessoires",
 ] as const;
 
 export type Category = (typeof categories)[number];
@@ -1193,6 +1213,8 @@ export const products: Product[] = [
     price: "À partir de 5 €/pièce",
     prices: { solo: 7, team: 6, bestof: 5 },
   },
+  // Selection Roly, generee par scripts/import-roly.mjs.
+  ...rolyProducts,
 ];
 
 export function getPackshotImages(ref: string, colorSlug: string): string[] {
@@ -1214,7 +1236,24 @@ export function getPackshotImages(ref: string, colorSlug: string): string[] {
  */
 export function hasColorPhoto(product: Product, color: ProductColor): boolean {
   if (color.images) return true;
+  if (product.packshotSource === "roly")
+    return color.views?.length !== 0 || Boolean(color.photo);
   return product.packshotSource !== "none";
+}
+
+export const ROLY_MODELS = "https://static.gorfactory.es/images/models";
+
+// Packshots Roly : /images/models/<id>/views/large/p_<id>_<coloris>_<vue>_1.jpg,
+// <id> etant la reference sans son prefixe de famille (CA6424 -> 6424).
+function rolyImages(product: Product, color: ProductColor): string[] {
+  const id = product.ref.slice(2);
+  const vues = color.views ?? [1, 2, 7];
+  if (vues.length)
+    return vues.map(
+      (v) => `${ROLY_MODELS}/${id}/views/large/p_${id}_${color.slug}_${v}_1.jpg`
+    );
+  if (color.photo) return [`${ROLY_MODELS}/${color.photo}`];
+  return product.defaultImages;
 }
 
 export function getColorImages(
@@ -1223,12 +1262,18 @@ export function getColorImages(
 ): string[] {
   if (color.images) return color.images;
   if (product.packshotSource === "none") return product.defaultImages;
+  if (product.packshotSource === "roly") return rolyImages(product, color);
   return getPackshotImages(product.ref, color.slug);
 }
 
 export function getColorSwatch(ref: string, color: ProductColor): string {
-  return (
-    color.swatch ??
-    `https://cdn.toptex.com/stickers/PAST_${ref}_${color.slug}.jpg?w=48`
-  );
+  if (color.swatch) return color.swatch;
+  if (color.hex)
+    return (
+      "data:image/svg+xml," +
+      encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="${color.hex}"/></svg>`
+      )
+    );
+  return `https://cdn.toptex.com/stickers/PAST_${ref}_${color.slug}.jpg?w=48`;
 }

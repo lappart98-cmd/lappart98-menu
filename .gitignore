@@ -49,3 +49,6 @@ scripts/pricing.config.json
 
 # Mockups generes localement, pas de raison de les versionner
 public/mockups/
+
+# Tarif confidentiel Roly (prix d achat), lu par scripts/import-roly.mjs
+scripts/roly-achats.json

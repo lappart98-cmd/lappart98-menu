@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "stospweb0pro01a237.blob.core.windows.net",
       },
+      // Visuels Roly (groupe Gorfactory)
+      {
+        protocol: "https",
+        hostname: "static.gorfactory.es",
+      },
     ],
   },
 };

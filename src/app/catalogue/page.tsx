@@ -3,7 +3,6 @@
 import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Leaf,
@@ -32,6 +31,65 @@ const sortModes = [
 ] as const;
 
 type SortMode = (typeof sortModes)[number]["id"];
+
+// Les packshots fournisseurs (Toptex / Mukua) sont servis via notre propre
+// relais same-origin `/api/packshot`, mis en cache un an. On court-circuite
+// ainsi l'optimiseur d'images de Vercel (qui saturait et cassait le catalogue
+// sur mobile) et on dépend d'un seul domaine : le nôtre.
+function relayUrl(u: string): string {
+  return /^https?:\/\//i.test(u)
+    ? `/api/packshot?url=${encodeURIComponent(u)}`
+    : u;
+}
+
+/**
+ * Image de packshot avec repli propre. Si le visuel manque (le fournisseur
+ * renvoie son pictogramme « image absente », que le relais transforme en 404),
+ * on affiche un cartouche neutre plutôt que l'icône « image cassée » du
+ * navigateur. `fill` pour occuper un parent `relative`, sinon l'image remplit
+ * son conteneur via la className passée.
+ */
+function Packshot({
+  src,
+  alt,
+  className = "",
+  fill = false,
+  eager = false,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  fill?: boolean;
+  eager?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  const fillCls = fill ? "absolute inset-0 w-full h-full " : "";
+  if (failed || !src) {
+    return (
+      <div
+        role="img"
+        aria-label={alt}
+        className={`${fillCls}w-full h-full flex items-center justify-center bg-[#1a1a1a]`}
+      >
+        <span className="font-heading text-[8px] font-bold tracking-wider uppercase text-white/20">
+          visuel
+        </span>
+      </div>
+    );
+  }
+  return (
+    // Volontairement un <img> natif, pas next/image : voir relayUrl ci-dessus.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={relayUrl(src)}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      onError={() => setFailed(true)}
+      className={`${fillCls}${className}`}
+    />
+  );
+}
 
 function ProductCard({
   product,
@@ -80,12 +138,11 @@ function ProductCard({
         className="w-full flex items-center gap-4 p-4 sm:p-5 cursor-pointer group"
       >
         <div className="relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-[#1a1a1a]">
-          <Image
+          <Packshot
             src={product.defaultImages[0]}
             alt={product.name}
             fill
             className="object-cover"
-            sizes="56px"
           />
         </div>
         <div className="flex-1 text-left min-w-0">
@@ -144,7 +201,7 @@ function ProductCard({
                       photoDuColoris && activeColor ? "bg-white" : "bg-[#1a1a1a]"
                     }`}
                   >
-                    <Image
+                    <Packshot
                       src={currentImages[activeImage] || currentImages[0]}
                       alt={`${product.name} - ${product.ref}${
                         activeColor ? ` - ${activeColor}` : ""
@@ -153,8 +210,7 @@ function ProductCard({
                       className={
                         photoDuColoris && activeColor ? "object-contain p-4" : "object-cover"
                       }
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority
+                      eager
                     />
                   </div>
                   {!photoDuColoris && (
@@ -175,7 +231,7 @@ function ProductCard({
                             : "border-transparent hover:border-white/20"
                         } ${photoDuColoris && activeColor ? "bg-white" : "bg-[#1a1a1a]"}`}
                       >
-                        <Image
+                        <Packshot
                           src={img}
                           alt=""
                           fill
@@ -184,7 +240,6 @@ function ProductCard({
                               ? "object-contain p-1"
                               : "object-cover"
                           }
-                          sizes="80px"
                         />
                       </button>
                     ))}
@@ -287,11 +342,9 @@ function ProductCard({
                                 : "border-[#333] hover:border-white/40"
                             }`}
                           >
-                            <Image
+                            <Packshot
                               src={getColorSwatch(product.ref, color)}
                               alt={color.name}
-                              width={36}
-                              height={36}
                               className="w-full h-full object-cover"
                             />
                           </div>
